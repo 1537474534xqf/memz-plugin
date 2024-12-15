@@ -26,30 +26,22 @@ export class SystemStatus extends plugin {
       return false
     }
 
-    const match = e.raw_message.match(/^#(?:memz)?(?:插件)?系统状态(?:(pro)(max)?)?$/i)
+    const reg = /^#(?:memz)?(?:插件)?系统状态(pro)?(max)?/
+    const match = e.msg.match(reg)
+    const mode = match?.[2] ? 'max' : match?.[1] ? 'extended' : 'basic'
 
-    let mode
-    if (match?.[2] === 'max') {
-      mode = 'max'
-    } else if (match?.[1] === 'pro') {
-      mode = 'extended'
-    } else {
-      mode = 'basic'
-    }
     try {
       logger.info(`[memz-plugin] 系统状态模式: ${mode}`)
-      switch (mode) {
-        case 'basic':
-          await this.getSystemInfo(e)
-          break
-        case 'extended':
-          await this.getExtendedSystemInfo(e)
-          break
-        case 'max':
-          await this.getMaxExtendedSystemInfo(e)
-          break
-        default:
-          await e.reply('未识别的系统状态模式，请检查输入指令格式是否正确。')
+      const modeHandlers = {
+        basic: () => this.getSystemInfo(e),
+        extended: () => this.getExtendedSystemInfo(e),
+        max: () => this.getMaxExtendedSystemInfo(e)
+      }
+
+      if (modeHandlers[mode]) {
+        await modeHandlers[mode]()
+      } else {
+        await e.reply('未识别的系统状态模式，请检查输入指令格式是否正确。')
       }
     } catch (error) {
       logger.error(`[memz-plugin] 获取系统状态信息时出错: ${error.message}`)
