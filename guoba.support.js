@@ -185,7 +185,7 @@ export function supportGuoba () {
           componentProps: {
             options: [
               { label: 'ZHALEMA', value: 1 },
-              { label: 'Itdog', value: 2 }
+              { label: 'ITDOG', value: 2 }
             ],
             placeholder: '请选择Ping类型'
           }
@@ -193,7 +193,7 @@ export function supportGuoba () {
         {
           field: 'memz.PingProxy',
           label: 'Ping代理',
-          bottomHelpMessage: '用于一些服务器无法访问ZHALE.MA的情况',
+          bottomHelpMessage: '用于一些服务器无法访问ZHALE.MA/ITDOG.CN的情况',
           component: 'Switch'
         },
         {

@@ -214,6 +214,7 @@ export class PingScreenshot extends plugin {
   }
 
   async itdog (e) {
+    const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
       logger.warn('未匹配到正确的Ping命令')
@@ -229,7 +230,7 @@ export class PingScreenshot extends plugin {
     }
     const url = `https://www.itdog.cn/${type}/${siteName}`
 
-    const browser = await puppeteer.launch({
+    const launchOptions = {
       headless: true,
       args: [
         '--no-sandbox',
@@ -238,7 +239,15 @@ export class PingScreenshot extends plugin {
         '--disable-infobars',
         '--window-size=1920,1080'
       ]
-    })
+    }
+
+    if (PingProxy && PingProxyAddress) {
+      launchOptions.args.push(`--proxy-server=${PingProxyAddress}`)
+      logger.debug(`[MEMZ-Plugin] 使用代理: ${PingProxyAddress}`)
+    }
+
+    const browser = await puppeteer.launch(launchOptions)
+    await puppeteer.launch(browser)
 
     const page = await browser.newPage()
 
