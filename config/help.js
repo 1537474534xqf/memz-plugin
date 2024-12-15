@@ -29,6 +29,11 @@ export const helpList = [
         desc: '网站测速'
       },
       {
+        icon: 84,
+        title: '#ipinfo+IP/域名',
+        desc: 'IP信息查询'
+      },
+      {
         icon: 83,
         title: '#seo+域名',
         desc: '查询域名的SEO信息'

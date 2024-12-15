@@ -8,7 +8,7 @@ import { pathToFileURL } from 'url'
 import Redis from 'ioredis'
 import { PluginPath } from '../components/Path.js'
 import Config from '../components/Config.js'
-import { RedisConfig } from '../model/Redis.js'
+import { RedisConfig } from '../components/Redis.js'
 
 const redis = new Redis({
   host: RedisConfig.host,

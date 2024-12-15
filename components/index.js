@@ -9,6 +9,12 @@ import {
   PluginData,
   PluginName
 } from './Path.js'
+import {
+  RedisConfig,
+  RedisHost,
+  RedisPort,
+  RedisPassword
+} from './Redis.js'
 const MEMZ_NAME = 'MEMZ-Plugin'
 let BotName = Version.isTrss
   ? 'Trss-Yunzai'
@@ -26,5 +32,9 @@ export {
   PluginTemp,
   PluginData,
   MEMZ_NAME,
-  BotName
+  BotName,
+  RedisConfig,
+  RedisHost,
+  RedisPort,
+  RedisPassword
 }

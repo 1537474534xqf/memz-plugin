@@ -14,6 +14,10 @@ export class PingScreenshot extends plugin {
         {
           reg: '^#(http|ping|tcping)\\s*(\\S+)$',
           fnc: 'ping'
+        },
+        {
+          reg: '^#(ipinfo|ip信息)\\s*(\\S+)$',
+          fnc: 'ipinfo'
         }
       ]
     })
@@ -28,8 +32,8 @@ export class PingScreenshot extends plugin {
       logger.debug('PingApi 是 1，执行 Zhalema 函数')
       await this.Zhalema(e)
     } else if (PingApi === 2) {
-      logger.debug('PingApi 是 2，执行 ipinfo 函数')
-      await this.ipinfo(e)
+      logger.debug('PingApi 是 2，执行 itdog 函数')
+      await this.itdog(e)
     } else {
       logger.error('PingApi 配置错误！')
     }
@@ -37,51 +41,60 @@ export class PingScreenshot extends plugin {
 
   async ipinfo (e) {
     const { IpinfoToken } = Config.getConfig('memz')
-    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
+
+    const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
     if (!match) {
-      logger.warn('未匹配到正确的Ping命令')
-      return await e.reply('请输入正确的Ping命令', true)
+      logger.warn('未匹配到正确的 IP 信息命令')
+      return await e.reply('请输入正确的 IP 信息命令，例如：#ipinfo IP/域名', true)
     }
 
-    const [, type, siteName] = match
+    const [, , siteName] = match
 
-    logger.debug(`解析的命令类型: ${type}, 目标: ${siteName}`)
-
-    if (type === 'http' || type === 'tcping') {
-      return await e.reply(`选择 IpInfo 暂时不支持 ${type} 命令`, true)
-    }
+    logger.debug(`解析的目标: ${siteName}`)
 
     if (!IpinfoToken) {
-      e.reply('请前往 https://ipinfo.io 注册账号并获取 Token 后在配置文件中配置', true)
+      await e.reply('请前往 https://ipinfo.io 注册账号并获取 Token 后在配置文件中配置', true)
       return false
     }
 
     let ipAddress = siteName
-    if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
-      ipAddress = await this.resolveDomainToIp(siteName)
-      if (!ipAddress) {
-        await e.reply('无法解析域名的IP地址！', e.isGroup)
-        return false
-      }
-    }
-
     try {
-      const ipInfo = await fetch(`https://ipinfo.io/${ipAddress}?token=${IpinfoToken}`)
-        .then(response => response.json())
-        .catch(error => {
-          throw new Error(`IP信息获取失败: ${error.message}`)
-        })
+      if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
+        ipAddress = await this.resolveDomainToIp(siteName)
+        if (!ipAddress) {
+          await e.reply('无法解析域名的 IP 地址！', e.isGroup)
+          return false
+        }
+      }
+
+      logger.info(`目标 IP 地址: ${ipAddress}`)
+
+      const response = await fetch(`https://ipinfo.io/${ipAddress}?token=${IpinfoToken}`)
+      const ipInfo = await response.json()
 
       if (ipInfo.bogon) {
-        await e.reply('目标地址为 Bogon IP（私有IP）。')
+        await e.reply('目标地址为 Bogon IP（私有 IP，不可路由）。')
+        return false
       }
 
-      let res = `IP: ${ipInfo.ip}\n国家/地区：${ipInfo.country}\n区域：${ipInfo.region}\n城市：${ipInfo.city}\n时区：${ipInfo.timezone}\n经纬度：${ipInfo.loc}\n运营商：${ipInfo.org}`
+      const res = [
+        'IP 信息',
+            `IP 地址：${ipInfo.ip || 'N/A'}`,
+            `国家/地区：${ipInfo.country || 'N/A'}`,
+            `区域：${ipInfo.region || 'N/A'}`,
+            `城市：${ipInfo.city || 'N/A'}`,
+            `邮政编码：${ipInfo.postal || 'N/A'}`,
+            `时区：${ipInfo.timezone || 'N/A'}`,
+            `经纬度：${ipInfo.loc || 'N/A'}`,
+            `运营商：${ipInfo.org || 'N/A'}`
+      ].join('\n')
+
       await e.reply(res)
       return true
     } catch (error) {
-      logger.error(`获取 IP 信息出错: ${error}`)
-      await e.reply(`获取 IP 信息出错: ${error.message}`)
+      logger.error(`获取 IP 信息出错: ${error.message}`)
+      await e.reply(`获取 IP 信息出错：${error.message}`)
+      return false
     }
   }
 
@@ -102,13 +115,14 @@ export class PingScreenshot extends plugin {
 
   async Zhalema (e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
-    e.reply('正在获取Ping数据...请稍等......', true, { recallMsg: 5 })
 
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
       logger.warn('未匹配到正确的Ping命令')
       return await e.reply('请输入正确的Ping命令', true)
     }
+
+    e.reply('正在获取Ping数据...请稍等......', true, { recallMsg: 5 })
 
     const [, type, siteName] = match
     logger.debug(`解析的命令类型: ${type}, 目标: ${siteName}`)
@@ -196,6 +210,124 @@ export class PingScreenshot extends plugin {
       logger.debug('关闭浏览器')
       await browser.close()
       logger.debug('退出 Zhalema 函数')
+    }
+  }
+
+  async itdog (e) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
+    if (!match) {
+      logger.warn('未匹配到正确的Ping命令')
+      return await e.reply('请输入正确的Ping命令', true)
+    }
+    e.reply('正在获取Ping数据...请稍等......', true, { recallMsg: 10 })
+
+    const [, type, siteName] = match
+    logger.debug(`解析的命令类型: ${type}, 目标: ${siteName}`)
+
+    if (type === 'http') {
+      return await e.reply(`选择 Itdog 暂时不支持 ${type} 命令`, true)
+    }
+    const url = `https://www.itdog.cn/${type}/${siteName}`
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-infobars',
+        '--window-size=1920,1080'
+      ]
+    })
+
+    const page = await browser.newPage()
+
+    // 设置浏览器伪装
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
+    )
+    await page.setViewport({ width: 1920, height: 1080 })
+
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => false })
+    })
+
+    try {
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 })
+
+      await page.waitForFunction(() => {
+        const buttons = Array.from(document.querySelectorAll('button'))
+        return buttons.some(btn => btn.textContent.includes('单次测试'))
+      }, { timeout: 10000 })
+
+      const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => null)
+
+      // 点击“单次测试”按钮
+      await page.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll('button'))
+        const btn = buttons.find(button => button.textContent.includes('单次测试'))
+        if (btn) btn.click()
+      })
+
+      await navigationPromise
+
+      // 等待加载进度条达到100%
+      const progressSelector = '#complete_progress > div'
+      let progress = 0
+
+      while (progress < 100) {
+        try {
+          await page.waitForSelector(progressSelector, { timeout: 5000 })
+          progress = await page.evaluate((selector) => {
+            const progressElement = document.querySelector(selector)
+            if (progressElement) {
+              const text = progressElement.textContent
+              const num = parseInt(text.replace('%', ''), 10)
+              return isNaN(num) ? 0 : num
+            }
+            return 0
+          }, progressSelector)
+        } catch {
+          logger.warn('进度条元素未找到，继续等待')
+        }
+
+        if (progress >= 100) {
+          break
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
+      // 页面视口大小和截图设置
+      const viewportHeight = 1080
+      const clipHeight = 1000
+      const clipTop = 799
+
+      await page.setViewport({ width: 1420, height: viewportHeight })
+
+      logger.info('已设置视口大小')
+      logger.info(`截图区域 - x: 140, y: ${clipTop}, width: 1245, height: ${clipHeight}`)
+
+      const clipOptions = {
+        x: 140,
+        y: clipTop,
+        width: 1245,
+        height: clipHeight
+      }
+
+      logger.debug(
+        `截图区域 - x: ${clipOptions.x}, y: ${clipOptions.y}, width: ${clipOptions.width}, height: ${clipOptions.height}`
+      )
+
+      const screenshot = await page.screenshot({ encoding: 'base64', clip: clipOptions })
+      logger.debug('截图成功，发送截图')
+
+      await e.reply(segment.image(`base64://${screenshot}`), true)
+    } catch (error) {
+      logger.error(`Error in handlePing: ${error.stack}`)
+      await e.reply(`无法获取网页截图: ${error.message}`, true)
+    } finally {
+      await browser.close()
     }
   }
 }

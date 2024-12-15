@@ -20,22 +20,22 @@ export function supportGuoba () {
           component: 'Divider',
           label: '插件设置'
         },
-        {
-          field: 'update.autoupdate',
-          label: '插件自动更新',
-          bottomHelpMessage: '插件更新时自动更新插件',
-          component: 'Switch'
-        },
-        {
-          field: 'update.updatecron',
-          label: '自动更新',
-          helpMessage: '修改后重启生效',
-          bottomHelpMessage: '自动更新插件',
-          component: 'EasyCron',
-          componentProps: {
-            placeholder: '请输入Cron表达式'
-          }
-        },
+        // {
+        //   field: 'update.autoupdate',
+        //   label: '插件自动更新',
+        //   bottomHelpMessage: '插件更新时自动更新插件',
+        //   component: 'Switch'
+        // },
+        // {
+        //   field: 'update.updatecron',
+        //   label: '自动更新',
+        //   helpMessage: '修改后重启生效',
+        //   bottomHelpMessage: '自动更新插件',
+        //   component: 'EasyCron',
+        //   componentProps: {
+        //     placeholder: '请输入Cron表达式'
+        //   }
+        // },
         {
           field: 'memz.SystemStatusAll',
           label: '系统状态',
@@ -180,12 +180,12 @@ export function supportGuoba () {
         {
           field: 'memz.PingApi',
           label: 'Ping类型',
-          bottomHelpMessage: '建议ZHALIMA,Ipinfo暂时不可用http/tcping',
+          bottomHelpMessage: 'itdog暂时不可用http测速',
           component: 'Select',
           componentProps: {
             options: [
               { label: 'ZHALEMA', value: 1 },
-              { label: 'IpInfo', value: 2 }
+              { label: 'Itdog', value: 2 }
             ],
             placeholder: '请选择Ping类型'
           }
