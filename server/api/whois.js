@@ -55,7 +55,7 @@ export default async (req, res) => {
       res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
       res.end(JSON.stringify({
         code: 400,
-        message: '缺少必要的域名参数, 请在查询参数中添加 ?domain=域名 参数',
+        message: '缺少必要的域名参数, 请在查询参数中添加domain参数',
         title: 'Whois查询',
         time,
         source: MEMZ_NAME

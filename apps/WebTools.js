@@ -40,7 +40,6 @@ export async function fetchSeoFromHtml (url) {
   const response = await fetch(url)
   const html = await response.text()
 
-  // 使用正则表达式提取 title、description、keywords
   const titleMatch = html.match(/<title>(.*?)<\/title>/i)
   const descriptionMatch = html.match(
     /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
