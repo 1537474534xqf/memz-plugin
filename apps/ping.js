@@ -215,20 +215,26 @@ export class PingScreenshot extends plugin {
 
   async itdog (e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
+
+    logger.debug('开始处理 Itdog 命令')
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
-      logger.warn('未匹配到正确的Ping命令')
-      return await e.reply('请输入正确的Ping命令', true)
+      logger.warn('未匹配到正确的 Ping 命令')
+      return await e.reply('请输入正确的 Ping 命令，例如：#ping example.com', true)
     }
-    e.reply('正在获取Ping数据...请稍等......', true, { recallMsg: 10 })
+
+    e.reply('正在获取 Ping 数据...请稍等......', true, { recallMsg: 10 })
 
     const [, type, siteName] = match
     logger.debug(`解析的命令类型: ${type}, 目标: ${siteName}`)
 
     if (type === 'http') {
-      return await e.reply(`选择 Itdog 暂时不支持 ${type} 命令`, true)
+      logger.warn('Itdog 暂不支持 http 类型的命令')
+      return await e.reply(`Itdog 暂时不支持 ${type} 命令`, true)
     }
+
     const url = `https://www.itdog.cn/${type}/${siteName}`
+    logger.info(`目标 URL: ${url}`)
 
     const launchOptions = {
       headless: true,
@@ -243,44 +249,48 @@ export class PingScreenshot extends plugin {
 
     if (PingProxy && PingProxyAddress) {
       launchOptions.args.push(`--proxy-server=${PingProxyAddress}`)
-      logger.debug(`[MEMZ-Plugin] 使用代理: ${PingProxyAddress}`)
+      logger.info(`[MEMZ-Plugin] 使用代理: ${PingProxyAddress}`)
     }
 
+    logger.debug('启动 Puppeteer 浏览器')
     const browser = await puppeteer.launch(launchOptions)
-    await puppeteer.launch(browser)
 
-    const page = await browser.newPage()
-
-    // 设置浏览器伪装
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
-    )
-    await page.setViewport({ width: 1920, height: 1080 })
-
-    await page.evaluateOnNewDocument(() => {
-      Object.defineProperty(navigator, 'webdriver', { get: () => false })
-    })
-
+    let page
     try {
+      page = await browser.newPage()
+
+      // 设置浏览器伪装
+      await page.setUserAgent(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
+      )
+      await page.setViewport({ width: 1920, height: 1080 })
+
+      await page.evaluateOnNewDocument(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => false })
+      })
+
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 })
+      logger.debug(`页面加载成功: ${url}`)
 
       await page.waitForFunction(() => {
         const buttons = Array.from(document.querySelectorAll('button'))
-        return buttons.some(btn => btn.textContent.includes('单次测试'))
+        return buttons.some((btn) => btn.textContent.includes('单次测试'))
       }, { timeout: 10000 })
+      logger.debug('“单次测试”按钮检测成功')
 
       const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => null)
 
       // 点击“单次测试”按钮
       await page.evaluate(() => {
         const buttons = Array.from(document.querySelectorAll('button'))
-        const btn = buttons.find(button => button.textContent.includes('单次测试'))
+        const btn = buttons.find((button) => button.textContent.includes('单次测试'))
         if (btn) btn.click()
       })
+      logger.debug('已点击“单次测试”按钮')
 
       await navigationPromise
+      logger.debug('页面导航完成，等待进度条加载')
 
-      // 等待加载进度条达到100%
       const progressSelector = '#complete_progress > div'
       let progress = 0
 
@@ -296,47 +306,41 @@ export class PingScreenshot extends plugin {
             }
             return 0
           }, progressSelector)
+          logger.debug(`当前进度: ${progress}%`)
         } catch {
           logger.warn('进度条元素未找到，继续等待')
         }
 
         if (progress >= 100) {
+          logger.debug('进度条加载完成')
           break
         }
 
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
       }
-
-      // 页面视口大小和截图设置
-      const viewportHeight = 1080
-      const clipHeight = 1000
-      const clipTop = 799
-
-      await page.setViewport({ width: 1420, height: viewportHeight })
-
-      logger.info('已设置视口大小')
-      logger.info(`截图区域 - x: 140, y: ${clipTop}, width: 1245, height: ${clipHeight}`)
 
       const clipOptions = {
-        x: 140,
-        y: clipTop,
+        x: 340,
+        y: 799,
         width: 1245,
-        height: clipHeight
+        height: 1000
       }
-
       logger.debug(
-        `截图区域 - x: ${clipOptions.x}, y: ${clipOptions.y}, width: ${clipOptions.width}, height: ${clipOptions.height}`
+            `设置截图区域 - x: ${clipOptions.x}, y: ${clipOptions.y}, width: ${clipOptions.width}, height: ${clipOptions.height}`
       )
 
       const screenshot = await page.screenshot({ encoding: 'base64', clip: clipOptions })
-      logger.debug('截图成功，发送截图')
+      logger.info('截图成功，准备发送图片')
 
       await e.reply(segment.image(`base64://${screenshot}`), true)
     } catch (error) {
-      logger.error(`Error in handlePing: ${error.stack}`)
+      logger.error(`Itdog 命令执行出错: ${error.stack}`)
       await e.reply(`无法获取网页截图: ${error.message}`, true)
     } finally {
-      await browser.close()
+      if (browser) {
+        await browser.close()
+        logger.info('浏览器已关闭')
+      }
     }
   }
 }
