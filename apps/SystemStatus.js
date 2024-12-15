@@ -41,7 +41,7 @@ export class SystemStatus extends plugin {
       if (modeHandlers[mode]) {
         await modeHandlers[mode]()
       } else {
-        await e.reply('未识别的系统状态模式，请检查输入指令格式是否正确。')
+        logger.warn('未识别的系统状态模式')
       }
     } catch (error) {
       logger.error(`[memz-plugin] 获取系统状态信息时出错: ${error.message}`)
