@@ -45,6 +45,10 @@ export class SystemStatus extends plugin {
         case 'max':
           await this.getMaxExtendedSystemInfo(e)
           break
+        default:
+          logger.warn(`[memz-plugin] 未识别的系统状态模式: ${mode} 默认使用basic`)
+          await this.getSystemInfo(e)
+          break
       }
     } catch (error) {
       logger.error(`[memz-plugin] 获取系统状态信息时出错: ${error.message}`)
@@ -67,7 +71,7 @@ export class SystemStatus extends plugin {
     try {
       logger.debug('[memz-plugin] 正在获取扩展系统信息...')
       const responses = await Promise.all([
-        this.basicInfo(),
+        this.basicInfo(e),
         this.getAdditionalSystemInfo(),
         this.getGPUInfo(),
         this.getBatteryInfo(),
@@ -86,7 +90,7 @@ export class SystemStatus extends plugin {
     try {
       logger.debug('[memz-plugin] 正在获取最大扩展系统信息...')
       const responses = await Promise.all([
-        this.basicInfo(),
+        this.basicInfo(e),
         this.getAdditionalSystemInfo(),
         this.getGPUInfo(),
         this.getBatteryInfo(),
@@ -105,7 +109,7 @@ export class SystemStatus extends plugin {
     }
   }
 
-  async basicInfo () {
+  async basicInfo (e) {
     try {
       logger.debug('[memz-plugin] 获取基本系统信息...')
       const [osInfo, cpuInfo, currentLoad, memoryInfo] = await Promise.all([
@@ -117,7 +121,7 @@ export class SystemStatus extends plugin {
 
       if (!osInfo || !cpuInfo || !currentLoad || !memoryInfo) return null
 
-      const systemInfo = `📊 系统状态\n适配器: ${this?.e?.adapter_name || this?.e.bot?.version?.id || '我不知道'}\n操作系统: ${osInfo.distro}\n系统架构: ${osInfo.codename} ${osInfo.kernel} ${osInfo.arch}\n主机名: ${osInfo.hostname}\nNode.js 版本: ${process.version}\nCPU 信息: ${cpuInfo.physicalCores}核 ${cpuInfo.brand}\nCPU 使用率: ${currentLoad.currentLoad.toFixed(2)}%\n内存: ${(memoryInfo.active / 1024 ** 3).toFixed(2)} GiB / ${(memoryInfo.total / 1024 ** 3).toFixed(2)} GiB (${((memoryInfo.active / memoryInfo.total) * 100).toFixed(2)}%)\n系统运行时间: ${(os.uptime() / 86400).toFixed(2)} 天\nCPU 频率: ${cpuInfo.speed} GHz\n内存交换: ${(memoryInfo.swaptotal / 1024 ** 3).toFixed(2)} GiB`
+      const systemInfo = `📊 系统状态\n适配器: ${e?.adapter_name || e.bot?.version?.id || '我不知道'}\n操作系统: ${osInfo.distro}\n系统架构: ${osInfo.codename} ${osInfo.kernel} ${osInfo.arch}\n主机名: ${osInfo.hostname}\nNode.js 版本: ${process.version}\nCPU 信息: ${cpuInfo.physicalCores}核 ${cpuInfo.brand}\nCPU 使用率: ${currentLoad.currentLoad.toFixed(2)}%\n内存: ${(memoryInfo.active / 1024 ** 3).toFixed(2)} GiB / ${(memoryInfo.total / 1024 ** 3).toFixed(2)} GiB (${((memoryInfo.active / memoryInfo.total) * 100).toFixed(2)}%)\n系统运行时间: ${(os.uptime() / 86400).toFixed(2)} 天\nCPU 频率: ${cpuInfo.speed} GHz\n内存交换: ${(memoryInfo.swaptotal / 1024 ** 3).toFixed(2)} GiB`
 
       logger.debug(`[memz-plugin] 基本系统信息获取成功: ${systemInfo}`)
       return systemInfo
