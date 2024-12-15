@@ -19,6 +19,8 @@ PingProxy: false
 PingProxyAddress: ""
 # Ping接口 1为炸了吗网站截图测速,2为ipinfo.io测速
 PingApi: 1
+# Ipinfo是否所有人可用
+IpinfoAll: true
 # Ping功能Ipinfo.io的token
 IpinfoToken: ""
 # 是否所有人可用Unicode编码解码

@@ -40,7 +40,11 @@ export class PingScreenshot extends plugin {
   }
 
   async ipinfo (e) {
-    const { IpinfoToken } = Config.getConfig('memz')
+    const { IpinfoToken, IpinfoAll } = Config.getConfig('memz')
+
+    if (!IpinfoAll && !e.isMaster) {
+      return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
+    }
 
     const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
     if (!match) {
@@ -78,7 +82,7 @@ export class PingScreenshot extends plugin {
       }
 
       const res = [
-        'IP 信息',
+        `IP 信息 - ${siteName}`,
             `IP 地址：${ipInfo.ip || 'N/A'}`,
             `国家/地区：${ipInfo.country || 'N/A'}`,
             `区域：${ipInfo.region || 'N/A'}`,

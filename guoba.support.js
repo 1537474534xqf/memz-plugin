@@ -206,6 +206,12 @@ export function supportGuoba () {
           }
         },
         {
+          field: 'memz.IpinfoAll',
+          label: 'Ipinfo',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
           field: 'memz.IpinfoToken',
           label: 'Ipinfo的Token',
           bottomHelpMessage: '前往 https://ipinfo.io 注册账号并获取 Token',
