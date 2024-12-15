@@ -18,9 +18,9 @@ const appsDir = path.join(__dirname, 'apps')
 
 const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
 
-const coloredDashes = Array.from({ length: 12 }, () => {
+const coloredDashes = Array.from({ length: 23 }, () => {
   const randomColor = colors[Math.floor(Math.random() * colors.length)]
-  return chalk[randomColor]('=+')
+  return chalk[randomColor]('*')
 }).join('')
 
 let successCount = 0
