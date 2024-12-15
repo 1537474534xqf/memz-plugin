@@ -30,7 +30,7 @@ let loadStats = {
 const loadConfig = async () => {
   try {
     config = Config.getConfig('api')
-    logger.debug(chalk.green('[memz-plugin]API服务配置加载成功!', config))
+    logger.debug(chalk.green('[memz-plugin]API服务配置加载成功!'))
   } catch (err) {
     logger.error(chalk.red('[memz-plugin]API服务配置加载失败'), err.message)
   }

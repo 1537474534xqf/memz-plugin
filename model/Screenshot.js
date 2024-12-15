@@ -10,7 +10,6 @@ export async function generateScreenshot (html) {
 
     await page.setContent(html, { waitUntil: 'domcontentloaded' })
 
-    // 自动调整页面，截图整个页面
     const buffer = await page.screenshot({
       encoding: 'base64',
       fullPage: true

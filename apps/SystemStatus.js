@@ -26,8 +26,8 @@ export class SystemStatus extends plugin {
       return false
     }
 
-    const reg = /^#(?:memz)?(?:插件)?系统状态(pro)?(max)?/
-    const match = e.msg.match(reg)
+    const match = e.msg.match(/^#(?:memz)?(?:插件)?系统状态(pro)?(max)?/i)
+
     const mode = match?.[2] ? 'max' : match?.[1] ? 'extended' : 'basic'
 
     try {
