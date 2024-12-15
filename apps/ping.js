@@ -43,7 +43,7 @@ export class PingScreenshot extends plugin {
     const { IpinfoToken, IpinfoAll } = Config.getConfig('memz')
 
     if (!IpinfoAll && !e.isMaster) {
-      return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
+      return logger.warn('[memz-plugin]IP信息功能当前为仅主人可用')
     }
 
     const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
