@@ -31,7 +31,7 @@ export class SystemStatus extends plugin {
     if (!(await this.handleMasterCheck(e))) return
 
     const match = e.raw_message.match(/^#(?:memz)?(?:插件)?系统状态(?:pro(max)?)?$/i)
-    const mode = match && match[1] ? 'max' : match && match[0].includes('pro') ? 'extended' : 'basic'
+    const mode = match?.[1] === 'max' ? 'max' : match?.[0]?.includes('pro') ? 'extended' : 'basic'
 
     try {
       logger.info(`[memz-plugin] 系统状态模式: ${mode}`)
