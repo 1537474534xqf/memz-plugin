@@ -20,47 +20,42 @@ const redis = new Redis({
 
 let config = {}
 const apiHandlersCache = {}
-// 统计
-let loadStats = {
-  success: 0,
-  failure: 0,
-  totalTime: 0
-}
-// 加载配置
+const loadStats = { success: 0, failure: 0, totalTime: 0 }
+const REDIS_STATS_KEY = 'MEMZ/API'
+
 const loadConfig = async () => {
   try {
     config = Config.getConfig('api')
-    logger.debug(chalk.green('[memz-plugin]API服务配置加载成功!'))
+    logger.debug(chalk.green('[memz-plugin] API服务配置加载成功!'))
   } catch (err) {
-    logger.error(chalk.red('[memz-plugin]API服务配置加载失败'), err.message)
+    logger.error(chalk.red('[memz-plugin] API服务配置加载失败'), err.message)
   }
 }
+
 await loadConfig()
 
-const REDIS_STATS_KEY = 'MEMZ/API'
-
-// 更新统计信息
 const updateRequestStats = async (ip, route) => {
   const ipKey = `${REDIS_STATS_KEY}:${ip}`
   try {
-    await redis.hincrby(ipKey, route, 1) // 路由請求次數
-    await redis.hincrby(ipKey, 'total', 1) // 總請求次數
-    await redis.expire(ipKey, 86400) // 设置过期时间为 1 天
+    await redis
+      .multi()
+      .hincrby(ipKey, route, 1)
+      .hincrby(ipKey, 'total', 1)
+      .expire(ipKey, 86400)
+      .exec()
   } catch (err) {
     logger.error(chalk.red(`[统计错误] 更新统计失败: IP=${ip}, Route=${route}, 错误=${err.message}`))
   }
 }
 
-// 获取 Redis 中的统计数据
 const getStats = async (req, res) => {
   try {
     const keys = await redis.keys(`${REDIS_STATS_KEY}:*`)
-    const stats = {}
-    for (const key of keys) {
-      const ipStats = await redis.hgetall(key)
-      const ip = key.split(':').pop()
-      stats[ip] = ipStats
-    }
+    const statsPromises = keys.map(async (key) => ({
+      [key.split(':').pop()]: await redis.hgetall(key)
+    }))
+    const stats = Object.assign({}, ...(await Promise.all(statsPromises)))
+
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify(stats, null, 2))
   } catch (err) {
@@ -70,7 +65,6 @@ const getStats = async (req, res) => {
   }
 }
 
-// 健康检查
 const healthCheck = (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
   res.end(JSON.stringify({
@@ -79,59 +73,60 @@ const healthCheck = (req, res) => {
   }))
 }
 
-// 加载API
-const loadApiHandler = async (filePath) => {
-  const baseName = path.basename(filePath, '.js')
-  let route = `/${baseName}`
+const serveFavicon = async (req, res) => {
   try {
-    const fileUrl = pathToFileURL(filePath)
-    const handlerModule = await import(fileUrl)
+    const faviconPath = path.join(__dirname, 'favicon.ico')
+    const favicon = await fs.readFile(faviconPath)
+    res.writeHead(200, { 'Content-Type': 'image/x-icon' })
+    res.end(favicon)
+  } catch (err) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
+    res.end('404 未找到：favicon.ico')
+    logger.warn(`[favicon] 加载失败: ${err.message}`)
+  }
+}
+
+const loadApiHandler = async (filePath) => {
+  const route = `/${path.basename(filePath, '.js')}`
+  logger.debug(`[加载调试] 开始加载API文件: ${filePath}，路由: ${route}`)
+  try {
+    const handlerModule = await import(pathToFileURL(filePath))
     const handler = handlerModule.default
 
     if (typeof handler === 'function') {
       apiHandlersCache[route] = handler
-      logger.info(chalk.blueBright(`[memz-plugin]API加载完成 路由: ${route}`))
+      logger.info(chalk.blueBright(`[memz-plugin] API加载完成 路由: ${route}`))
       loadStats.success++
     } else {
-      logger.warn(chalk.yellow(`[memz-plugin]API服务跳过无效文件: ${filePath}`))
+      logger.warn(chalk.yellow(`[memz-plugin] API服务跳过无效文件: ${filePath}`))
       loadStats.failure++
     }
   } catch (err) {
-    logger.error(chalk.red(`[memz-plugin]API加载失败: ${filePath}`), err.message)
+    logger.error(chalk.red(`[memz-plugin] API加载失败: ${filePath}`), err.message)
+    logger.debug(`[加载调试] 错误详情: ${err.stack}`)
     loadStats.failure++
   }
+  logger.debug(`[加载调试] API文件处理完成: ${filePath}`)
 }
-// 获取本地IP
+
 const getLocalIPs = () => {
-  const interfaces = os.networkInterfaces()
-  const addresses = []
-  for (const iface of Object.values(interfaces)) {
-    iface.forEach(details => {
-      if (details.family === 'IPv4' || details.family === 'IPv6') {
-        addresses.push(details.address)
-      }
-    })
-  }
-  return addresses
+  return Object.values(os.networkInterfaces())
+    .flat()
+    .filter((details) => details.family === 'IPv4' || details.family === 'IPv6')
+    .map((details) => details.address)
 }
-// 请求处理
+
 const handleRequest = async (req, res) => {
   const startTime = Date.now()
   const originalIP = req.socket.remoteAddress
-  let ip
+  const ip = originalIP.includes(':')
+    ? originalIP.startsWith('::ffff:')
+      ? originalIP.replace('::ffff:', '')
+      : originalIP.replace(/:/g, '.')
+    : originalIP
 
-  if (originalIP.includes(':')) {
-    if (originalIP.startsWith('::ffff:')) {
-      ip = originalIP.replace('::ffff:', '')
-    } else {
-      // 如果是IPv6 地址，那就替换:为.,防止Redis分割(
-      ip = originalIP.replace(/:/g, '.')
-    }
-  } else {
-    ip = originalIP
-  }
+  logger.debug(`[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
 
-  // IP 黑名单
   if (config.blacklistedIPs.includes(ip)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('403 禁止访问：您的 IP 已被列入黑名单')
@@ -139,7 +134,6 @@ const handleRequest = async (req, res) => {
     return
   }
 
-  // IP 白名单
   if (config.whitelistedIPs.length > 0 && !config.whitelistedIPs.includes(ip)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('403 禁止访问：您的 IP 不在白名单中')
@@ -149,20 +143,14 @@ const handleRequest = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`)
   const route = url.pathname
 
-  if (route === '/health') {
-    healthCheck(req, res)
-    return
-  }
-
-  if (route === '/stats') {
-    await getStats(req, res)
-    return
-  }
+  if (route === '/health') return healthCheck(req, res)
+  if (route === '/stats') return await getStats(req, res)
+  if (route === '/favicon.ico') return await serveFavicon(req, res)
 
   const handler = apiHandlersCache[route]
   if (handler) {
     try {
-      logger.info(`[请求日志] IP:${ip} 路由:${route}`)
+      logger.info(`[请求日志] IP: ${ip} 路由: ${route}`)
       await updateRequestStats(ip, route)
 
       if (config.corsenabled) {
@@ -191,17 +179,18 @@ const startServer = async () => {
 
     const apiDir = path.join(PluginPath, 'server', 'api')
     const files = await fs.readdir(apiDir)
-    for (const file of files) {
-      if (file.endsWith('.js')) {
-        await loadApiHandler(path.join(apiDir, file))
-      }
-    }
+    await Promise.all(
+      files.filter((file) => file.endsWith('.js')).map((file) => loadApiHandler(path.join(apiDir, file)))
+    )
+
     loadStats.totalTime = Date.now() - startTime
 
+    logger.info(chalk.greenBright('****************************'))
     logger.info(chalk.green('MEMZ-API 服务载入完成'))
     logger.info(chalk.greenBright(`成功加载：${loadStats.success} 个`))
     logger.info(chalk.yellowBright(`加载失败：${loadStats.failure} 个`))
     logger.info(chalk.cyanBright(`总耗时：${loadStats.totalTime} 毫秒`))
+    logger.info(chalk.greenBright('****************************'))
 
     const serverOptions = config.httpsenabled
       ? {
@@ -218,10 +207,9 @@ const startServer = async () => {
 
     server.listen(config.port, '::', () => {
       const protocol = config.httpsenabled ? 'https' : 'http'
-      const ips = getLocalIPs()
       logger.info('#######################################################')
       logger.info(chalk.greenBright('- MEMZ-API 服务器已启动'))
-      ips.forEach(ip => {
+      getLocalIPs().forEach((ip) => {
         const formattedIP = ip.includes(':') ? `[${ip}]` : ip
         logger.info(chalk.blueBright(`- ${protocol}://${formattedIP}:${config.port}`))
       })
@@ -234,29 +222,18 @@ const startServer = async () => {
   }
 }
 
-// 错误处理
 const handleServerError = (error) => {
-  logger.error('[MEMZ-API]API 服务启动失败')
   const errorMessages = {
     EADDRINUSE: `端口 ${config.port} 已被占用，请修改配置文件中的端口号或关闭占用该端口的程序。`,
-    EACCES: `端口 ${config.port} 权限不足，请尝试使用管理员权限启动程序，或者修改为更高的端口号（>=1024）。`,
-    ENOTFOUND: '无法找到指定的主机，请检查配置文件中的主机地址是否正确。',
-    EADDRNOTAVAIL: '绑定的地址无效，无法在当前环境下使用。请检查配置文件中的地址设置。',
-    ENOTDIR: '指定的文件路径无效，请检查配置文件的路径设置是否正确。',
-    EPERM: '操作权限不足，无法完成请求。请检查相关权限或以管理员权限运行。',
-    EPIPE: '管道错误，可能是连接中断或写入无效数据。',
-    ECONNREFUSED: '连接被拒绝，请检查网络状态或目标服务器是否可达。',
-    ECONNRESET: '连接被对方重置，可能是远程服务器的问题。',
-    ETIMEOUT: '连接超时，请检查网络设置或目标服务器响应速度。'
+    EACCES: `端口 ${config.port} 权限不足，请尝试使用管理员权限启动程序，或者修改为更高的端口号（>=1024）。`
   }
   const message = errorMessages[error.code] || `服务器运行时发生未知错误: ${error.message}`
   logger.error(chalk.red(message))
 }
+
 const handleStartupError = (error) => {
   if (error.code === 'ENOENT') {
     logger.error(`文件未找到: ${error.path}。请检查配置文件中的路径是否正确。`)
-  } else if (error instanceof ReferenceError && error.message === 'server is not defined') {
-    logger.error('未能成功定义服务器，请检查相关配置或初始化顺序。')
   } else {
     logger.error(`启动服务器时发生错误: ${error.message}`)
   }
