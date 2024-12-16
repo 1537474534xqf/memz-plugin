@@ -87,7 +87,10 @@ export class UpdateTask extends plugin {
 
       const masters = cfg.masterQQ
       for (const master of masters) {
-        if (master.toString().length > 11) continue
+        if (((this.e?.adapter_name || this.e.bot?.version?.id) == 'QQBot') || master.toString().length > 11) {
+          logger.info('[memz-plugin] 更新推送跳过 QQBot')
+          continue
+        }
         await Bot.pickFriend(master).sendMsg(msg)
         await this.sleep(2000)
       }
