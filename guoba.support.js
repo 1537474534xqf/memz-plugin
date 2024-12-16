@@ -49,6 +49,18 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'memz.AutoLike',
+          label: '自动点赞',
+          bottomHelpMessage: '每日00:00自动点赞',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.AutoLikeList',
+          label: '自动点赞列表',
+          bottomHelpMessage: '填入QQ号,主人默认在点赞列表,无需添加',
+          component: 'GTags'
+        },
+        {
           component: 'Divider',
           label: '仓库更新推送设置'
         },
