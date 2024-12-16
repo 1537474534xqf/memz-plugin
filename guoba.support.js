@@ -49,9 +49,13 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          component: 'Divider',
+          label: '插件设置'
+        },
+        {
           field: 'memz.AutoLike',
           label: '自动点赞',
-          bottomHelpMessage: '每日00:00自动点赞',
+          bottomHelpMessage: '每日 00:00 自动点赞',
           component: 'Switch'
         },
         {

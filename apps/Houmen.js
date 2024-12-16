@@ -90,15 +90,21 @@ export class DZ extends plugin {
     for (let uin of bot) {
       logger.info(`[memz-plugin] 开始处理 QQ：${uin}`)
       for (let i of Users) {
+        if (this.e?.adapter_name || this.e.bot?.version?.id == 'QQBot') {
+          logger.info('[memz-plugin] 自动点赞跳过 QQBot')
+          continue
+        }
         try {
           // 好友
           if (await Bot[uin].fl.has(i)) {
             Bot[uin].pickFriend(i).thumbUp(20)
-            logger.info(`[memz-plugin] 为 ${uin} 的好友 ${i} 点赞`)
+            logger.info(`[memz-plugin] 为 ${uin} 的好友 ${i} 点赞 20 下`)
+            await this.sleep(2000)
           } else {
           // 非好友
             Bot[uin].pickUser(i).thumbUp(20)
-            logger.info(`[memz-plugin] 为 ${uin} 的非好友 ${i} 点赞`)
+            logger.info(`[memz-plugin] 为 ${uin} 的非好友 ${i} 点赞 20 下`)
+            await this.sleep(2000)
           }
         } catch (error) {
           logger.error(`[memz-plugin] 为 ${uin} 的 ${i} 点赞时发生错误：${error}`)
