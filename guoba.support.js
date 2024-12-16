@@ -72,7 +72,7 @@ export function supportGuoba () {
         },
         {
           field: 'memz.GroupSchedulerCron',
-          label: '定时群发CRON表达式',
+          label: '定时群发',
           helpMessage: '修改后重启生效',
           bottomHelpMessage: '定时群发CRON表达式',
           component: 'EasyCron',

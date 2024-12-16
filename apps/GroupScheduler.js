@@ -1,43 +1,41 @@
 import { Config } from '../components/index.js'
 
-const { GroupSchedulerCron } = Config.getConfig('memz')
+const { GroupScheduler, GroupSchedulerCron } = Config.getConfig('memz')
 
-export class GroupScheduler extends plugin {
+export class executeGroupScheduler extends plugin {
   constructor () {
     super({
       name: '定时群发',
       dsc: '定时群发任务',
       priority: -100000,
       event: 'message'
-    //   rule: [
-    //     {
-    //       reg: '^#?(memz)?定时群发测试$',
-    //       fnc: 'executeGroupScheduler'
-    //     }
-    //   ]
-    })
+      //   rule: [
+      //     {
+      //       reg: '^#?(memz)?定时群发测试$',
+      //       fnc: 'executeGroupScheduler'
+      //     }
+      //   ]
 
-    this.task = [
-      {
-        cron: GroupSchedulerCron,
-        name: '定时群发任务',
-        fnc: () => this.executeGroupScheduler()
-      }
-    ]
+    })
+    if (GroupScheduler) {
+      this.task = []
+      this.task.push([
+        {
+          cron: GroupSchedulerCron,
+          name: '定时群发任务',
+          fnc: () => this.executeGroupScheduler()
+        }
+      ])
+    }
   }
 
   async executeGroupScheduler () {
     const {
-      GroupScheduler,
       GroupSchedulerWhiteBotList,
       GroupSchedulerBlackBotList,
       GroupSchedulerMsg,
       GroupSchedulerGroup
     } = Config.getConfig('memz')
-
-    if (!GroupScheduler) {
-      return logger.warn('[memz-plugin] 定时群发功能未开启')
-    }
 
     if (!GroupSchedulerMsg || !GroupSchedulerGroup || !Array.isArray(GroupSchedulerGroup) || GroupSchedulerGroup.length === 0) {
       return logger.warn('[memz-plugin] 定时群发配置不完整')

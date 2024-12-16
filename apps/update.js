@@ -1,5 +1,6 @@
 import { update as Update } from '../../other/update.js'
 import { PluginName, Config } from '../components/index.js'
+import cfg from '../../../lib/config/config.js'
 const { autoupdate, updatecron } = Config.getConfig('update')
 export class Updates extends plugin {
   constructor () {
@@ -26,8 +27,23 @@ export class Updates extends plugin {
       isMaster: true,
       logFnc: '[memz-plugin]自动更新]',
       msg: `#更新${PluginName}`,
-      reply: msg => Bot.sendMasterMsg(msg)
+      reply: async (msg) => {
+        const masters = Object.keys(cfg.master)
+        for (const master of masters) {
+          if ((this.e?.adapter_name || this.e.bot?.version?.id) === 'QQBot' || master.toString().length > 11) {
+            logger.info('[memz-plugin] 更新推送跳过 QQBot')
+            continue
+          }
+          try {
+            await Bot.pickFriend(master).sendMsg(msg)
+            await this.sleep(2000)
+          } catch (err) {
+            logger.error(`[memz-plugin] 向好友 ${master} 发送消息时出错：`, err)
+          }
+        }
+      }
     }
+
     if (!autoupdate) return logger.warn('[memz-plugin]自动更新已关闭')
 
     this.task = []
