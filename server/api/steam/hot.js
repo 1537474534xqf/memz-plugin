@@ -1,4 +1,4 @@
-import { MEMZ_NAME } from '../components/index.js'
+import { MEMZ_NAME } from '../../components/index.js'
 export default async (req, res) => {
   const url = 'https://steamcharts.com/top'
   const timestamp = new Date().toISOString()

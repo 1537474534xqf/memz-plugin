@@ -20,7 +20,7 @@ const redis = new Redis({
 
 let config = {}
 const apiHandlersCache = {}
-const loadStats = { success: 0, failure: 0, totalTime: 0 }
+const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
 const REDIS_STATS_KEY = 'MEMZ/API'
 
 const loadConfig = async () => {
@@ -67,15 +67,17 @@ const getStats = async (req, res) => {
 
 const healthCheck = (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-  res.end(JSON.stringify({
-    status: '服务正常',
-    time: new Date().toLocaleString()
-  }))
+  res.end(
+    JSON.stringify({
+      status: '服务正常',
+      time: new Date().toLocaleString()
+    })
+  )
 }
 
 const serveFavicon = async (req, res) => {
   try {
-    const faviconPath = path.join(__dirname, 'favicon.ico')
+    const faviconPath = path.join(PluginPath, 'server', 'favicon.ico')
     const favicon = await fs.readFile(faviconPath)
     res.writeHead(200, { 'Content-Type': 'image/x-icon' })
     res.end(favicon)
@@ -86,16 +88,18 @@ const serveFavicon = async (req, res) => {
   }
 }
 
-const loadApiHandler = async (filePath) => {
-  const route = `/${path.basename(filePath, '.js')}`
-  // logger.debug(`[加载调试] 开始加载API文件: ${filePath}，路由: ${route}`)
+const loadApiHandler = async (filePath, routePrefix = '') => {
+  const route = `${routePrefix}/${path.basename(filePath, '.js')}`
+  const startTime = Date.now()
   try {
     const handlerModule = await import(pathToFileURL(filePath))
     const handler = handlerModule.default
 
     if (typeof handler === 'function') {
       apiHandlersCache[route] = handler
-      logger.info(chalk.blueBright(`[memz-plugin] API加载完成 路由: ${route}`))
+      const loadTime = Date.now() - startTime
+      loadStats.routeTimes.push({ route, time: loadTime })
+      logger.debug(chalk.blueBright(`[memz-plugin] API加载完成 路由: ${route}, 耗时: ${loadTime}ms`))
       loadStats.success++
     } else {
       logger.warn(chalk.yellow(`[memz-plugin] API服务跳过无效文件: ${filePath}`))
@@ -106,6 +110,19 @@ const loadApiHandler = async (filePath) => {
     logger.debug(`[加载调试] 错误详情: ${err.stack}`)
     loadStats.failure++
   }
+}
+
+const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
+  const entries = await fs.readdir(directory, { withFileTypes: true })
+  const loadPromises = entries.map(async (entry) => {
+    const fullPath = path.join(directory, entry.name)
+    if (entry.isDirectory()) {
+      return loadApiHandlersRecursively(fullPath, `${routePrefix}/${entry.name}`)
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      return loadApiHandler(fullPath, routePrefix)
+    }
+  })
+  await Promise.all(loadPromises)
 }
 
 const getLocalIPs = () => {
@@ -124,7 +141,9 @@ const handleRequest = async (req, res) => {
       : originalIP.replace(/:/g, '.')
     : originalIP
 
-  logger.debug(`[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
+  logger.debug(
+    `[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`
+  )
 
   if (config.blacklistedIPs.includes(ip)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
@@ -177,10 +196,7 @@ const startServer = async () => {
     const startTime = Date.now()
 
     const apiDir = path.join(PluginPath, 'server', 'api')
-    const files = await fs.readdir(apiDir)
-    await Promise.all(
-      files.filter((file) => file.endsWith('.js')).map((file) => loadApiHandler(path.join(apiDir, file)))
-    )
+    await loadApiHandlersRecursively(apiDir)
 
     loadStats.totalTime = Date.now() - startTime
 
@@ -189,6 +205,9 @@ const startServer = async () => {
     logger.info(chalk.greenBright(`成功加载：${loadStats.success} 个`))
     logger.info(chalk.yellowBright(`加载失败：${loadStats.failure} 个`))
     logger.info(chalk.cyanBright(`总耗时：${loadStats.totalTime} 毫秒`))
+    loadStats.routeTimes.forEach(({ route, time }) => {
+      logger.info(chalk.magentaBright(`路由: ${route}, 加载时间: ${time}ms`))
+    })
     logger.info(chalk.greenBright('****************************'))
 
     const serverOptions = config.httpsenabled

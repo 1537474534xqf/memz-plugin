@@ -1,6 +1,6 @@
 import whois from 'whois-json'
 import { URL } from 'url'
-import { MEMZ_NAME } from '../components/index.js'
+import { MEMZ_NAME } from '../../components/index.js'
 const time = new Date().toISOString()
 const fieldMapping = {
   domainName: '域名',

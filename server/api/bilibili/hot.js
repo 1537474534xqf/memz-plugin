@@ -1,4 +1,4 @@
-import { MEMZ_NAME } from '../components/index.js'
+import { MEMZ_NAME } from '../../components/index.js'
 export default async (req, res) => {
   if (req.method === 'GET') {
     const time = new Date().toISOString()

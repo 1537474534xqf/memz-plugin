@@ -18,17 +18,17 @@ export default async (req, res) => {
           description: '获取访问统计数据'
         },
         {
-          path: '/bilibilihot',
+          path: '/bilibili/hot',
           method: 'GET',
           description: '获取BiliBili热榜'
         },
         {
-          path: '/steamhot',
+          path: '/steam/hot',
           method: 'GET',
           description: '获取Steam热榜'
         },
         {
-          path: '/whois?domain=域名',
+          path: '/webtool/whois?domain=域名',
           method: 'GET',
           description: '获取域名的Whois信息'
         }
