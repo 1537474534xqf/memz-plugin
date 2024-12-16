@@ -35,12 +35,12 @@ export class Updates extends plugin {
     this.task.push({
       name: '[memz-plugin]自动更新]',
       cron: updatecron,
-      fnc: () => this.update.bind(this.e)
+      fnc: () => this.update(this.e)
     })
   }
 
   async update (e) {
-    if (!(e.isMaster || e.user_id == 1011303349)) return
+    if (!(e.isMaster || e.user_id == 1011303349)) return logger.warn('[memz-plugin]自动更新仅限主人使用')
     e.isMaster = true
     if (e.at && !e.atme) return
     e.msg = `#${e.msg.includes('强制') ? '强制' : ''}更新${PluginName}`
