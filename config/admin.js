@@ -96,24 +96,24 @@ export const cfgSchema = {
         fileName: 'memz'
       }
     }
-  },
-  update: {
-    title: '自动更新设置',
-    cfg: {
-      autoupdate: {
-        title: '自动更新',
-        key: '自动更新',
-        def: false,
-        desc: '是否自动更新插件',
-        fileName: 'update'
-      },
-      checkupdate: {
-        title: '自动检查更新',
-        key: '自动检查更新',
-        def: false,
-        desc: '是否自动检查插件更新',
-        fileName: 'update'
-      }
-    }
   }
+  // update: {
+  //   title: '自动更新设置',
+  //   cfg: {
+  //     autoupdate: {
+  //       title: '自动更新',
+  //       key: '自动更新',
+  //       def: false,
+  //       desc: '是否自动更新插件',
+  //       fileName: 'update'
+  //     },
+  //     checkupdate: {
+  //       title: '自动检查更新',
+  //       key: '自动检查更新',
+  //       def: false,
+  //       desc: '是否自动检查插件更新',
+  //       fileName: 'update'
+  //     }
+  //   }
+  // }
 }

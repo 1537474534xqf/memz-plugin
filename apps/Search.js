@@ -73,7 +73,7 @@ export class Search extends plugin {
         }
       ]
     })
-    this.data = loadDataFromExcelFiles() // 初始化加载数据
+    this.data = loadDataFromExcelFiles() // 初始化
   }
 
   async handleSearch (e) {

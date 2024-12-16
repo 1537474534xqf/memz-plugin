@@ -200,7 +200,7 @@ const startServer = async () => {
 
     loadStats.totalTime = Date.now() - startTime
 
-    logger.info(chalk.greenBright('****************************'))
+    logger.info(chalk.greenBright('**********************************'))
     logger.info(chalk.green('MEMZ-API 服务载入完成'))
     logger.info(chalk.greenBright(`成功加载：${loadStats.success} 个`))
     logger.info(chalk.yellowBright(`加载失败：${loadStats.failure} 个`))
@@ -208,7 +208,7 @@ const startServer = async () => {
     loadStats.routeTimes.forEach(({ route, time }) => {
       logger.info(chalk.magentaBright(`路由: ${route}, 加载时间: ${time}ms`))
     })
-    logger.info(chalk.greenBright('****************************'))
+    logger.info(chalk.greenBright('**********************************'))
 
     const serverOptions = config.httpsenabled
       ? {

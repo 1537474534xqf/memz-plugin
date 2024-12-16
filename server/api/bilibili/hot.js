@@ -2,7 +2,7 @@ import { MEMZ_NAME } from '../../components/index.js'
 export default async (req, res) => {
   if (req.method === 'GET') {
     const time = new Date().toISOString()
-    const title = 'BiliBili熱榜'
+    const title = 'BiliBili热榜'
     try {
       const response = await fetch('https://api.bilibili.com/x/web-interface/wbi/search/square?limit=10')
       const rawData = await response.json()
@@ -25,7 +25,7 @@ export default async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
         res.end(JSON.stringify(result))
       } else {
-        throw new Error('接口返回數據格式異常')
+        throw new Error('接口返回数据格式異常')
       }
     } catch (error) {
       res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })

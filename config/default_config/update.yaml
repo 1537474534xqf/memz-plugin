@@ -1,11 +1,11 @@
 # 是否自动更新插件
 autoupdate: true
 # 自动更新Cron
-updatecron: "0 0 1 * * ? *"
+updatecron: "0 */45 * * * *"
 # 是否自动检查插件更新
 checkupdate: true
 # 仓库更新列表
 CUSTOM_REPOSITORY:
   - https://gitee.com/memzjs/memz-plugin
 # 插件检查更新cron
-cron: "30 0/10 * * * ? *"
+cron: "0 */15 * * * *"

@@ -26,7 +26,7 @@ export class UpdateTask extends plugin {
       this.task.push({
         name: '[memz-plugin]定时检查仓库更新',
         cron,
-        fnc: () => this.UpdateTask.bind()
+        fnc: () => this.UpdateTask()
       })
     }
   }
