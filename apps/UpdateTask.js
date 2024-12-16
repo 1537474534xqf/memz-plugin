@@ -3,7 +3,7 @@ import moment from 'moment'
 import { Config } from '../components/index.js'
 const { checkupdate, CUSTOM_REPOSITORY, cron } = Config.getConfig('update')
 
-const prefix = 'bubble:codeUpdateTask:'
+const prefix = 'memz:codeUpdateTask:'
 let REPOSITORY_LIST = []
 
 init()

@@ -20,22 +20,22 @@ export function supportGuoba () {
           component: 'Divider',
           label: '插件设置'
         },
-        // {
-        //   field: 'update.autoupdate',
-        //   label: '插件自动更新',
-        //   bottomHelpMessage: '插件更新时自动更新插件',
-        //   component: 'Switch'
-        // },
-        // {
-        //   field: 'update.updatecron',
-        //   label: '自动更新',
-        //   helpMessage: '修改后重启生效',
-        //   bottomHelpMessage: '自动更新插件',
-        //   component: 'EasyCron',
-        //   componentProps: {
-        //     placeholder: '请输入Cron表达式'
-        //   }
-        // },
+        {
+          field: 'update.autoupdate',
+          label: '插件自动更新',
+          bottomHelpMessage: '插件更新时自动更新插件',
+          component: 'Switch'
+        },
+        {
+          field: 'update.updatecron',
+          label: '自动更新',
+          helpMessage: '修改后重启生效',
+          bottomHelpMessage: '自动更新插件',
+          component: 'EasyCron',
+          componentProps: {
+            placeholder: '请输入Cron表达式'
+          }
+        },
         {
           field: 'memz.SystemStatusAll',
           label: '系统状态',
@@ -49,9 +49,144 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          component: 'Divider',
+          label: '仓库更新推送设置'
+        },
+        {
+          field: 'update.checkupdate',
+          label: '自动检查仓库更新',
+          bottomHelpMessage: '检查插件更新并推送到主人',
+          component: 'Switch'
+        },
+        {
+          field: 'update.CUSTOM_REPOSITORY',
+          label: '仓库链接',
+          bottomHelpMessage: '填入仓库链接,如https://gitee.com/memzjs/memz-plugin,支持Gitee/Github',
+          component: 'GTags',
+          componentProps: {
+            allowAdd: true,
+            allowDel: true
+          }
+        },
+        {
+          field: 'update.cron',
+          label: '自动检查仓库更新',
+          helpMessage: '修改后重启生效',
+          bottomHelpMessage: '自动检查仓库更新Cron表达式',
+          component: 'EasyCron',
+          componentProps: {
+            placeholder: '请输入Cron表达式'
+          }
+        },
+        {
+          component: 'Divider',
+          label: '工具设置'
+        },
+        {
+          field: 'memz.WhoisAll',
+          label: 'Whois',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.SeoAll',
+          label: 'SEO',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
           field: 'memz.webpage',
           label: '网页截图',
           bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.IpinfoAll',
+          label: 'Ipinfo',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.PingAll',
+          label: 'Ping功能',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.PingApi',
+          label: 'Ping类型',
+          bottomHelpMessage: 'itdog暂时不可用http测速',
+          component: 'Select',
+          componentProps: {
+            options: [
+              { label: 'ZHALEMA', value: 1 },
+              { label: 'ITDOG', value: 2 }
+            ],
+            placeholder: '请选择Ping类型'
+          }
+        },
+        {
+          field: 'memz.PingProxy',
+          label: 'Ping代理',
+          bottomHelpMessage: '用于一些服务器无法访问ZHALE.MA/ITDOG.CN的情况',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.PingProxyAddress',
+          label: 'Ping代理地址',
+          bottomHelpMessage: '支持HTTP/SOCKS5协议,SOCKS5不可用带有用户身份验证的',
+          component: 'Input',
+          componentProps: {
+            placeholder: '代理地址'
+          }
+        },
+        {
+          field: 'memz.IpinfoToken',
+          label: 'Ipinfo的Token',
+          bottomHelpMessage: '前往 https://ipinfo.io 注册账号并获取 Token',
+          component: 'Input',
+          componentProps: {
+            placeholder: 'Token'
+          }
+        },
+        {
+          field: 'memz.UnicodeAll',
+          label: 'Unicode编码解码',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.UrlAll',
+          label: 'Url编码解码',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.BaseConversionAll',
+          label: '进制转换',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          component: 'Divider',
+          label: '网络搜索设置'
+        },
+        {
+          field: 'memz.SearchMovie',
+          label: '搜影视',
+          bottomHelpMessage: '使用API搜索影视资源,关闭时所有人不可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.SearchResource',
+          label: '搜资源',
+          bottomHelpMessage: '搜索本地xlsx文件的游戏,关闭时所有人不可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.SearchMagnet',
+          label: '磁力搜索',
+          bottomHelpMessage: '由于内容涉及违规, 不建议开启,关闭时仅主人可用',
           component: 'Switch'
         },
         {
@@ -124,145 +259,11 @@ export function supportGuoba () {
             placeholder: '请求数',
             addonAfter: '次'
           }
-        },
-        {
-          component: 'Divider',
-          label: '仓库更新推送设置'
-        },
-        {
-          field: 'update.checkupdate',
-          label: '自动检查仓库更新',
-          bottomHelpMessage: '检查插件更新并推送到主人',
-          component: 'Switch'
-        },
-        {
-          field: 'update.CUSTOM_REPOSITORY',
-          label: '仓库链接',
-          bottomHelpMessage: '填入仓库链接,如https://gitee.com/memzjs/memz-plugin,支持Gitee/Github',
-          component: 'GTags',
-          componentProps: {
-            allowAdd: true,
-            allowDel: true
-          }
-        },
-        {
-          field: 'update.cron',
-          label: '自动检查仓库更新',
-          helpMessage: '修改后重启生效',
-          bottomHelpMessage: '自动检查仓库更新Cron表达式',
-          component: 'EasyCron',
-          componentProps: {
-            placeholder: '请输入Cron表达式'
-          }
-        },
-        {
-          component: 'Divider',
-          label: '工具设置'
-        },
-        {
-          field: 'memz.WhoisAll',
-          label: 'Whois',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.SeoAll',
-          label: 'SEO',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.PingAll',
-          label: 'Ping功能',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.PingApi',
-          label: 'Ping类型',
-          bottomHelpMessage: 'itdog暂时不可用http测速',
-          component: 'Select',
-          componentProps: {
-            options: [
-              { label: 'ZHALEMA', value: 1 },
-              { label: 'ITDOG', value: 2 }
-            ],
-            placeholder: '请选择Ping类型'
-          }
-        },
-        {
-          field: 'memz.PingProxy',
-          label: 'Ping代理',
-          bottomHelpMessage: '用于一些服务器无法访问ZHALE.MA/ITDOG.CN的情况',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.PingProxyAddress',
-          label: 'Ping代理地址',
-          bottomHelpMessage: '支持HTTP/SOCKS5协议,SOCKS5不可用带有用户身份验证的',
-          component: 'Input',
-          componentProps: {
-            placeholder: '代理地址'
-          }
-        },
-        {
-          field: 'memz.IpinfoAll',
-          label: 'Ipinfo',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.IpinfoToken',
-          label: 'Ipinfo的Token',
-          bottomHelpMessage: '前往 https://ipinfo.io 注册账号并获取 Token',
-          component: 'Input',
-          componentProps: {
-            placeholder: 'Token'
-          }
-        },
-        {
-          field: 'memz.UnicodeAll',
-          label: 'Unicode编码解码',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.UrlAll',
-          label: 'Url编码解码',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.BaseConversionAll',
-          label: '进制转换',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
-          component: 'Divider',
-          label: '网络搜索设置'
-        },
-        {
-          field: 'memz.SearchMovie',
-          label: '搜影视',
-          bottomHelpMessage: '使用API搜索影视资源,关闭时所有人不可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.SearchResource',
-          label: '搜资源',
-          bottomHelpMessage: '搜索本地xlsx文件的游戏,关闭时所有人不可用',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.SearchMagnet',
-          label: '磁力搜索',
-          bottomHelpMessage: '由于内容涉及违规, 不建议开启,关闭时仅主人可用',
-          component: 'Switch'
         }
       ],
       getConfigData () {
         return {
+          config: Config.getDefOrConfig('config'),
           memz: Config.getDefOrConfig('memz'),
           update: Config.getDefOrConfig('update'),
           api: Config.getDefOrConfig('api')
