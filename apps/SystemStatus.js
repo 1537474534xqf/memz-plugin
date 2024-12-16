@@ -64,11 +64,17 @@ export class SystemStatus extends plugin {
     try {
       logger.debug('[memz-plugin] 正在获取扩展系统信息...')
       const responses = await Promise.all([
+        // 基本信息
         this.basicInfo(),
+        // 扩展信息
         this.getAdditionalSystemInfo(),
+        // GPU 信息
         this.getGPUInfo(),
+        // 电池信息
         this.getBatteryInfo(),
+        // 进程信息
         this.getProcessInfo(),
+        // 网络连接信息
         this.getNetworkConnections()
       ])
       const validResponses = responses.filter(info => info)
@@ -83,15 +89,25 @@ export class SystemStatus extends plugin {
     try {
       logger.debug('[memz-plugin] 正在获取最大扩展系统信息...')
       const responses = await Promise.all([
+        // 基本信息
         this.basicInfo(),
+        // 扩展信息
         this.getAdditionalSystemInfo(),
+        // GPU 信息
         this.getGPUInfo(),
+        // 电池信息
         this.getBatteryInfo(),
+        // 进程信息
         this.getProcessInfo(),
+        // 网络连接信息
         this.getNetworkConnections(),
+        // 磁盘详细信息
         this.getDiskDetailedInfo(),
+        // 服务详细信息
         this.getServiceDetails(),
+        // 主板信息
         this.getMotherboardInfo(),
+        // 内存条信息
         this.getRamInfo()
       ])
       const validResponses = responses.filter(info => info)
@@ -102,6 +118,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取基本系统信息
   async basicInfo () {
     try {
       logger.debug('[memz-plugin] 获取基本系统信息...')
@@ -124,6 +141,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取进程信息
   async getAdditionalSystemInfo () {
     try {
       const diskInfo = await si.diskLayout()
@@ -138,6 +156,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取 GPU 信息
   async getGPUInfo () {
     try {
       const graphics = await si.graphics()
@@ -149,6 +168,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取电池信息
   async getBatteryInfo () {
     try {
       const battery = await si.battery()
@@ -160,6 +180,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取进程信息
   async getProcessInfo () {
     try {
       const processes = await si.processes()
@@ -171,6 +192,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取网络连接信息
   async getNetworkConnections () {
     try {
       const networkStats = await si.networkStats()
@@ -182,6 +204,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取磁盘详细信息
   async getDiskDetailedInfo () {
     try {
       const fsSize = await si.fsSize()
@@ -193,6 +216,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取服务详细信息
   async getServiceDetails () {
     try {
       const services = await si.services('*')
@@ -204,6 +228,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取主板信息
   async getMotherboardInfo () {
     try {
       const motherboard = await si.baseboard()
@@ -215,6 +240,7 @@ export class SystemStatus extends plugin {
     }
   }
 
+  // 获取内存条信息
   async getRamInfo () {
     try {
       const memLayout = await si.memLayout()

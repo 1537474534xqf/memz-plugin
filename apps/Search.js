@@ -5,49 +5,49 @@ import { Config, PluginData } from '../components/index.js'
 
 const folderPath = path.join(PluginData, 'xlsx')
 
+/**
+ * 加载所有 Excel 文件中的数据
+ * @returns {Array} 数据数组
+ */
 function loadDataFromExcelFiles () {
-  const files = fs.readdirSync(folderPath)
-  const data = []
-
-  files.forEach((file) => {
-    if (file.endsWith('.xlsx')) {
+  return fs.readdirSync(folderPath)
+    .filter(file => file.endsWith('.xlsx'))
+    .flatMap(file => {
       const filePath = path.join(folderPath, file)
       const workbook = xlsx.readFile(filePath)
       const sheet = workbook.Sheets[workbook.SheetNames[0]]
-      const sheetData = xlsx.utils.sheet_to_json(sheet, {
+      return xlsx.utils.sheet_to_json(sheet, {
         header: ['ID', '关键词', '内容', '分类'],
         defval: '',
         range: 1
       })
-      data.push(...sheetData)
-    }
-  })
-
-  return data
+    })
 }
 
+/**
+ * 根据关键词搜索资源
+ * @param {string} keyword 关键词
+ * @param {Array} data 数据
+ * @returns {Array} 匹配的资源
+ */
 function searchResources (keyword, data) {
-  const results = data.filter((row) => row.关键词.includes(keyword))
-  return results
+  return data.filter(row => row.关键词.includes(keyword))
 }
 
-// 统计分类数量
+/**
+ * 统计分类数量
+ * @param {Array} data 数据
+ * @returns {Object} 分类统计结果
+ */
 function countCategories (data) {
-  const categoryCount = {}
-
-  data.forEach((row) => {
+  return data.reduce((acc, row) => {
     const category = row.分类 || '未分类'
-    if (categoryCount[category]) {
-      categoryCount[category]++
-    } else {
-      categoryCount[category] = 1
-    }
-  })
-
-  return categoryCount
+    acc[category] = (acc[category] || 0) + 1
+    return acc
+  }, {})
 }
 
-export class ResourceSearchPlugin extends plugin {
+export class Search extends plugin {
   constructor () {
     super({
       name: '资源搜索',
@@ -65,7 +65,7 @@ export class ResourceSearchPlugin extends plugin {
         },
         {
           reg: '^#?磁力搜索\\s*(.+)',
-          fnc: 'fetchSearchResults'
+          fnc: 'CiliSearch'
         },
         {
           reg: '^#?搜影视\\s*(\\S+)$',
@@ -73,60 +73,51 @@ export class ResourceSearchPlugin extends plugin {
         }
       ]
     })
-    this.data = loadDataFromExcelFiles()// 加载
+    this.data = loadDataFromExcelFiles() // 初始化加载数据
   }
 
   async handleSearch (e) {
     const { SearchResource } = Config.getConfig('memz')
-    if (!SearchResource) { return logger.warn('[memz-plugin]搜资源状态当前为关闭') }
-    const match = e.msg.match(/^#?搜资源\s*(\S+)$/)
-    const keyword = match ? match[1] : null
+    if (!SearchResource) return logger.warn('[memz-plugin] 搜资源状态当前为关闭')
 
-    if (!keyword) {
-      return await e.reply('请输入关键词进行搜索！', true)
-    }
+    const keyword = e.msg.match(/^#?搜资源\s*(\S+)$/)?.[1]
+    if (!keyword) return e.reply('请输入关键词进行搜索！', true)
+
     try {
       const results = searchResources(keyword, this.data)
       if (results.length > 0) {
-        const forward = results.map((row) => ({
+        const forward = results.map(row => ({
           user_id: e.user_id,
           nickname: e.sender.nickname || '为什么不玩原神',
-          message: [
-            `名称: ${row.关键词}\n内容: ${row.内容}\n分类: ${row.分类}`
-          ]
+          message: `名称: ${row.关键词}\n内容: ${row.内容}\n分类: ${row.分类}`
         }))
         forward.push({
           user_id: 382879217,
           nickname: 'ZSY11',
-          message: ['来源：十一实验室(QQ群632226555)\n官网：https://zsy11.com']
+          message: '来源：十一实验室(QQ群632226555)\n官网：https://zsy11.com'
         })
-        const nmsg = await Bot.makeForwardMsg(forward)
-        await e.reply(nmsg)
+        await e.reply(await Bot.makeForwardMsg(forward))
       } else {
-        await e.reply('没有找到你想要的哦~', true)
+        e.reply('没有找到你想要的哦~', true)
       }
     } catch (error) {
-      await e.reply(`搜索过程中发生错误：${error.message}`, true)
+      e.reply(`搜索过程中发生错误：${error.message}`, true)
     }
   }
 
-  // 统计
   async handleCategoryCount (e) {
     try {
       const categoryCount = countCategories(this.data)
-      let message = '----资源分类统计----\n'
-
-      for (const category in categoryCount) {
-        message += `${category}: ${categoryCount[category]} 个资源\n`
-      }
-
-      await e.reply(message)
+      const message = Object.entries(categoryCount)
+        .map(([category, count]) => `${category}: ${count} 个资源`)
+        .join('\n')
+      e.reply(`----资源分类统计----\n${message}`)
     } catch (error) {
-      await e.reply(`统计过程中发生错误：${error.message}`, true)
+      e.reply(`统计过程中发生错误：${error.message}`, true)
     }
   }
 
-  async fetchSearchResults (e) {
+  async CiliSearch (e) {
     const { SearchMagnet } = Config.getConfig('memz')
     if (!SearchMagnet && !e.isMaster) return logger.warn('[memz-plugin]磁力搜索状态当前为仅主人可用')
     const msg = e.msg
@@ -172,65 +163,36 @@ export class ResourceSearchPlugin extends plugin {
 
   async TheFilmAndTelevision (e) {
     const { SearchMovie } = Config.getConfig('memz')
-    if (!SearchMovie) return logger.warn('[memz-plugin]搜影视功能已禁用')
-    const match = e.msg.match(/^#?搜影视\s*(\S+)$/)
-    const keyword = match ? match[1] : null
+    if (!SearchMovie) return logger.warn('[memz-plugin] 搜影视功能已禁用')
 
-    if (!keyword) {
-      return await e.reply('请输入关键词进行搜索！', true)
-    }
+    const keyword = e.msg.match(/^#?搜影视\s*(\S+)$/)?.[1]
+    if (!keyword) return e.reply('请输入关键词进行搜索！', true)
 
     try {
-      const results = await this.searchResources(keyword)
-      if (results.length > 0) {
-        const forward = results.map((row) => ({
-          user_id: 382879217,
-          nickname: 'ZSY11',
-          message: [
-            `名称: ${row.name}\n链接: ${row.link}\n分类: ${row.category}`
-          ]
-        }))
-        const nmsg = await Bot.makeForwardMsg(forward)
-        await e.reply(nmsg)
-      } else {
-        await e.reply('未找到匹配的结果。', true)
-      }
-    } catch (error) {
-      await e.reply(`搜索过程中发生错误：${error.message}`, true)
-    }
-  }
-
-  async searchResources (keyword) {
-    const apiUrl = `https://ysxjjkl.souyisou.top/api_searchtxt.php?name=${encodeURIComponent(keyword)}`
-
-    try {
+      const apiUrl = `https://ysxjjkl.souyisou.top/api_searchtxt.php?name=${encodeURIComponent(keyword)}`
       const response = await fetch(apiUrl)
       const text = await response.text()
 
-      if (text.includes('[可怜]对不起，本资源暂未收录')) {
-        return []
+      if (text.includes('[可怜]对不起，本资源暂未收录')) return e.reply('未找到匹配的结果。', true)
+
+      const results = text.split('\n名称：').slice(1).map(item => {
+        const name = item.match(/^(.*?)\s*链接：/)?.[1]?.trim()
+        const link = item.match(/链接：(https:\/\/\S+)/)?.[1]
+        return { name, category: '影视资源', link }
+      }).filter(Boolean)
+
+      if (results.length > 0) {
+        const forward = results.map(row => ({
+          user_id: e.user_id,
+          nickname: 'ZSY11',
+          message: `名称: ${row.name}\n链接: ${row.link}\n分类: ${row.category}`
+        }))
+        await e.reply(await Bot.makeForwardMsg(forward))
+      } else {
+        e.reply('未找到匹配的结果。', true)
       }
-
-      const results = []
-      const items = text.split('\n名称：').slice(1)
-
-      for (const item of items) {
-        const nameMatch = item.match(/^(.*?)\s*链接：/)
-        const linkMatch = item.match(/链接：(https:\/\/.+?)(?=\s|$)/)
-
-        if (nameMatch && linkMatch) {
-          results.push({
-            name: nameMatch[1].trim(),
-            category: '影视资源',
-            link: linkMatch[1]
-          })
-        }
-      }
-
-      return results
     } catch (error) {
-      console.error('请求出错:', error)
-      throw new Error('资源搜索失败')
+      e.reply(`搜索过程中发生错误：${error.message}`, true)
     }
   }
 }

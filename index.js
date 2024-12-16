@@ -24,29 +24,46 @@ const coloredDashes = Array.from({ length: 23 }, () => {
   return chalk[randomColor]('*')
 }).join('')
 
-let successCount = 0
-let failureCount = 0
 const startTime = Date.now()
 const apps = {}
+
+let successCount = 0
+let failureCount = 0
 
 logger.info(chalk.cyan('MEMZ插件载入中...'))
 logger.debug(`[memz-plugin] 开始扫描目录：${appsDir}`)
 
+async function scanDirectory (directory) {
+  const entries = await fs.readdir(directory, { withFileTypes: true })
+  const tasks = []
+
+  for (const entry of entries) {
+    const fullPath = path.join(directory, entry.name)
+
+    if (entry.isDirectory()) {
+      tasks.push(...(await scanDirectory(fullPath)))
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      tasks.push({
+        name: path.basename(entry.name, '.js'),
+        filePath: pathToFileURL(fullPath).href
+      })
+    }
+  }
+
+  return tasks
+}
+
 try {
-  const files = await fs.readdir(appsDir)
-  logger.debug(`[memz-plugin] 找到文件 ${files.length} 个，开始过滤 JavaScript 文件...`)
-
-  const jsFiles = files.filter((file) => file.endsWith('.js'))
-  logger.debug(`[memz-plugin] JavaScript 文件数：${jsFiles.length}`)
-
-  const filePaths = jsFiles.map((file) => ({
-    name: path.basename(file, '.js'),
-    filePath: pathToFileURL(path.join(appsDir, file)).href
-  }))
-
+  // 递归
+  const filePaths = await scanDirectory(appsDir)
   logger.debug(`[memz-plugin] 构建模块路径完成，共计 ${filePaths.length} 个模块。`)
 
+  // 并发
+  logger.debug('[memz-plugin] 开始并发加载所有模块...')
+
   const loadModules = filePaths.map(async ({ name, filePath }) => {
+    const loadStartTime = Date.now()
+
     try {
       const moduleExports = await import(filePath)
       const defaultExport = moduleExports?.default || moduleExports[Object.keys(moduleExports)[0]]
@@ -60,13 +77,14 @@ try {
       let counter = 1
 
       while (apps[newName]) {
-        logger.debug(`[memz-plugin] 重命名模块 ${name} 为 ${newName}...`)
         newName = `${name}_${counter}`
         counter++
       }
 
       apps[newName] = defaultExport
-      logger.debug(chalk.green(`[memz-plugin] 成功载入模块：${newName}`))
+
+      const loadTime = Date.now() - loadStartTime
+      logger.debug(chalk.green(`[memz-plugin] 成功载入模块：${newName}，耗时 ${loadTime} ms`))
       successCount++
     } catch (error) {
       logger.error(chalk.red(`[memz-plugin] 加载模块失败：${name}`))
@@ -76,8 +94,7 @@ try {
     }
   })
 
-  logger.debug('[memz-plugin] 开始并发加载所有模块...')
-  await Promise.allSettled(loadModules)
+  await Promise.all(loadModules)
   logger.debug('[memz-plugin] 所有模块加载任务已完成。')
 } catch (error) {
   logger.error(`[memz-plugin] 扫描或加载文件时出错：${chalk.red(error.message)}`)

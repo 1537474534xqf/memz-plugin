@@ -88,7 +88,7 @@ const serveFavicon = async (req, res) => {
 
 const loadApiHandler = async (filePath) => {
   const route = `/${path.basename(filePath, '.js')}`
-  logger.debug(`[加载调试] 开始加载API文件: ${filePath}，路由: ${route}`)
+  // logger.debug(`[加载调试] 开始加载API文件: ${filePath}，路由: ${route}`)
   try {
     const handlerModule = await import(pathToFileURL(filePath))
     const handler = handlerModule.default
@@ -106,7 +106,6 @@ const loadApiHandler = async (filePath) => {
     logger.debug(`[加载调试] 错误详情: ${err.stack}`)
     loadStats.failure++
   }
-  logger.debug(`[加载调试] API文件处理完成: ${filePath}`)
 }
 
 const getLocalIPs = () => {
