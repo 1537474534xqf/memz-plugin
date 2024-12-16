@@ -3,6 +3,11 @@
 SystemStatusAll: false
 # Redis状态是否所有人可用
 RedisStatusAll: false
+# 自动点赞 主人默认在点赞名单
+AutoLike: true
+# 自动点赞列表
+AutoLikeList: []
+
 
 ### 工具设置
 # 是否所有人可用Whois
