@@ -9,13 +9,13 @@ export class DZ extends plugin {
       name: '自动点赞',
       dsc: '自动点赞',
       priority: -100000,
-      event: 'message',
-      rule: [
-        {
-          reg: '^#?(memz)?一键点赞',
-          fnc: 'DZ'
-        }
-      ]
+      event: 'message'
+      // rule: [
+      //   {
+      //     reg: '^#?(memz)?一键点赞',
+      //     fnc: 'DZ'
+      //   }
+      // ]
     })
     this.task = [
       {
@@ -90,7 +90,7 @@ export class DZ extends plugin {
     for (let uin of bot) {
       logger.info(`[memz-plugin] 开始处理 QQ：${uin}`)
       for (let i of Users) {
-        if (this.e?.adapter_name || this.e.bot?.version?.id == 'QQBot') {
+        if ((this.e?.adapter_name || this.e.bot?.version?.id) == 'QQBot') {
           logger.info('[memz-plugin] 自动点赞跳过 QQBot')
           continue
         }

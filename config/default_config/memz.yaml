@@ -44,3 +44,17 @@ SearchResource: true
 apply_game: true
 # 是否开启磁力搜索
 SearchMagnet: false
+
+### 定时群发设置
+# 定时群发开关
+GroupScheduler: false
+# 群发白名单bot
+GroupSchedulerWhiteBotList: []
+# 群发黑名单bot
+GroupSchedulerBlackBotList: []
+# 定时群发CRON表达式
+GroupSchedulerCron: "0 0 1 * *?" #默认每天1点
+# 定时群发内容
+GroupSchedulerMsg: "#全部赞我"
+# 定时群发群组
+GroupSchedulerGroup: []

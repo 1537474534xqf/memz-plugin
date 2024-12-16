@@ -50,7 +50,7 @@ export function supportGuoba () {
         },
         {
           component: 'Divider',
-          label: '插件设置'
+          label: '奇奇怪怪'
         },
         {
           field: 'memz.AutoLike',
@@ -63,6 +63,57 @@ export function supportGuoba () {
           label: '自动点赞列表',
           bottomHelpMessage: '填入QQ号,主人默认在点赞列表,无需添加',
           component: 'GTags'
+        },
+        {
+          field: 'memz.GroupScheduler',
+          label: '定时群发',
+          bottomHelpMessage: '定时群发某消息到指定群',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.GroupSchedulerCron',
+          label: '定时群发CRON表达式',
+          helpMessage: '修改后重启生效',
+          bottomHelpMessage: '定时群发CRON表达式',
+          component: 'EasyCron',
+          componentProps: {
+            placeholder: '请输入Cron表达式'
+          }
+        },
+        {
+          field: 'memz.GroupSchedulerMsg',
+          label: '定时群发内容',
+          component: 'Input',
+          componentProps: {
+            placeholder: '请输入群发内容'
+          }
+        },
+        {
+          field: 'memz.GroupSchedulerGroup',
+          helpMessage: '定时群发群列表',
+          label: '群发群列表',
+          componentProps: {
+            placeholder: '点击选择要群发的群'
+          },
+          component: 'GSelectGroup'
+        },
+        {
+          field: 'memz.GroupSchedulerWhiteBotList',
+          label: '群发白名单bot',
+          component: 'GTags',
+          componentProps: {
+            allowAdd: true,
+            allowDel: true
+          }
+        },
+        {
+          field: 'memz.GroupSchedulerBlackBotList',
+          label: '群发黑名单bot',
+          component: 'GTags',
+          componentProps: {
+            allowAdd: true,
+            allowDel: true
+          }
         },
         {
           component: 'Divider',
