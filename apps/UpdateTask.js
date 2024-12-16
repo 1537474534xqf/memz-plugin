@@ -47,7 +47,7 @@ export class UpdateTask extends plugin {
     for (let index = 0; index < uniqueRepositories.length; index++) {
       const item = uniqueRepositories[index]
       if (index > 0) {
-        await this.sleep(1000) // 延迟避免请求过于频繁
+        await this.sleep(1000) // 避免请求过于频繁
       }
 
       logger.info(`[memz-plugin]开始检查仓库更新：${item.owner}/${item.repo}`)
