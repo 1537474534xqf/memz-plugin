@@ -1,7 +1,7 @@
 import fs from 'fs'
 import whois from 'whois-json'
-import { generateScreenshot } from '../model/Screenshot.js'
-import { Config, PluginPath } from '../components/index.js'
+import { generateScreenshot } from '#model'
+import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 const whoisFieldsMap = {
   domainName: '域名',

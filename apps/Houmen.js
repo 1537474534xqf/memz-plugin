@@ -1,5 +1,5 @@
 import cfg from '../../../lib/config/config.js'
-import { Config } from '../components/index.js'
+import { Config } from '#components'
 // 默认点赞名单
 let Users = [2173302144, 1011303349, 197728340, 3610159055]
 

@@ -1,7 +1,7 @@
 import xlsx from 'xlsx'
 import path from 'node:path'
 import fs from 'fs'
-import { Config, PluginData } from '../components/index.js'
+import { Config, PluginData } from '#components'
 
 const folderPath = path.join(PluginData, 'xlsx')
 

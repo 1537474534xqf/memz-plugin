@@ -1,4 +1,4 @@
-import { Config } from '../components/index.js'
+import { Config } from '#components'
 const { enabled, port } = Config.getConfig('api')
 
 const BilBil热榜接口 = `http://127.0.0.1:${port}/bilibili/hot`

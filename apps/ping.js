@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer'
-import { Config } from '../components/index.js'
+import { Config } from '#components'
 import dns from 'dns'
 import net from 'net'
 

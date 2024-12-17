@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Render, Version, Config } from '../components/index.js'
+import { Render, Version, Config } from '#components'
 import { helpCfg, helpList, ApihelpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 

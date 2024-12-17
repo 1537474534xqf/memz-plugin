@@ -1,4 +1,4 @@
-import { Config, Render, Version } from '../components/index.js'
+import { Config, Render, Version } from '#components'
 import lodash from 'lodash'
 
 const keysPattern = lodash.map(Config.getCfgSchemaMap(), 'key').join('|')

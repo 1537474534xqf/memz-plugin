@@ -1,7 +1,7 @@
 import fs from 'fs'
 import Redis from 'ioredis'
-import { Config, PluginPath } from '../components/index.js'
-import { generateScreenshot } from '../model/Screenshot.js'
+import { Config, PluginPath } from '#components'
+import { generateScreenshot } from '#model'
 
 export class RedisStatus extends plugin {
   constructor () {

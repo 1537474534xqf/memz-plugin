@@ -12,5 +12,9 @@
         "whois-json": "*",
         "xlsx": "*",
         "yaml": "^2.2.2"
-    }
+    },
+    "imports": {
+        "#components": "./components/index.js",
+        "#model": "./model/index.js"
+      }
 }

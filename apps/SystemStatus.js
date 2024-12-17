@@ -1,6 +1,6 @@
 import os from 'os'
 import si from 'systeminformation'
-import { Config } from '../components/index.js'
+import { Config } from '#components'
 
 export class SystemStatus extends plugin {
   constructor () {
