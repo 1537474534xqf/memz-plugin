@@ -1,6 +1,6 @@
 import cfg from '../../../lib/config/config.js'
 import moment from 'moment'
-import { Config } from '#components'
+import { Config } from '../components/index.js'
 const { checkupdate, CUSTOM_REPOSITORY, cron } = Config.getConfig('update')
 
 const prefix = 'memz:codeUpdateTask:'

@@ -1,5 +1,5 @@
 import { update as Update } from '../../other/update.js'
-import { PluginName, Config } from '.#components'
+import { PluginName, Config } from '#components'
 import cfg from '../../../lib/config/config.js'
 const { autoupdate, updatecron } = Config.getConfig('update')
 export class Updates extends plugin {
