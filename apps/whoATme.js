@@ -99,16 +99,7 @@ export class whoAtme extends plugin {
       return { message, user_id: entry.User, nickname: entry.name, time: entry.time }
     })
 
-    const forwardMsg = await e.group.makeForwardMsg(msgList)
-
-    if (typeof forwardMsg.data === 'object') {
-      const detail = forwardMsg.data?.meta?.detail
-      if (detail) detail.news = [{ text: '点击显示内容' }]
-    } else {
-      forwardMsg.data = forwardMsg.data
-        .replace(/\n/g, '')
-        .replace(/<title color="#777777" size="26">(.+?)<\/title>/g, '<title color="#777777" size="26">点击显示内容</title>')
-    }
+    const forwardMsg = await Bot.makeForwardMsg(msgList)
 
     return e.reply(forwardMsg)
   }

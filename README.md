@@ -3,13 +3,14 @@
 ## 📋介绍
 
 Yunzai系列Bot插件,本插件基于TRSS-Yunzai作为开发环境,其他框架可能有不支持的地方,可提issue适配
+
 <div align="center">
 
 ![GitHub stars](https://img.shields.io/github/stars/MapleLeaf2007/memz-plugin?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/MapleLeaf2007/memz-plugin?style=social)
 ![GitHub issues](https://img.shields.io/github/issues/MapleLeaf2007/memz-plugin)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/MapleLeaf2007/memz-plugin)
-<br>
+`<br>`
 
 <img src="https://count.getloli.com/@MEMZ-Plugin?name=MEMZ-Plugin&theme=random&padding=7&offset=0&align=top&scale=1&pixelated=0&darkmode=auto" />
 
@@ -34,16 +35,16 @@ git clone --depth=1 https://github.com/MapleLeaf2007/memz-plugin.git ./plugins/m
 ### 安装依赖
 
 ```bash
-pnpm i
+pnpm install --filter=memz-plugin
 ```
 
 ## 使用
 
 发送 `#MEMZ帮助`查看插件部分功能
 
-开启MEMZ-API服务(默认开启)后可通过`#MEMZAPI帮助`查看API部分功能
+开启MEMZ-API服务(默认开启)后可通过 `#MEMZAPI帮助`查看API部分功能
 
-发送`#MEMZ设置`可进行部分功能快捷设置
+发送 `#MEMZ设置`可进行部分功能快捷设置
 
 完整设置请通过[锅巴面板](https://gitee.com/guoba-yunzai/guoba-plugin)或[YePanel](https://github.com/XasYer/YePanel)等管理面板进行设置
 
@@ -51,7 +52,7 @@ pnpm i
 
 直接提issue或者PR都行,暂时就没有交流群了,有也没有人来
 
-有事发邮件`fengyeplus@outlook.com`
+有事发邮件 `fengyeplus@outlook.com`
 
 ## 免责声明
 
