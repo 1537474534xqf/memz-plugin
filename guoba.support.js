@@ -117,6 +117,15 @@ export function supportGuoba () {
           }
         },
         {
+          field: 'memz.whoAtmeTime',
+          label: '谁艾特我保留',
+          bottomHelpMessage: '谁艾特我保留时长,单位小时',
+          component: 'InputNumber',
+          componentProps: {
+            addonAfter: '小时'
+          }
+        },
+        {
           component: 'Divider',
           label: '仓库更新推送设置'
         },

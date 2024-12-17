@@ -36,7 +36,7 @@ const whoisFieldsMap = {
   fax: '传真',
   email: '电子邮件'
 }
-export async function fetchSeoFromHtml (url) {
+async function fetchSeoFromHtml (url) {
   const response = await fetch(url)
   const html = await response.text()
 
@@ -55,14 +55,14 @@ export async function fetchSeoFromHtml (url) {
   }
 }
 
-export function encodeToUrl (msg) {
+async function encodeToUrl (msg) {
   return encodeURIComponent(msg)
 }
 
-export function decodeFromUrl (urlStr) {
+async function decodeFromUrl (urlStr) {
   return decodeURIComponent(urlStr)
 }
-export function encodeToUnicode (msg) {
+async function encodeToUnicode (msg) {
   return msg
     .split('')
     .map((char) => {
@@ -72,13 +72,13 @@ export function encodeToUnicode (msg) {
     .join('')
 }
 
-export function decodeFromUnicode (unicodeStr) {
+async function decodeFromUnicode (unicodeStr) {
   return unicodeStr.replace(/\\u[\dA-Fa-f]{4}/g, (match) =>
     String.fromCharCode(parseInt(match.replace('\\u', ''), 16))
   )
 }
 
-export function encodeToAscii (msg) {
+async function encodeToAscii (msg) {
   return msg
     .split('')
     .map((char) => {
@@ -88,7 +88,7 @@ export function encodeToAscii (msg) {
     .join('')
 }
 
-export function decodeFromAscii (asciiStr) {
+async function decodeFromAscii (asciiStr) {
   return asciiStr.replace(/\\x[\dA-Fa-f]{2}/g, (match) =>
     String.fromCharCode(parseInt(match.replace('\\x', ''), 16))
   )
@@ -100,7 +100,7 @@ async function getDetailedWhoisData (domain) {
     throw new Error(`获取 WHOIS 数据时出错: ${error.message}`)
   }
 }
-function translateWhoisData (data) {
+async function translateWhoisData (data) {
   return Object.entries(data).reduce((acc, [key, value]) => {
     const translatedKey = whoisFieldsMap[key] || key
     acc[translatedKey] =
@@ -121,6 +121,26 @@ async function convertBase (number, fromBase, toBase) {
   await new Promise((resolve) => setTimeout(resolve, 100))
   return base10Number.toString(toBase).toUpperCase()
 }
+async function decodeHexToReadableText (hex) {
+  const buffer = Buffer.from(hex, 'hex')
+
+  try {
+    const utf8Decoded = buffer.toString('utf-8')
+    const readableText = filterReadableText(utf8Decoded)
+    if (readableText) {
+      return readableText
+    }
+  } catch (error) {
+    console.error('UTF-8 解码失败:', error)
+  }
+
+  return '没有可读的文本内容'
+}
+
+function filterReadableText (str) {
+  return str.replace(/[^\s\p{L}\p{N}\p{P}\p{S}]/gu, '')
+}
+
 export class WebTools extends plugin {
   constructor () {
     super({
@@ -152,6 +172,10 @@ export class WebTools extends plugin {
         {
           reg: '^#?进制转换\\s*(.+)',
           fnc: 'BaseConversion'
+        },
+        {
+          reg: /^#?hex解码\s*(\S+)$/i,
+          fnc: 'HexToUtf'
         }
       ]
     })
@@ -329,6 +353,16 @@ export class WebTools extends plugin {
       )
     } catch (error) {
       await e.reply(`Error: ${error.message}`)
+    }
+  }
+
+  async HexToUtf (e) {
+    const msg = e.msg.match(/^#?hex解码\s*(\S+)$/i)
+    if (msg && msg[1]) {
+      const decodedString = decodeHexToReadableText(msg[1])
+      e.reply(decodedString, true)
+    } else {
+      e.reply('请提供有效的 HEX 字符串。', true)
     }
   }
 }
