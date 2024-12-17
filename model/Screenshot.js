@@ -10,9 +10,17 @@ export async function generateScreenshot (html) {
 
     await page.setContent(html, { waitUntil: 'domcontentloaded' })
 
+    const pageHeight = await page.evaluate(() => {
+      return document.documentElement.scrollHeight
+    })
+
+    await page.setViewport({
+      width: 1024,
+      height: pageHeight
+    })
+
     const buffer = await page.screenshot({
-      encoding: 'base64',
-      fullPage: true
+      encoding: 'base64'
     })
 
     await page.close()
