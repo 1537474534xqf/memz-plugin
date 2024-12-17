@@ -36,7 +36,7 @@ export class Updates extends plugin {
           }
           try {
             await Bot.pickFriend(master).sendMsg(msg)
-            await this.sleep(2000)
+            await Bot.sleep(2000)
           } catch (err) {
             logger.error(`[memz-plugin] 向好友 ${master} 发送消息时出错：`, err)
           }
