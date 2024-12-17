@@ -251,28 +251,45 @@ export class WebTools extends plugin {
 
   async Whois (e) {
     const { WhoisAll } = Config.getConfig('memz')
-    if (!WhoisAll && !e.isMaster) { return logger.warn('[memz-plugin]Whois状态当前为仅主人可用') }
-    const domain = e.msg.match(/#?whois\s*(.+)/)[1].trim()
+    if (!WhoisAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] Whois状态当前为仅主人可用')
+    }
+
+    const domainMatch = e.msg.match(/#?whois\s*(.+)/)
+    if (!domainMatch) {
+      return await e.reply('未识别到有效的域名，请确保输入格式正确。', true)
+    }
+
+    let domain = domainMatch[1].trim()
+
+    domain = domain.replace(/^https?:\/\//, '').split('/')[0].split('?')[0].split('#')[0]
+
     try {
       logger.debug(`[memz-plugin] WHOIS 请求域名: ${domain}`)
+
+      // 获取Whois数据
       const whoisData = await whois(domain)
+
       if (Object.keys(whoisData).length === 0) {
-        return await e.reply('未能获取到 Whois 数据，请检查域名是否有效活是否开启Whois保护。', true)
+        return await e.reply('未能获取到 Whois 数据，请检查域名是否有效或是否开启Whois保护。', true)
       }
+
       logger.debug(`[memz-plugin] WHOIS 数据: ${JSON.stringify(whoisData)}`)
+
       const translatedData = translateWhoisData(whoisData)
 
       const whoisDataHtml = Object.entries(translatedData)
         .map(([key, value]) => `${key}: ${value}`)
         .join('<br>')
+
       const htmlTemplate = fs.readFileSync(`${PluginPath}/resources/html/whois/whois.html`, 'utf8')
       const html = htmlTemplate.replace('{{whoisdata}}', whoisDataHtml)
 
       const screenshotBuffer = await generateScreenshot(html)
-
       await e.reply(segment.image(`base64://${screenshotBuffer}`), true)
     } catch (error) {
-      await this.reply(`错误: ${error.message}`, true)
+      logger.error(`[memz-plugin] Whois查询失败: ${error.message}`)
+      await e.reply(`错误: ${error.message}`, true)
     }
   }
 
