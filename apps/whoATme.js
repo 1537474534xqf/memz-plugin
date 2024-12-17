@@ -101,7 +101,7 @@ export class whoAtme extends plugin {
 
     const forwardMsg = await Bot.makeForwardMsg(msgList)
 
-    return e.reply(forwardMsg)
+    e.reply(forwardMsg)
   }
 
   async clearAt (e) {
@@ -111,7 +111,8 @@ export class whoAtme extends plugin {
     if (!(await redis.exists(key))) return e.reply('目前数据库没有你的AT数据，无法清除', true)
 
     await redis.del(key)
-    return e.reply('已成功清除', true)
+
+    e.reply('已成功清除', true)
   }
 
   async clearAll (e) {

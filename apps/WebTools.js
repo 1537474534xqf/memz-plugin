@@ -294,7 +294,7 @@ export class WebTools extends plugin {
       const screenshotBase64 = await this.captureScreenshot(url)
       await e.reply(segment.image(`base64://${screenshotBase64}`), true)
     } catch (error) {
-      await e.reply(`网页截图失败: ${error.message}`, true)
+      await e.reply(`[memz-plugin] 网页截图失败: ${error.message}`, true)
     }
   }
 
