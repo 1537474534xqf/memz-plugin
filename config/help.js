@@ -62,11 +62,6 @@ export const helpList = [
         icon: 69,
         title: '#unicode(编码|解码)+内容',
         desc: 'unicode(解|编)码'
-      },
-      {
-        icon: 71,
-        title: '#进制转换',
-        desc: '没有什么用的进制转换'
       }
     ]
   },

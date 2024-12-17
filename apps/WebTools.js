@@ -93,14 +93,7 @@ async function decodeFromAscii (asciiStr) {
     String.fromCharCode(parseInt(match.replace('\\x', ''), 16))
   )
 }
-async function getDetailedWhoisData (domain) {
-  try {
-    return await whois(domain, { timeout: 10000 })
-  } catch (error) {
-    throw new Error(`获取 WHOIS 数据时出错: ${error.message}`)
-  }
-}
-async function translateWhoisData (data) {
+function translateWhoisData (data) {
   return Object.entries(data).reduce((acc, [key, value]) => {
     const translatedKey = whoisFieldsMap[key] || key
     acc[translatedKey] =
@@ -163,7 +156,7 @@ export class WebTools extends plugin {
         },
         {
           reg: '^#?whois\\s*(.+)',
-          fnc: 'whois'
+          fnc: 'Whois'
         },
         {
           reg: '^#?网页截图\\s*(\\S+.*)',
@@ -256,18 +249,22 @@ export class WebTools extends plugin {
     })
   }
 
-  async whois (e) {
+  async Whois (e) {
     const { WhoisAll } = Config.getConfig('memz')
     if (!WhoisAll && !e.isMaster) { return logger.warn('[memz-plugin]Whois状态当前为仅主人可用') }
     const domain = e.msg.match(/#?whois\s*(.+)/)[1].trim()
     try {
-      const data = await getDetailedWhoisData(domain)
-      const translatedData = translateWhoisData(data)
+      logger.debug(`[memz-plugin] WHOIS 请求域名: ${domain}`)
+      const whoisData = await whois(domain)
+      if (Object.keys(whoisData).length === 0) {
+        return await e.reply('未能获取到 Whois 数据，请检查域名是否有效活是否开启Whois保护。', true)
+      }
+      logger.debug(`[memz-plugin] WHOIS 数据: ${JSON.stringify(whoisData)}`)
+      const translatedData = translateWhoisData(whoisData)
 
       const whoisDataHtml = Object.entries(translatedData)
         .map(([key, value]) => `${key}: ${value}`)
         .join('<br>')
-
       const htmlTemplate = fs.readFileSync(`${PluginPath}/resources/html/whois/whois.html`, 'utf8')
       const html = htmlTemplate.replace('{{whoisdata}}', whoisDataHtml)
 
