@@ -30,7 +30,7 @@ export class Updates extends plugin {
       reply: async (msg) => {
         const masters = Object.keys(cfg.master)
         for (const master of masters) {
-          if ((this.e?.adapter_name || this.e.bot?.version?.id) === 'QQBot' || master.toString().length > 11) {
+          if (master.toString().length > 11) {
             logger.info('[memz-plugin] 更新推送跳过 QQBot')
             continue
           }
