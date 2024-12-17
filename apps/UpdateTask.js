@@ -32,10 +32,7 @@ export class UpdateTask extends plugin {
   }
 
   async UpdateTask () {
-    if (!checkupdate) {
-      return logger.warn('[memz-plugin]仓库定时检查更新已关闭')
-    }
-
+    if (!checkupdate) { return logger.warn('[memz-plugin]仓库定时检查更新已关闭') }
     // 去重
     const uniqueRepositories = Array.from(new Set(REPOSITORY_LIST.map(JSON.stringify))).map(JSON.parse)
     if (uniqueRepositories.length === 0) {

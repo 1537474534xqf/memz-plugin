@@ -56,6 +56,7 @@ export class Updates extends plugin {
   }
 
   async update (e) {
+    if (!autoupdate) return logger.warn('[memz-plugin]自动更新已关闭')
     if (!(e.isMaster || e.user_id == 1011303349)) return logger.warn('[memz-plugin]自动更新仅限主人使用')
     e.isMaster = true
     if (e.at && !e.atme) return

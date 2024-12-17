@@ -9,13 +9,12 @@ export class executeGroupScheduler extends plugin {
       dsc: '定时群发任务',
       priority: -100000,
       event: 'message'
-      //   rule: [
-      //     {
-      //       reg: '^#?(memz)?定时群发测试$',
-      //       fnc: 'executeGroupScheduler'
-      //     }
-      //   ]
-
+      // rule: [
+      //   {
+      //     reg: '^#?(memz)?定时群发测试$',
+      //     fnc: 'executeGroupScheduler'
+      //   }
+      // ]
     })
     if (GroupScheduler) {
       this.task = []
@@ -30,6 +29,7 @@ export class executeGroupScheduler extends plugin {
   }
 
   async executeGroupScheduler () {
+    if (!GroupScheduler) { return logger.warn('[memz-plugin] 定时群发已关闭') }
     const {
       GroupSchedulerWhiteBotList,
       GroupSchedulerBlackBotList,
@@ -42,6 +42,7 @@ export class executeGroupScheduler extends plugin {
     }
 
     const botIds = Bot.uin
+    const messages = GroupSchedulerMsg.split('|') // 分割消息
 
     for (let botId of botIds) {
       // 黑名单
@@ -60,19 +61,21 @@ export class executeGroupScheduler extends plugin {
       for (const groupId of GroupSchedulerGroup) {
         logger.info(`[memz-plugin] Bot (${botId}) 处理群组 ${groupId}`)
 
-        try {
-          await Bot[botId].pickGroup(groupId).sendMsg(GroupSchedulerMsg)
+        for (const message of messages) {
+          try {
+            await Bot[botId].pickGroup(groupId).sendMsg(message.trim())
 
-          logger.info(
-            `[memz-plugin] Bot ${botId} 消息已发送到群组 ${groupId}: ${GroupSchedulerMsg}`
-          )
+            logger.info(
+              `[memz-plugin] Bot ${botId} 消息已发送到群组 ${groupId}: ${message.trim()}`
+            )
 
-          await Bot.sleep(2000) // 防止发送过快
-        } catch (err) {
-          logger.error(
-            `[memz-plugin] Bot (${botId}) 向群组 ${groupId} 发送消息时出错：`,
-            err
-          )
+            await Bot.sleep(2000) // 防止发送过快
+          } catch (err) {
+            logger.error(
+              `[memz-plugin] Bot (${botId}) 向群组 ${groupId} 发送消息时出错：`,
+              err
+            )
+          }
         }
       }
 

@@ -83,6 +83,7 @@ export function supportGuoba () {
         {
           field: 'memz.GroupSchedulerMsg',
           label: '定时群发内容',
+          bottomHelpMessage: '如果要发送多条消息,使用|隔开,例如: #赞我|#全部赞我',
           component: 'Input',
           componentProps: {
             placeholder: '请输入群发内容'
