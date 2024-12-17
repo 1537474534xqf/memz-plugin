@@ -71,6 +71,16 @@ export const helpList = [
     ]
   },
   {
+    group: '群聊功能',
+    list: [
+      {
+        icon: 67,
+        title: '#谁艾特我',
+        desc: '哪个叼毛艾特我'
+      }
+    ]
+  },
+  {
     group: '搜索功能',
     list: [
       {

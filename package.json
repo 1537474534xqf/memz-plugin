@@ -7,7 +7,9 @@
         "fix": "npx prettier --write **/*.js && npx prettier --write *.js"
     },
     "dependencies": {
+        "axios": "^1.7.9",
         "ioredis": "*",
+        "qrcode": "^1.5.4",
         "systeminformation": "*",
         "whois-json": "*",
         "xlsx": "*",
@@ -16,5 +18,5 @@
     "imports": {
         "#components": "./components/index.js",
         "#model": "./model/index.js"
-      }
+    }
 }
