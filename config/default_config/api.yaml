@@ -4,6 +4,8 @@ enabled: true
 port: 1129
 #*是否啟用 HTTPS
 httpsenabled: false
+#*统计过期时间
+redisExpire: 0 #*单位为秒,0表示永不过期
 #*HTTPS 证书和私钥文件路径
 httpskey: "private-key.pem"
 httpscert: "certificate.pem"

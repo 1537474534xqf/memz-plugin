@@ -130,10 +130,6 @@ export class WebTools extends plugin {
     }
     url = url[1].trim()
 
-    if (!url.startsWith('http')) {
-      url = `https://${url}`
-    }
-
     try {
       const seoInfoJson = await fetchSeoFromHtml(url)
 

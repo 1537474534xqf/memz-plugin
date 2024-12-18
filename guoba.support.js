@@ -292,6 +292,15 @@ export function supportGuoba () {
           }
         },
         {
+          field: 'api.redisExpire',
+          label: '统计数据过期时间',
+          bottomHelpMessage: '单位为秒,填入0表示永不过期',
+          component: 'InputNumber',
+          componentProps: {
+            placeholder: '请输入过期时间'
+          }
+        },
+        {
           field: 'api.httpsenabled',
           label: 'HTTPS服务',
           bottomHelpMessage: '开启前请配置 SSL 证书,重启生效',

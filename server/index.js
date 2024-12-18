@@ -35,14 +35,21 @@ const loadConfig = async () => {
 await loadConfig()
 
 const updateRequestStats = async (ip, route) => {
-  const ipKey = `${REDIS_STATS_KEY}:${ip}`
+  const normalizedIp = ip.replace(/:/g, '.')
+
+  const ipKey = `${REDIS_STATS_KEY}:${normalizedIp}`
+
+  const pipeline = redis.multi()
+
   try {
-    await redis
-      .multi()
-      .hincrby(ipKey, route, 1)
-      .hincrby(ipKey, 'total', 1)
-      .expire(ipKey, 86400)
-      .exec()
+    pipeline.hincrby(ipKey, route, 1)
+    pipeline.hincrby(ipKey, 'total', 1)
+
+    if (config.redisExpire > 0) {
+      pipeline.expire(ipKey, config.redisExpire)
+    }
+
+    await pipeline.exec()
   } catch (err) {
     logger.error(chalk.red(`[统计错误] 更新统计失败: IP=${ip}, Route=${route}, 错误=${err.message}`))
   }
@@ -134,12 +141,11 @@ const getLocalIPs = () => {
 
 const handleRequest = async (req, res) => {
   const startTime = Date.now()
-  const originalIP = req.socket.remoteAddress
-  const ip = originalIP.includes(':')
-    ? originalIP.startsWith('::ffff:')
-      ? originalIP.replace('::ffff:', '')
-      : originalIP.replace(/:/g, '.')
-    : originalIP
+  let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
+
+  if (ip && ip.startsWith('::ffff:')) {
+    ip = ip.replace('::ffff:', '')
+  }
 
   logger.debug(
     `[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`

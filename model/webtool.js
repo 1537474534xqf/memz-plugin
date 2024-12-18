@@ -1,6 +1,7 @@
 import iconv from 'iconv-lite'
 import * as cheerio from 'cheerio'
-
+import axios from 'axios'
+import https from 'https'
 // ICP备案查询
 export async function fetchIcpInfo (domain) {
   // 去掉一些奇奇怪怪的东西
@@ -85,20 +86,27 @@ export async function translateWhoisData (data) {
 // SEO 查询
 export async function fetchSeoFromHtml (url) {
   try {
-    if (!/^https?:\/\//i.test(url)) {
+    if (!url.startsWith('http')) {
       url = `https://${url}`
     }
 
     const validUrl = new URL(url)
+    logger.debug(`[memz-plugin] SEO 查询 URL: ${validUrl.href}`)
 
-    const response = await fetch(validUrl)
+    // 忽略 SSL 验证
+    const agent = new https.Agent({
+      rejectUnauthorized: false
+    })
 
-    if (!response.ok) {
-      throw new Error(`无法访问 URL: ${url}`)
+    const response = await axios.get(validUrl.href, {
+      httpsAgent: agent,
+      timeout: 10000
+    })
+
+    if (response.status !== 200) {
+      throw new Error(`无法访问 URL: ${url} (Status: ${response.status})`)
     }
-
-    const html = await response.text()
-
+    const html = response.data
     const titleMatch = html.match(/<title>(.*?)<\/title>/i)
     const descriptionMatch = html.match(
       /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
@@ -115,7 +123,7 @@ export async function fetchSeoFromHtml (url) {
   } catch (error) {
     return JSON.stringify({
       error: true,
-      message: error.message
+      message: `发生错误: ${error.message}`
     })
   }
 }

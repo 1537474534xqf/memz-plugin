@@ -25,13 +25,18 @@ export default async (req, res) => {
     const seoInfoJson = await fetchSeoFromHtml(url)
     logger.debug('[memz-plugin] SEO info: ', seoInfoJson)
 
-    const seoInfo = JSON.parse(seoInfoJson)
+    let seoInfo
+    try {
+      seoInfo = JSON.parse(seoInfoJson)
+    } catch (e) {
+      throw new Error('返回的SEO信息格式无效')
+    }
 
-    if (!seoInfo || Object.keys(seoInfo).length === 0) {
-      res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' })
+    if (seoInfo.error) {
+      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
       return res.end(JSON.stringify({
-        code: 404,
-        message: '未找到该域名的SEO信息',
+        code: 500,
+        message: `查询失败: ${seoInfo.message}`,
         title: 'SEO查询',
         time,
         source: MEMZ_NAME
@@ -51,7 +56,7 @@ export default async (req, res) => {
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify({
       code: 500,
-      message: '查询失败',
+      message: `查询失败: ${error.message}`,
       title: 'SEO查询',
       time,
       error: error.message,
