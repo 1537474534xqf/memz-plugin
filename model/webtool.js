@@ -107,7 +107,10 @@ export async function checkHttpStatus (url) {
   const parsedUrl = new URL(url)
   url = parsedUrl.toString()
 
-  const browser = await puppeteer.launch({ headless: true })
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  })
   const page = await browser.newPage()
 
   try {
