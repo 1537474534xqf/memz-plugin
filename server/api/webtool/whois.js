@@ -1,7 +1,7 @@
 import whois from 'whois-json'
 import { URL } from 'url'
 import { translateWhoisData } from '#model'
-import { MEMZ_NAME, apiby } from '#components'
+import { copyright } from '#components'
 const time = new Date().toISOString()
 
 export default async (req, res) => {
@@ -20,8 +20,7 @@ export default async (req, res) => {
         message: '缺少必要的域名参数, 请在查询参数中添加domain参数',
         title: 'Whois查询',
         time,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
       return
     }
@@ -36,8 +35,7 @@ export default async (req, res) => {
         message: '未能获取到有效的WHOIS数据',
         title: 'Whois查询',
         time,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
       return
     }
@@ -53,8 +51,7 @@ export default async (req, res) => {
       title: 'Whois查询',
       time,
       data: chineseData,
-      source: MEMZ_NAME,
-      by: apiby
+      copyright
     }))
   } catch (error) {
     logger.error('[memz-plugin] 查询失败:', error)
@@ -65,8 +62,7 @@ export default async (req, res) => {
       title: 'Whois查询',
       time,
       error: error.message,
-      source: MEMZ_NAME,
-      by: apiby
+      copyright
     }))
   }
 }

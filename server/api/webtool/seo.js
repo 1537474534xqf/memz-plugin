@@ -1,6 +1,6 @@
 import { URL } from 'url'
 import { fetchSeoFromHtml } from '#model'
-import { MEMZ_NAME, apiby } from '#components'
+import { copyright } from '#components'
 
 const time = new Date().toISOString()
 
@@ -18,8 +18,7 @@ export default async (req, res) => {
         message: '缺少必要的URL参数, 请在查询参数中添加url参数',
         title: 'SEO查询',
         time,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
     }
 
@@ -40,8 +39,7 @@ export default async (req, res) => {
         message: `查询失败: ${seoInfo.message}`,
         title: 'SEO查询',
         time,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
     }
 
@@ -52,8 +50,7 @@ export default async (req, res) => {
       title: 'SEO查询',
       time,
       data: seoInfo,
-      source: MEMZ_NAME,
-      by: apiby
+      copyright
     }))
   } catch (error) {
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
@@ -63,8 +60,7 @@ export default async (req, res) => {
       title: 'SEO查询',
       time,
       error: error.message,
-      source: MEMZ_NAME,
-      by: apiby
+      copyright
     }))
   }
 }

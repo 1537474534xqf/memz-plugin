@@ -1,4 +1,4 @@
-import { MEMZ_NAME, apiby } from '#components'
+import { copyright } from '#components'
 export default async (req, res) => {
   const url = 'https://steamcharts.com/top'
   const timestamp = new Date().toISOString()
@@ -40,8 +40,7 @@ export default async (req, res) => {
         title,
         time: timestamp,
         data: rankings,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
@@ -54,8 +53,7 @@ export default async (req, res) => {
         title,
         time: timestamp,
         error: error.message,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
     }
   } else {

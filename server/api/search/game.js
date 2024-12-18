@@ -1,5 +1,5 @@
 import { searchResources, loadDataFromExcelFiles } from '#model'
-import { MEMZ_NAME, PluginData, apiby } from '#components'
+import { PluginData, copyright } from '#components'
 import path from 'path'
 
 const folderPath = path.join(PluginData, 'xlsx')
@@ -35,8 +35,7 @@ export default async (req, res) => {
         message: '缺少必要的查询参数, 请在查询参数中添加key参数',
         title: '游戏搜索',
         time,
-        source: MEMZ_NAME,
-        by: apiby
+        Copyright: copyright
       }))
     }
 
@@ -51,8 +50,7 @@ export default async (req, res) => {
         message: '未找到相关的搜索结果',
         title: '游戏搜索',
         time,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
     }
 
@@ -63,8 +61,7 @@ export default async (req, res) => {
       title: '游戏搜索',
       time,
       data: searchResults,
-      source: MEMZ_NAME,
-      by: apiby
+      copyright
     }))
   } catch (error) {
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
@@ -74,8 +71,7 @@ export default async (req, res) => {
       title: '游戏搜索',
       time,
       error: error.message,
-      source: MEMZ_NAME,
-      by: apiby
+      copyright
     }))
   }
 }

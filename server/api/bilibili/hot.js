@@ -1,4 +1,4 @@
-import { MEMZ_NAME, apiby } from '#components'
+import { copyright } from '#components'
 export default async (req, res) => {
   if (req.method === 'GET') {
     const time = new Date().toISOString()
@@ -19,8 +19,7 @@ export default async (req, res) => {
           title,
           time,
           data: parsedData,
-          source: MEMZ_NAME,
-          by: apiby
+          copyright
         }
 
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
@@ -36,8 +35,7 @@ export default async (req, res) => {
         title,
         time,
         error: error.message,
-        source: MEMZ_NAME,
-        by: apiby
+        copyright
       }))
     }
   } else {

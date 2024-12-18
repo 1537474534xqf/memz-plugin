@@ -17,6 +17,7 @@ import {
 } from './Redis.js'
 const MEMZ_NAME = 'MEMZ-Plugin'
 const { apiby } = Config.getConfig('api')
+const copyright = `Copyright © 2024-${new Date().getFullYear()} ${MEMZ_NAME} - ${apiby}`
 let BotName = Version.isTrss
   ? 'Trss-Yunzai'
   : Version.isMiao
@@ -33,7 +34,7 @@ export {
   PluginTemp,
   PluginData,
   MEMZ_NAME,
-  apiby,
+  copyright,
   BotName,
   RedisConfig,
   RedisHost,
