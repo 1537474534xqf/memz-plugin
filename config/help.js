@@ -54,6 +54,11 @@ export const helpList = [
         desc: '查询域名的SEO信息'
       },
       {
+        icon: 83,
+        title: '#ssl证书查询+域名',
+        desc: '查询网站SSL证书信息'
+      },
+      {
         icon: 84,
         title: '#网页截图+域名',
         desc: '网页截图'

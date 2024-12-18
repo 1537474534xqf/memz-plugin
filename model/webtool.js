@@ -2,6 +2,8 @@ import iconv from 'iconv-lite'
 import * as cheerio from 'cheerio'
 import axios from 'axios'
 import https from 'https'
+import tls from 'tls'
+import { URL } from 'url'
 import puppeteer from 'puppeteer'
 
 // ICP备案查询
@@ -96,6 +98,8 @@ export async function fetchSeoFromHtml (url) {
     })
   }
 }
+
+// 网页状态检查
 export async function checkHttpStatus (url) {
   let redirectCount = 0 // 跳转次数
   let responseDetails = [] // 用来保存每次请求的响应信息
@@ -176,6 +180,7 @@ export async function checkHttpStatus (url) {
     await browser.close()
   }
 }
+
 // whois 翻译
 const whoisFieldsMap = {
   domainName: '域名',
@@ -377,4 +382,57 @@ const whoisFieldsMap = {
   techContactCountryCode: '技术联系人国家代码',
   techContactEmailVerified: '技术联系人邮箱验证',
   techContactPhoneVerified: '技术联系人电话验证'
+}
+
+// SSL证书查询
+export async function fetchSslInfo (domain) {
+  let hostname = domain
+  if (!/^https?:\/\//i.test(domain)) {
+    hostname = 'https://' + domain
+  }
+
+  const parsedUrl = new URL(hostname)
+  const { hostname: host, port } = parsedUrl
+
+  // 默认使用 443 端口
+  const effectivePort = port ? parseInt(port, 10) : 443
+
+  if (isNaN(effectivePort) || effectivePort < 0 || effectivePort >= 65536) {
+    throw new Error('无效的端口号')
+  }
+
+  return new Promise((resolve, reject) => {
+    const socket = tls.connect(effectivePort, host, {
+      rejectUnauthorized: false, // 禁用证书验证
+      secureProtocol: 'TLSv1_2_method' // 强制使用 TLS 1.2
+    }, () => {
+      const certificate = socket.getPeerCertificate()
+
+      if (certificate) {
+        const certificateInfo = {
+          domain: host,
+          certificateIssuedTo: certificate.subject.CN || '我不知道', // 证书的主域名
+          issuer: certificate.issuer.O || '我不知道', // 证书的签发人
+          isValid: certificate.valid_to > new Date().toISOString(), // 是否有效
+          isExpired: new Date() > new Date(certificate.valid_to), // 是否过期
+          validFrom: certificate.valid_from || '我不知道', // 生效开始时间
+          validTo: certificate.valid_to || '我不知道', // 生效结束时间
+          signatureAlgorithm: certificate.signatureAlgorithm || '我不知道', // 签名算法
+          otherDomains: certificate.subject.altNames || [], // 其他域名
+          fingerprint: certificate.fingerprint || '我不知道', // 证书指纹信息
+          fingerprintSHA256: certificate.fingerprint256 || '我不知道' // SHA256指纹信息
+        }
+
+        resolve(certificateInfo)
+      } else {
+        reject(new Error('未能获取证书信息'))
+      }
+
+      socket.end()
+    })
+
+    socket.on('error', (err) => {
+      reject(new Error(`SSL/TLS 连接失败: ${err.message}`))
+    })
+  })
 }

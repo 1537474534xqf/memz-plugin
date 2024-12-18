@@ -1,7 +1,7 @@
 import fs from 'fs'
 import whois from 'whois-json'
 import axios from 'axios'
-import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus } from '#model'
+import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
@@ -215,9 +215,49 @@ export class WebTools extends plugin {
         {
           reg: /^#?http状态\s*(.+)/i,
           fnc: 'httpStatusCheck'
+        },
+        {
+          reg: /^#?ssl证书查询\s*(.+)/i,
+          fnc: 'SslInfo'
         }
       ]
     })
+  }
+
+  async SslInfo (e) {
+    const { SslInfoAll } = Config.getConfig('memz')
+
+    if (!SslInfoAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] SSL证书查询当前为仅主人可用')
+    }
+
+    let url = e.msg.match(/^#?ssl证书查询\s*(.+)/i)
+
+    if (!url) {
+      return await e.reply('未识别到有效的URL，请确保输入格式正确。', true)
+    }
+
+    url = url[1].trim()
+
+    try {
+      const sslInfo = await fetchSslInfo(url)
+
+      const sslInfoFormatted = `证书主域名: ${sslInfo.certificateIssuedTo}
+签发人: ${sslInfo.issuer}
+是否有效: ${sslInfo.isValid ? '有效' : '无效'}
+是否过期: ${sslInfo.isExpired ? '是' : '否'}
+生效开始时间: ${sslInfo.validFrom}
+生效结束时间: ${sslInfo.validTo}
+签名算法: ${sslInfo.signatureAlgorithm}
+其他域名: ${sslInfo.otherDomains.join(', ') || '无'}
+指纹信息: ${sslInfo.fingerprint}
+指纹信息(SHA256): ${sslInfo.fingerprintSHA256}`
+
+      await e.reply(sslInfoFormatted, true)
+    } catch (error) {
+      logger.error(`[memz-plugin] SSL证书查询失败: ${error.message}`)
+      await e.reply(`获取失败: ${error.message}`, true)
+    }
   }
 
   async DomainMinPricing (e) {

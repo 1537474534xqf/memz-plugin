@@ -10,7 +10,9 @@ import {
   // 从HTML中提取SEO信息
   fetchSeoFromHtml,
   // 检查HTTP状态码
-  checkHttpStatus
+  checkHttpStatus,
+  // 获取SSL证书信息
+  fetchSslInfo
 } from './webtool.js'
 import {
   // 从Excel文件中加载数据
@@ -30,6 +32,7 @@ export {
   translateWhoisData,
   fetchSeoFromHtml,
   checkHttpStatus,
+  fetchSslInfo,
   // Search
   loadDataFromExcelFiles,
   searchResources,
