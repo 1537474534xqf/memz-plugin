@@ -56,11 +56,11 @@ Bot.on('message.group', async (e) => {
   }
 })
 
-export class whoAtme extends plugin {
+export class GroupPlugin extends plugin {
   constructor () {
     super({
-      name: '谁艾特我',
-      dsc: '记录和查询群成员的AT信息',
+      name: '群聊功能',
+      dsc: '群聊功能',
       event: 'message',
       priority: -114514,
       rule: [
@@ -76,6 +76,10 @@ export class whoAtme extends plugin {
           reg: '^#?(/clear_all|清除全部(艾特|at)数据)$',
           fnc: 'clearAll',
           permission: 'master'
+        },
+        {
+          reg: /^[#/](一键)?召唤(全体|所有|全部|all|所有)(成员)?$/i,
+          fnc: 'atAll'
         }
       ]
     })
@@ -120,5 +124,22 @@ export class whoAtme extends plugin {
     for (const key of keys) await redis.del(key)
 
     e.reply('已成功清除本群的全部艾特数据')
+  }
+
+  async atAll (e) {
+    if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
+    if (!e.isGroup) return e.reply('只支持群聊使用', true)
+
+    let { atalltext, atChunkSize } = Config.getConfig('memz') || '🈷️吗'
+    const members = await this.e.group.getMemberMap()
+    const qqNumbers = [...members.keys()]
+
+    const atSegments = qqNumbers.map(qq => segment.at(qq)).concat(segment.text(atalltext))
+
+    for (let i = 0; i < atSegments.length; i += atChunkSize) {
+      const chunk = atSegments.slice(i, i + atChunkSize)
+      await e.reply(chunk)
+      await Bot.sleep(500)
+    }
   }
 }

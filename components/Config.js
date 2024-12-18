@@ -154,10 +154,12 @@ class Config {
     let memzconfig = this.getDefOrConfig('memz')
     let updateconfig = this.getDefOrConfig('update')
     let apiconfig = this.getDefOrConfig('api')
+    let config = this.getDefOrConfig('config')
     return {
       ...memzconfig,
       ...updateconfig,
-      ...apiconfig
+      ...apiconfig,
+      ...config
     }
   }
 

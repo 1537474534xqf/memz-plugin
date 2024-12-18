@@ -50,7 +50,7 @@ export function supportGuoba () {
         },
         {
           component: 'Divider',
-          label: '奇奇怪怪'
+          label: '群聊功能'
         },
         {
           field: 'memz.atalltext',
@@ -71,16 +71,13 @@ export function supportGuoba () {
           }
         },
         {
-          field: 'memz.AutoLike',
-          label: '自动点赞',
-          bottomHelpMessage: '每日 00:00 自动点赞',
-          component: 'Switch'
-        },
-        {
-          field: 'memz.AutoLikeList',
-          label: '自动点赞列表',
-          bottomHelpMessage: '填入QQ号,主人默认在点赞列表,无需添加',
-          component: 'GTags'
+          field: 'memz.whoAtmeTime',
+          label: '谁艾特我保留',
+          bottomHelpMessage: '谁艾特我保留时长,单位小时',
+          component: 'InputNumber',
+          componentProps: {
+            addonAfter: '小时'
+          }
         },
         {
           field: 'memz.GroupScheduler',
@@ -135,17 +132,24 @@ export function supportGuoba () {
           }
         },
         {
-          field: 'memz.whoAtmeTime',
-          label: '谁艾特我保留',
-          bottomHelpMessage: '谁艾特我保留时长,单位小时',
-          component: 'InputNumber',
-          componentProps: {
-            addonAfter: '小时'
-          }
+          component: 'Divider',
+          label: '个人功能'
+        },
+        {
+          field: 'memz.AutoLike',
+          label: '自动点赞',
+          bottomHelpMessage: '每日 00:00 自动点赞',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.AutoLikeList',
+          label: '自动点赞列表',
+          bottomHelpMessage: '填入QQ号,主人默认在点赞列表,无需添加',
+          component: 'GTags'
         },
         {
           component: 'Divider',
-          label: '仓库更新推送设置'
+          label: '仓库更新推送'
         },
         {
           field: 'update.checkupdate',
@@ -394,14 +398,35 @@ export function supportGuoba () {
       },
       setConfigData (data, { Result }) {
         let config = Config.getCfg()
+        const updateConfig = (keyPath, value) => {
+          const [rootKey, ...subKeys] = keyPath.split('.')
+          const targetConfig = config[rootKey]
 
-        for (const key in data) {
-          let split = key.split('.')
-          if (lodash.isEqual(config[split[1]], data[key])) continue
-          Config.modify(split[0], split[1], data[key])
+          if (!targetConfig) return
+          let currentConfig = targetConfig
+          let isDifferent = false
+          for (const key of subKeys.slice(0, -1)) {
+            if (currentConfig[key] !== undefined) {
+              currentConfig = currentConfig[key]
+            } else {
+              isDifferent = true
+              break
+            }
+          }
+          const lastKey = subKeys[subKeys.length - 1]
+          if (
+            isDifferent ||
+            !lodash.isEqual(currentConfig[lastKey], value)
+          ) {
+            Config.modify(rootKey, subKeys.join('.'), value)
+          }
+        }
+        for (const [key, value] of Object.entries(data)) {
+          updateConfig(key, value)
         }
         return Result.ok({}, '𝑪𝒊𝒂𝒍𝒍𝒐～(∠・ω< )⌒★')
       }
+
     }
   }
 }
