@@ -6,7 +6,7 @@ import net from 'net'
 export class PingScreenshot extends plugin {
   constructor () {
     super({
-      name: '[memz-plugin]Ping截图',
+      name: '[memz-plugin]Ping',
       dsc: 'MEMZ-Plugin-Ping',
       event: 'message',
       priority: 1,
