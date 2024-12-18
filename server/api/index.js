@@ -31,6 +31,16 @@ export default async (req, res) => {
           path: '/webtool/whois?domain=域名',
           method: 'GET',
           description: '获取域名的Whois信息'
+        },
+        {
+          path: '/webtool/icp?domain=域名',
+          method: 'GET',
+          description: '获取域名的ICP备案信息'
+        },
+        {
+          path: '/webtool/seo?url=链接',
+          method: 'GET',
+          description: '获取链接的SEO信息'
         }
       ]
     }

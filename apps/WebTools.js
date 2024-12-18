@@ -1,27 +1,8 @@
 import fs from 'fs'
 import whois from 'whois-json'
-import { generateScreenshot, fetchIcpInfo, translateWhoisData } from '#model'
+import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
-
-async function fetchSeoFromHtml (url) {
-  const response = await fetch(url)
-  const html = await response.text()
-
-  const titleMatch = html.match(/<title>(.*?)<\/title>/i)
-  const descriptionMatch = html.match(
-    /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
-  )
-  const keywordsMatch = html.match(
-    /<meta\s+name=["']keywords["']\s+content=["'](.*?)["']/i
-  )
-
-  return {
-    title: titleMatch ? titleMatch[1] : '未找到标题',
-    description: descriptionMatch ? descriptionMatch[1] : '未找到描述',
-    keywords: keywordsMatch ? keywordsMatch[1] : '未找到关键词'
-  }
-}
 
 async function encodeToUrl (msg) {
   return encodeURIComponent(msg)
@@ -139,14 +120,28 @@ export class WebTools extends plugin {
 
   async fetchSeoInfoHandler (e) {
     const { SeoAll } = Config.getConfig('memz')
-    if (!SeoAll && !e.isMaster) { return logger.warn('[memz-plugin]Seo状态当前为仅主人可用') }
-    let url = e.msg.match(/^#?seo\s*(.+)/)[1].trim()
+    if (!SeoAll && !e.isMaster) {
+      return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
+    }
+
+    let url = e.msg.match(/^#?seo\s*(.+)/)
+    if (!url) {
+      return await e.reply('未识别到有效的URL，请确保输入格式正确。', true)
+    }
+    url = url[1].trim()
+
     if (!url.startsWith('http')) {
       url = `https://${url}`
     }
 
     try {
-      const seoInfo = await fetchSeoFromHtml(url)
+      const seoInfoJson = await fetchSeoFromHtml(url)
+
+      const seoInfo = JSON.parse(seoInfoJson)
+
+      if (seoInfo.error) {
+        return await e.reply(`SEO抓取失败: ${seoInfo.message}`, true)
+      }
       const result = `SEO信息:\n页面标题: ${seoInfo.title}\n描述: ${seoInfo.description}\n关键词: ${seoInfo.keywords}`
       await e.reply(result, true)
     } catch (error) {
@@ -226,6 +221,7 @@ export class WebTools extends plugin {
     let domain = domainMatch[1].trim()
 
     domain = domain.replace(/^https?:\/\//, '').split('/')[0].split('?')[0].split('#')[0]
+    domain = domain.replace(/^www\./, '')
 
     try {
       logger.debug(`[memz-plugin] WHOIS 请求域名: ${domain}`)

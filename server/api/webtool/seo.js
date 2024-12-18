@@ -1,7 +1,7 @@
-import whois from 'whois-json'
 import { URL } from 'url'
-import { translateWhoisData } from '#model'
+import { fetchSeoFromHtml } from '#model'
 import { MEMZ_NAME } from '#components'
+
 const time = new Date().toISOString()
 
 export default async (req, res) => {
@@ -9,57 +9,49 @@ export default async (req, res) => {
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
 
-    let domain = parsedUrl.searchParams.get('domain')
-    domain = domain.replace(/^https?:\/\//, '').split('/')[0].split('?')[0].split('#')[0]
-    domain = domain.replace(/^www\./, '')
+    const url = parsedUrl.searchParams.get('url')
 
-    if (!domain) {
+    if (!url) {
       res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
+      return res.end(JSON.stringify({
         code: 400,
-        message: '缺少必要的域名参数, 请在查询参数中添加domain参数',
-        title: 'Whois查询',
+        message: '缺少必要的URL参数, 请在查询参数中添加url参数',
+        title: 'SEO查询',
         time,
         source: MEMZ_NAME
       }))
-      return
     }
 
-    const whoisData = await whois(domain)
+    const seoInfoJson = await fetchSeoFromHtml(url)
 
-    // 处理返回为空或无效数据的情况
-    if (!whoisData || Object.keys(whoisData).length === 0) {
+    const seoInfo = JSON.parse(seoInfoJson)
+
+    if (!seoInfo || Object.keys(seoInfo).length === 0) {
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
+      return res.end(JSON.stringify({
         code: 404,
-        message: '未能获取到有效的WHOIS数据',
-        title: 'Whois查询',
+        message: '未找到该域名的SEO信息',
+        title: 'SEO查询',
         time,
         source: MEMZ_NAME
       }))
-      return
     }
-
-    logger.debug(`[memz-plugin] WHOIS 数据: ${JSON.stringify(whoisData)}`)
-
-    const chineseData = await translateWhoisData(whoisData)
 
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify({
       code: 0,
       message: '查询成功',
-      title: 'Whois查询',
+      title: 'SEO查询',
       time,
-      data: chineseData,
+      data: seoInfo,
       source: MEMZ_NAME
     }))
   } catch (error) {
-    logger.error('[memz-plugin] 查询失败:', error)
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify({
       code: 500,
       message: '查询失败',
-      title: 'Whois查询',
+      title: 'SEO查询',
       time,
       error: error.message,
       source: MEMZ_NAME

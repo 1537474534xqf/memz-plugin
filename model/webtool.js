@@ -81,3 +81,41 @@ export async function translateWhoisData (data) {
     return acc
   }, {})
 }
+
+// SEO 查询
+export async function fetchSeoFromHtml (url) {
+  try {
+    if (!/^https?:\/\//i.test(url)) {
+      url = `https://${url}`
+    }
+
+    const validUrl = new URL(url)
+
+    const response = await fetch(validUrl)
+
+    if (!response.ok) {
+      throw new Error(`无法访问 URL: ${url}`)
+    }
+
+    const html = await response.text()
+
+    const titleMatch = html.match(/<title>(.*?)<\/title>/i)
+    const descriptionMatch = html.match(
+      /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
+    )
+    const keywordsMatch = html.match(
+      /<meta\s+name=["']keywords["']\s+content=["'](.*?)["']/i
+    )
+
+    return JSON.stringify({
+      title: titleMatch ? titleMatch[1] : '未找到标题',
+      description: descriptionMatch ? descriptionMatch[1] : '未找到描述',
+      keywords: keywordsMatch ? keywordsMatch[1] : '未找到关键词'
+    })
+  } catch (error) {
+    return JSON.stringify({
+      error: true,
+      message: error.message
+    })
+  }
+}
