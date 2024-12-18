@@ -172,6 +172,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'memz.icpBeianAll',
+          label: '域名备案查询',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
           field: 'memz.webpage',
           label: '网页截图',
           bottomHelpMessage: '关闭时仅主人可用',
