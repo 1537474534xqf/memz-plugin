@@ -130,11 +130,14 @@ export class GroupPlugin extends plugin {
     if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
     if (!e.isGroup) return e.reply('只支持群聊使用', true)
 
-    let { atalltext, atChunkSize } = Config.getConfig('memz') || '🈷️吗'
+    let { atalltext, atChunkSize } = Config.getConfig('memz')
     const members = await this.e.group.getMemberMap()
     const qqNumbers = [...members.keys()]
 
-    const atSegments = qqNumbers.map(qq => segment.at(qq)).concat(segment.text(atalltext))
+    const atSegments = qqNumbers.flatMap(qq => [
+      segment.at(qq),
+      segment.text(atalltext)
+    ])
 
     for (let i = 0; i < atSegments.length; i += atChunkSize) {
       const chunk = atSegments.slice(i, i + atChunkSize)

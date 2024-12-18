@@ -1,5 +1,5 @@
 import lodash from 'lodash'
-import { Config, PluginPath } from './components/index.js'
+import { Config, PluginPath } from '#components'
 
 export function supportGuoba () {
   return {
