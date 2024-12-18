@@ -194,6 +194,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'memz.httpStatusAll',
+          label: 'http状态查询',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
           field: 'memz.icpBeianAll',
           label: '域名备案查询',
           bottomHelpMessage: '关闭时仅主人可用',

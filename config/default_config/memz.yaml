@@ -19,6 +19,8 @@ atChunkSize: 40
 WhoisAll: true
 # 是否所有人可用SEO
 SeoAll: true
+# 是否所有人可用HTTP状态查询
+httpStatusAll: true
 # 是否所有人可用备案查询
 icpBeianAll: true
 # 是否所有人可用域名查询价格

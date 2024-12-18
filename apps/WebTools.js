@@ -1,7 +1,7 @@
 import fs from 'fs'
 import whois from 'whois-json'
 import axios from 'axios'
-import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml } from '#model'
+import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
@@ -174,7 +174,7 @@ export class WebTools extends plugin {
       name: 'WebTools',
       dsc: 'WebTools',
       event: 'message',
-      priority: 6,
+      priority: -1,
       rule: [
         {
           reg: '^#?seo\\s*(.+)',
@@ -211,6 +211,10 @@ export class WebTools extends plugin {
         {
           reg: /^#?域名查询\s*(\S+)$/i,
           fnc: 'DomainMinPricing'
+        },
+        {
+          reg: /^#?http状态\s*(.+)/i,
+          fnc: 'httpStatusCheck'
         }
       ]
     })
@@ -251,6 +255,23 @@ export class WebTools extends plugin {
       logger.error(`[memz-plugin] 域名查询失败: ${error.message}`)
       await e.reply(`获取失败: ${error.message}`, true)
     }
+  }
+
+  async httpStatusCheck (e) {
+    const { httpStatusAll } = Config.getConfig('memz')
+
+    if (!httpStatusAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] HTTP 状态检查功能当前为仅主人可用')
+    }
+
+    let urlMatch = e.msg.match(/^#?http状态查询\s*(.+)/i)
+    if (!urlMatch) {
+      return await e.reply('请输入有效的网址', true)
+    }
+
+    let url = urlMatch[1].trim()
+    let status = await checkHttpStatus(url)
+    e.reply(status, true)
   }
 
   async fetchSeoInfoHandler (e) {

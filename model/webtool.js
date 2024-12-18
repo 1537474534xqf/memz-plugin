@@ -2,6 +2,8 @@ import iconv from 'iconv-lite'
 import * as cheerio from 'cheerio'
 import axios from 'axios'
 import https from 'https'
+import puppeteer from 'puppeteer'
+
 // ICP备案查询
 export async function fetchIcpInfo (domain) {
   // 去掉一些奇奇怪怪的东西
@@ -38,6 +40,139 @@ export async function fetchIcpInfo (domain) {
   }
 }
 
+// whois 查询
+export async function translateWhoisData (data) {
+  return Object.entries(data).reduce((acc, [key, value]) => {
+    const translatedKey = whoisFieldsMap[key] || key
+    acc[translatedKey] =
+      typeof value === 'object' && !Array.isArray(value)
+        ? translateWhoisData(value)
+        : value
+    return acc
+  }, {})
+}
+
+// SEO 查询
+export async function fetchSeoFromHtml (url) {
+  try {
+    if (!url.startsWith('http')) {
+      url = `https://${url}`
+    }
+
+    const validUrl = new URL(url)
+    logger.debug(`[memz-plugin] SEO 查询 URL: ${validUrl.href}`)
+
+    // 忽略 SSL 验证
+    const agent = new https.Agent({
+      rejectUnauthorized: false
+    })
+
+    const response = await axios.get(validUrl.href, {
+      httpsAgent: agent,
+      timeout: 10000
+    })
+
+    if (response.status !== 200) {
+      throw new Error(`无法访问 URL: ${url} (Status: ${response.status})`)
+    }
+    const html = response.data
+    const titleMatch = html.match(/<title>(.*?)<\/title>/i)
+    const descriptionMatch = html.match(
+      /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
+    )
+    const keywordsMatch = html.match(
+      /<meta\s+name=["']keywords["']\s+content=["'](.*?)["']/i
+    )
+
+    return JSON.stringify({
+      title: titleMatch ? titleMatch[1] : '未找到标题',
+      description: descriptionMatch ? descriptionMatch[1] : '未找到描述',
+      keywords: keywordsMatch ? keywordsMatch[1] : '未找到关键词'
+    })
+  } catch (error) {
+    return JSON.stringify({
+      error: true,
+      message: `发生错误: ${error.message}`
+    })
+  }
+}
+export async function checkHttpStatus (url) {
+  let redirectCount = 0 // 跳转次数
+  let responseDetails = [] // 用来保存每次请求的响应信息
+  let visitedUrls = new Set() // 跟踪已经访问过的 URL，以防止死循环
+
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url
+  }
+  const parsedUrl = new URL(url)
+  url = parsedUrl.toString()
+
+  const browser = await puppeteer.launch({ headless: true })
+  const page = await browser.newPage()
+
+  try {
+    await page.setRequestInterception(true)
+    page.on('request', (request) => request.continue())
+
+    page.on('response', async (response) => {
+      const status = response.status()
+      const location = response.headers().location
+
+      // 检测跳转
+      if (status === 301 || status === 302) {
+        redirectCount++
+        if (visitedUrls.has(location)) {
+          throw new Error(`检测到死循环跳转: ${location}`)
+        }
+        visitedUrls.add(location)
+        return
+      }
+
+      // 收集响应信息
+      const responseBody = await response.text()
+      responseDetails.push({
+        requestUrl: response.url(),
+        status,
+        statusText: response.statusText(),
+        headers: response.headers(),
+        data: responseBody.substring(0, 300)
+      })
+    })
+
+    // 开始请求目标 URL
+    const finalResponse = await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000
+    })
+
+    if (!finalResponse.ok()) {
+      throw new Error(`请求失败，状态码: ${finalResponse.status()}`)
+    }
+
+    // 生成响应信息
+    let responseMessage = `请求 URL: ${url}\n响应状态: ${finalResponse.status()}\n→ 跳转次数: ${redirectCount} 次\n`
+
+    responseDetails.forEach((detail, index) => {
+      responseMessage += `\n第 ${index + 1} 次请求 ---> 返回 ${detail.status}\n`
+      responseMessage += `请求URL: ${detail.requestUrl}\n响应状态: ${detail.status} ${detail.statusText}\n`
+      responseMessage += `响应长度: ${detail.data.length}\n响应时间: ${new Date().toUTCString()}\n`
+      responseMessage += `服务器: ${detail.headers.server || '未知'}\n`
+      if (detail.status === 301 || detail.status === 302) {
+        responseMessage += `跳转地址: ${detail.headers.location}\n`
+      }
+    })
+
+    const finalStatus = finalResponse.status() === 200 ? '该网页可以访问' : '该网页无法访问'
+    responseMessage += `\n最终结果: ${finalStatus}`
+
+    return responseMessage
+  } catch (error) {
+    console.error('请求失败:', error.message)
+    throw new Error('请求失败，可能是由于网络问题或 URL 无效。')
+  } finally {
+    await browser.close()
+  }
+}
 // whois 翻译
 const whoisFieldsMap = {
   domainName: '域名',
@@ -239,60 +374,4 @@ const whoisFieldsMap = {
   techContactCountryCode: '技术联系人国家代码',
   techContactEmailVerified: '技术联系人邮箱验证',
   techContactPhoneVerified: '技术联系人电话验证'
-}
-
-export async function translateWhoisData (data) {
-  return Object.entries(data).reduce((acc, [key, value]) => {
-    const translatedKey = whoisFieldsMap[key] || key
-    acc[translatedKey] =
-      typeof value === 'object' && !Array.isArray(value)
-        ? translateWhoisData(value)
-        : value
-    return acc
-  }, {})
-}
-
-// SEO 查询
-export async function fetchSeoFromHtml (url) {
-  try {
-    if (!url.startsWith('http')) {
-      url = `https://${url}`
-    }
-
-    const validUrl = new URL(url)
-    logger.debug(`[memz-plugin] SEO 查询 URL: ${validUrl.href}`)
-
-    // 忽略 SSL 验证
-    const agent = new https.Agent({
-      rejectUnauthorized: false
-    })
-
-    const response = await axios.get(validUrl.href, {
-      httpsAgent: agent,
-      timeout: 10000
-    })
-
-    if (response.status !== 200) {
-      throw new Error(`无法访问 URL: ${url} (Status: ${response.status})`)
-    }
-    const html = response.data
-    const titleMatch = html.match(/<title>(.*?)<\/title>/i)
-    const descriptionMatch = html.match(
-      /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
-    )
-    const keywordsMatch = html.match(
-      /<meta\s+name=["']keywords["']\s+content=["'](.*?)["']/i
-    )
-
-    return JSON.stringify({
-      title: titleMatch ? titleMatch[1] : '未找到标题',
-      description: descriptionMatch ? descriptionMatch[1] : '未找到描述',
-      keywords: keywordsMatch ? keywordsMatch[1] : '未找到关键词'
-    })
-  } catch (error) {
-    return JSON.stringify({
-      error: true,
-      message: `发生错误: ${error.message}`
-    })
-  }
 }
