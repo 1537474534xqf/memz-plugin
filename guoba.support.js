@@ -292,12 +292,19 @@ export function supportGuoba () {
           }
         },
         {
+          field: 'api.apiby',
+          label: '署名',
+          bottomHelpMessage: '在API返回结果上加上署名',
+          component: 'Input'
+        },
+        {
           field: 'api.redisExpire',
           label: '统计数据过期时间',
           bottomHelpMessage: '单位为秒,填入0表示永不过期',
           component: 'InputNumber',
           componentProps: {
-            placeholder: '请输入过期时间'
+            placeholder: '请输入过期时间',
+            addonAfter: '秒'
           }
         },
         {

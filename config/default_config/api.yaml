@@ -2,6 +2,8 @@
 enabled: true
 #*啟動服務器的端口號
 port: 1129
+#*API署名
+apiby: 'MapleLeaf'
 #*是否啟用 HTTPS
 httpsenabled: false
 #*统计过期时间

@@ -16,6 +16,7 @@ import {
   RedisPassword
 } from './Redis.js'
 const MEMZ_NAME = 'MEMZ-Plugin'
+const { apiby } = Config.getConfig('api')
 let BotName = Version.isTrss
   ? 'Trss-Yunzai'
   : Version.isMiao
@@ -32,6 +33,7 @@ export {
   PluginTemp,
   PluginData,
   MEMZ_NAME,
+  apiby,
   BotName,
   RedisConfig,
   RedisHost,

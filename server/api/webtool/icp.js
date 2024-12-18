@@ -1,6 +1,6 @@
 import { URL } from 'url'
 import { fetchIcpInfo } from '#model'
-import { MEMZ_NAME } from '#components'
+import { MEMZ_NAME, apiby } from '#components'
 
 const time = new Date().toISOString()
 
@@ -18,7 +18,8 @@ export default async (req, res) => {
         message: '缺少必要的域名参数, 请在查询参数中添加domain参数',
         title: 'ICP备案查询',
         time,
-        source: MEMZ_NAME
+        source: MEMZ_NAME,
+        by: apiby
       }))
     }
 
@@ -32,7 +33,8 @@ export default async (req, res) => {
         message: '未找到该域名的ICP备案信息',
         title: 'ICP备案查询',
         time,
-        source: MEMZ_NAME
+        source: MEMZ_NAME,
+        by: apiby
       }))
     }
 
@@ -43,7 +45,8 @@ export default async (req, res) => {
       title: 'ICP备案查询',
       time,
       data: icpInfo,
-      source: MEMZ_NAME
+      source: MEMZ_NAME,
+      by: apiby
     }))
   } catch (error) {
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
@@ -53,7 +56,8 @@ export default async (req, res) => {
       title: 'ICP备案查询',
       time,
       error: error.message,
-      source: MEMZ_NAME
+      source: MEMZ_NAME,
+      by: apiby
     }))
   }
 }
