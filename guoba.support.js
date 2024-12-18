@@ -8,7 +8,7 @@ export function supportGuoba () {
       title: 'memz-plugin',
       author: '@MEMZJS',
       authorLink: 'https://gitee.com/memzjs',
-      link: 'https://gitee.com/memzjs/memz-plugin',
+      link: 'https://github.com/MEMZ-MapleLeaf/memz-plugin',
       isV3: true,
       isV2: false,
       description: 'Yunzai-Bot插件',
