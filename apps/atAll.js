@@ -4,7 +4,7 @@ export class 一键召唤 extends plugin {
     super({
       name: '召唤',
       dsc: '召唤',
-      event: 'message.group',
+      event: 'message',
       priority: 5000,
       rule: [
         {
@@ -16,17 +16,19 @@ export class 一键召唤 extends plugin {
   }
 
   async 召唤 (e) {
-    if (!e.isMaster) return false
-    let { atalltext } = Config.getConfig('memz') || '🈷️吗'
+    if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
+    if (!e.isGroup) return e.reply('只支持群聊使用', true)
+
+    let { atalltext, atChunkSize } = Config.getConfig('memz') || '🈷️吗'
     const members = await this.e.group.getMemberMap()
     const qqNumbers = [...members.keys()]
 
     const atSegments = qqNumbers.map(qq => segment.at(qq)).concat(segment.text(atalltext))
 
-    const chunkSize = 40
-    for (let i = 0; i < atSegments.length; i += chunkSize) {
-      const chunk = atSegments.slice(i, i + chunkSize)
+    for (let i = 0; i < atSegments.length; i += atChunkSize) {
+      const chunk = atSegments.slice(i, i + atChunkSize)
       await e.reply(chunk)
+      await Bot.sleep(500)
     }
   }
 }

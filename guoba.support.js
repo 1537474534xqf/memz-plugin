@@ -62,6 +62,15 @@ export function supportGuoba () {
           }
         },
         {
+          field: 'memz.atChunkSize',
+          label: '艾特全体分片',
+          bottomHelpMessage: '一条消息AT多少个群友,不建议太多',
+          component: 'InputNumber',
+          componentProps: {
+            addonAfter: '个'
+          }
+        },
+        {
           field: 'memz.AutoLike',
           label: '自动点赞',
           bottomHelpMessage: '每日 00:00 自动点赞',
