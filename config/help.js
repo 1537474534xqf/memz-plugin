@@ -34,6 +34,11 @@ export const helpList = [
         desc: 'IP信息查询'
       },
       {
+        icon: 85,
+        title: '#域名备案查询+域名',
+        desc: 'ICP备案查询'
+      },
+      {
         icon: 83,
         title: '#seo+域名',
         desc: '查询域名的SEO信息'

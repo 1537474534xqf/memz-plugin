@@ -1,5 +1,7 @@
 import fs from 'fs'
 import whois from 'whois-json'
+import iconv from 'iconv-lite'
+import * as cheerio from 'cheerio'
 import { generateScreenshot } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
@@ -54,7 +56,35 @@ async function fetchSeoFromHtml (url) {
     keywords: keywordsMatch ? keywordsMatch[1] : '未找到关键词'
   }
 }
+// ICP备案查询
+async function fetchIcpInfo (domain) {
+  const url = `https://whois.west.cn/icp/${domain.split('/').pop()}`
+  try {
+    const response = await fetch(url)
+    const arrayBuffer = await response.arrayBuffer()
+    // 转成gbk
+    const html = iconv.decode(Buffer.from(arrayBuffer), 'gbk')
+    // 解析HTML
+    const $ = cheerio.load(html)
+    const icpInfo = {}
 
+    // 提取
+    $('tbody tr').each((index, element) => {
+      const left = $(element).find('.table-left').text().trim()
+      const right = $(element).find('.table-right .domaininfo').text().trim()
+
+      // 丢掉空的键值对
+      if (left && right) {
+        icpInfo[left] = right
+      }
+    })
+
+    return icpInfo
+  } catch (error) {
+    console.error('Error fetching ICP info:', error)
+    throw error
+  }
+}
 async function encodeToUrl (msg) {
   return encodeURIComponent(msg)
 }
@@ -157,6 +187,10 @@ export class WebTools extends plugin {
         {
           reg: '^#?whois\\s*(.+)',
           fnc: 'Whois'
+        },
+        {
+          reg: '^#?域名备案查询\\s*(.+)',
+          fnc: 'domainIcp'
         },
         {
           reg: '^#?网页截图\\s*(\\S+.*)',
@@ -289,6 +323,45 @@ export class WebTools extends plugin {
       await e.reply(segment.image(`base64://${screenshotBuffer}`), true)
     } catch (error) {
       logger.error(`[memz-plugin] Whois查询失败: ${error.message}`)
+      await e.reply(`错误: ${error.message}`, true)
+    }
+  }
+
+  async domainIcp (e) {
+    const { icpBeianAll } = Config.getConfig('memz')
+    if (!icpBeianAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] 备案查询状态当前为仅主人可用')
+    }
+
+    const domainMatch = e.msg.match(/#?域名备案查询\s*(.+)/)
+
+    if (!domainMatch) {
+      return await e.reply('未识别到有效的域名，请确保输入格式正确。', true)
+    }
+
+    let domain = domainMatch[1].trim()
+
+    domain = domain.replace(/^https?:\/\//, '').split('/')[0].split('?')[0].split('#')[0]
+
+    try {
+      logger.debug(`[memz-plugin] 备案查询域名: ${domain}`)
+
+      const icpInfo = await fetchIcpInfo(domain)
+
+      if (Object.keys(icpInfo).length === 0) {
+        return await e.reply('未能获取到 备案 数据', true)
+      }
+
+      logger.debug(`[memz-plugin] 备案查询数据: ${JSON.stringify(icpInfo)}`)
+      let text = ''
+      for (let key in icpInfo) {
+        if (Object.prototype.hasOwnProperty.call(icpInfo, key)) {
+          text += `${key}: ${icpInfo[key]}\n`
+        }
+      }
+      await e.reply(text, true)
+    } catch (error) {
+      logger.error(`[memz-plugin] 备案查询失败: ${error.message}`)
       await e.reply(`错误: ${error.message}`, true)
     }
   }
