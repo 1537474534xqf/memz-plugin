@@ -1,5 +1,6 @@
 import { update as Update } from '../../other/update.js'
 import { PluginName, Config } from '#components'
+import { normalizeCronExpression } from '#model'
 import cfg from '../../../lib/config/config.js'
 const { autoupdate, updatecron } = Config.getConfig('update')
 export class Updates extends plugin {
@@ -50,7 +51,7 @@ export class Updates extends plugin {
 
     this.task.push({
       name: '[memz-plugin]自动更新]',
-      cron: updatecron,
+      cron: normalizeCronExpression(updatecron),
       fnc: () => this.update(this.e)
     })
   }

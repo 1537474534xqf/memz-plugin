@@ -50,8 +50,6 @@ export class Setting extends plugin {
 
     const schema = Config.getCfgSchema()
     const cfg = Config.getCfg()
-    logger.debug('[memz-plugin] schema:', schema)
-    logger.debug('[memz-plugin] cfg:', cfg)
 
     return Render.render('admin/index', { schema, cfg, isMiao: Version.isMiao }, { e, scale: 1.4 })
   }

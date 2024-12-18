@@ -1,6 +1,7 @@
 import cfg from '../../../lib/config/config.js'
 import moment from 'moment'
 import { Config } from '#components'
+import { normalizeCronExpression } from '#model'
 const { checkupdate, CUSTOM_REPOSITORY, cron } = Config.getConfig('update')
 
 const prefix = 'memz:codeUpdateTask:'
@@ -25,7 +26,7 @@ export class UpdateTask extends plugin {
     if (checkupdate) {
       this.task.push({
         name: '[memz-plugin]定时检查仓库更新',
-        cron,
+        cron: normalizeCronExpression(cron),
         fnc: () => this.UpdateTask()
       })
     }

@@ -1,5 +1,5 @@
 import { Config } from '#components'
-
+import { normalizeCronExpression } from '#model'
 const { GroupScheduler, GroupSchedulerCron } = Config.getConfig('memz')
 
 export class executeGroupScheduler extends plugin {
@@ -20,7 +20,7 @@ export class executeGroupScheduler extends plugin {
       this.task = []
       this.task.push([
         {
-          cron: GroupSchedulerCron,
+          cron: normalizeCronExpression(GroupSchedulerCron),
           name: '定时群发任务',
           fnc: () => this.executeGroupScheduler()
         }

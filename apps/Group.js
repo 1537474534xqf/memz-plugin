@@ -78,7 +78,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
-          reg: /^[#/](一键)?召唤(全体|所有|全部|all|所有)(成员)?$/i,
+          reg: /^[#/](一键)?召唤(全体|所有|全部|all)(成员)?$/i,
           fnc: 'atAll'
         }
       ]
