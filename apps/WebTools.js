@@ -142,7 +142,7 @@ export class WebTools extends plugin {
       if (seoInfo.error) {
         return await e.reply(`SEO抓取失败: ${seoInfo.message}`, true)
       }
-      const result = `SEO信息:\n页面标题: ${seoInfo.title}\n描述: ${seoInfo.description}\n关键词: ${seoInfo.keywords}`
+      const result = `---SEO信息---\n页面标题: ${seoInfo.title}\n描述: ${seoInfo.description}\n关键词: ${seoInfo.keywords}`
       await e.reply(result, true)
     } catch (error) {
       await e.reply(`抓取失败: ${error.message}`, true)

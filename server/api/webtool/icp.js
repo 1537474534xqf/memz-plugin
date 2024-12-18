@@ -23,6 +23,7 @@ export default async (req, res) => {
     }
 
     const icpInfo = await fetchIcpInfo(domain)
+    logger.debug(`[memz-plugin] 备案查询数据: ${JSON.stringify(icpInfo)}`)
 
     if (!icpInfo || Object.keys(icpInfo).length === 0) {
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' })

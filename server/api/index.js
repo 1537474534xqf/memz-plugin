@@ -41,6 +41,11 @@ export default async (req, res) => {
           path: '/webtool/seo?url=链接',
           method: 'GET',
           description: '获取链接的SEO信息'
+        },
+        {
+          path: '/search/game?key=游戏关键词',
+          method: 'GET',
+          description: '搜索单机破解游戏'
         }
       ]
     }

@@ -1,38 +1,7 @@
-import xlsx from 'xlsx'
 import path from 'node:path'
-import fs from 'fs'
 import { Config, PluginData } from '#components'
-
+import { loadDataFromExcelFiles, searchResources } from '#model'
 const folderPath = path.join(PluginData, 'xlsx')
-
-/**
- * 加载所有 Excel 文件中的数据
- * @returns {Array} 数据数组
- */
-function loadDataFromExcelFiles () {
-  return fs.readdirSync(folderPath)
-    .filter(file => file.endsWith('.xlsx'))
-    .flatMap(file => {
-      const filePath = path.join(folderPath, file)
-      const workbook = xlsx.readFile(filePath)
-      const sheet = workbook.Sheets[workbook.SheetNames[0]]
-      return xlsx.utils.sheet_to_json(sheet, {
-        header: ['ID', '关键词', '内容', '分类'],
-        defval: '',
-        range: 1
-      })
-    })
-}
-
-/**
- * 根据关键词搜索资源
- * @param {string} keyword 关键词
- * @param {Array} data 数据
- * @returns {Array} 匹配的资源
- */
-function searchResources (keyword, data) {
-  return data.filter(row => row.关键词.includes(keyword))
-}
 
 /**
  * 统计分类数量
@@ -73,7 +42,16 @@ export class Search extends plugin {
         }
       ]
     })
-    this.data = loadDataFromExcelFiles() // 初始化
+    this.initializeData()
+  }
+
+  async initializeData () {
+    try {
+      this.data = loadDataFromExcelFiles(folderPath)
+      logger.debug('[memz-plugin] xlsx文件加载成功')
+    } catch (error) {
+      logger.error('[memz-plugin] xlsx文件加载失败:', error)
+    }
   }
 
   async handleSearch (e) {
@@ -84,7 +62,9 @@ export class Search extends plugin {
     if (!keyword) return e.reply('请输入关键词进行搜索！', true)
 
     try {
-      const results = searchResources(keyword, this.data)
+      const resultsJson = searchResources(keyword, this.data)
+      const results = JSON.parse(resultsJson).matchedResources
+
       if (results.length > 0) {
         const forward = results.map(row => ({
           user_id: e.user_id,

@@ -1,38 +1,54 @@
-import { URL } from 'url'
-import { fetchSeoFromHtml } from '#model'
-import { MEMZ_NAME } from '#components'
+import { searchResources, loadDataFromExcelFiles } from '#model'
+import { MEMZ_NAME, PluginData } from '#components'
+import path from 'path'
 
+const folderPath = path.join(PluginData, 'xlsx')
 const time = new Date().toISOString()
+
+// 加载数据
+async function loadData () {
+  try {
+    const data = await loadDataFromExcelFiles(folderPath)
+    return data
+  } catch (error) {
+    throw new Error('加载数据失败: ' + error.message)
+  }
+}
+
+async function searchData (key, data) {
+  const resultsJson = searchResources(key, data)
+  const results = JSON.parse(resultsJson).matchedResources
+  return results
+}
 
 export default async (req, res) => {
   try {
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
 
-    const url = parsedUrl.searchParams.get('url')
+    const key = parsedUrl.searchParams.get('key')
 
-    if (!url) {
+    if (!key) {
       res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
       return res.end(JSON.stringify({
         code: 400,
-        message: '缺少必要的URL参数, 请在查询参数中添加url参数',
-        title: 'SEO查询',
+        message: '缺少必要的查询参数, 请在查询参数中添加key参数',
+        title: '游戏搜索',
         time,
         source: MEMZ_NAME
       }))
     }
 
-    const seoInfoJson = await fetchSeoFromHtml(url)
-    logger.debug('[memz-plugin] SEO info: ', seoInfoJson)
+    const data = await loadData()
 
-    const seoInfo = JSON.parse(seoInfoJson)
+    const searchResults = await searchData(key, data)
 
-    if (!seoInfo || Object.keys(seoInfo).length === 0) {
+    if (!searchResults || searchResults.length === 0) {
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' })
       return res.end(JSON.stringify({
         code: 404,
-        message: '未找到该域名的SEO信息',
-        title: 'SEO查询',
+        message: '未找到相关的搜索结果',
+        title: '游戏搜索',
         time,
         source: MEMZ_NAME
       }))
@@ -42,9 +58,9 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 0,
       message: '查询成功',
-      title: 'SEO查询',
+      title: '游戏搜索',
       time,
-      data: seoInfo,
+      data: searchResults,
       source: MEMZ_NAME
     }))
   } catch (error) {
@@ -52,7 +68,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: '查询失败',
-      title: 'SEO查询',
+      title: '游戏搜索',
       time,
       error: error.message,
       source: MEMZ_NAME
