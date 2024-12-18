@@ -53,6 +53,15 @@ export function supportGuoba () {
           label: '奇奇怪怪'
         },
         {
+          field: 'memz.atalltext',
+          label: '艾特全体文本',
+          bottomHelpMessage: '艾特全体后面跟的文本',
+          component: 'Input',
+          componentProps: {
+            placeholder: '请输入艾特全体文本'
+          }
+        },
+        {
           field: 'memz.AutoLike',
           label: '自动点赞',
           bottomHelpMessage: '每日 00:00 自动点赞',

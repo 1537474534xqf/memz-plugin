@@ -237,6 +237,7 @@ export class WebTools extends plugin {
         const domainAvail = await isDomainAvailable(domain)
         if (!domainAvail) {
           await e.reply('域名已被注册或不可用!', true)
+          // Whois,顺手的事
           e.msg = `#whois ${domain}`
           return this.Whois(e)
         }
