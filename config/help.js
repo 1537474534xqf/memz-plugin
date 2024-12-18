@@ -39,6 +39,11 @@ export const helpList = [
         desc: 'ICP备案查询'
       },
       {
+        icon: 86,
+        title: '#域名查询+域名/后缀',
+        desc: '域名注册商价格查询'
+      },
+      {
         icon: 83,
         title: '#seo+域名',
         desc: '查询域名的SEO信息'

@@ -178,6 +178,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'memz.DomainMinPricingAll',
+          label: '域名价格查询',
+          bottomHelpMessage: '域名常规最低价格查询(常规),关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
           field: 'memz.webpage',
           label: '网页截图',
           bottomHelpMessage: '关闭时仅主人可用',

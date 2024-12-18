@@ -17,6 +17,8 @@ WhoisAll: true
 SeoAll: true
 # 是否所有人可用备案查询
 icpBeianAll: true
+# 是否所有人可用域名查询价格
+DomainMinPricingAll: true
 # 是否所有人可用网页截图
 webpage: false
 # 是否所有人可用Ping
