@@ -51,7 +51,7 @@ Bot.on('message.group', async (e) => {
         EX: parseInt(newTTL, 10)
       })
     } catch (err) {
-      console.error(`Error processing AT data for user ${atQQ}:`, err)
+      logger.error(`Error processing AT data for user ${atQQ}:`, err)
     }
   }
 })

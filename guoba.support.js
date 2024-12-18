@@ -398,31 +398,22 @@ export function supportGuoba () {
       },
       setConfigData (data, { Result }) {
         let config = Config.getCfg()
-        const updateConfig = (keyPath, value) => {
-          const [rootKey, ...subKeys] = keyPath.split('.')
-          const targetConfig = config[rootKey]
 
-          if (!targetConfig) return
-          let currentConfig = targetConfig
-          let isDifferent = false
-          for (const key of subKeys.slice(0, -1)) {
-            if (currentConfig[key] !== undefined) {
-              currentConfig = currentConfig[key]
-            } else {
-              isDifferent = true
-              break
+        for (const key in data) {
+          let split = key.split('.')
+          let currentConfig = config
+
+          for (let i = 0; i < split.length - 1; i++) {
+            if (currentConfig[split[i]] === undefined) {
+              currentConfig[split[i]] = {}
             }
+            currentConfig = currentConfig[split[i]]
           }
-          const lastKey = subKeys[subKeys.length - 1]
-          if (
-            isDifferent ||
-            !lodash.isEqual(currentConfig[lastKey], value)
-          ) {
-            Config.modify(rootKey, subKeys.join('.'), value)
+
+          let lastKey = split[split.length - 1]
+          if (!lodash.isEqual(currentConfig[lastKey], data[key])) {
+            Config.modify(split[0], lastKey, data[key])
           }
-        }
-        for (const [key, value] of Object.entries(data)) {
-          updateConfig(key, value)
         }
         return Result.ok({}, '𝑪𝒊𝒂𝒍𝒍𝒐～(∠・ω< )⌒★')
       }
