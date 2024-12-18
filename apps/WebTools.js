@@ -161,7 +161,7 @@ export async function fetchDomainPricing (domain, order = 'new', count = 5) {
       textOutput += `数据更新时间: ${item.updatedtime}\n`
     })
 
-    textOutput += '价格仅为常规情况，以实际购买为准'
+    textOutput += '\n价格仅为常规情况，以实际购买为准'
     return textOutput
   } catch (error) {
     logger.error('获取域名注册商价格信息失败:', error.message)
@@ -236,7 +236,9 @@ export class WebTools extends plugin {
       if (isFullDomain) {
         const domainAvail = await isDomainAvailable(domain)
         if (!domainAvail) {
-          return await e.reply('域名已被注册或不可用!', true)
+          await e.reply('域名已被注册或不可用!', true)
+          e.msg = `#whois ${domain}`
+          return this.Whois(e)
         }
       }
       // 获取域名后缀
