@@ -213,7 +213,7 @@ export class WebTools extends plugin {
           fnc: 'DomainMinPricing'
         },
         {
-          reg: /^#?http状态\s*(.+)/i,
+          reg: /^#?http状态查询\s*(.+)/i,
           fnc: 'httpStatusCheck'
         },
         {
