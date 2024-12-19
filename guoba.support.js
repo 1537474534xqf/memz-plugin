@@ -323,6 +323,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'api.host',
+          label: 'API服务端地址',
+          bottomHelpMessage: '加载时显示,不填就不显示,目前无法自动绑定域名',
+          component: 'Input'
+        },
+        {
           field: 'api.port',
           label: 'API服务端口',
           bottomHelpMessage: '启动API服务时占用的端口号,不要与其他端口重复',

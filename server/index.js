@@ -120,12 +120,50 @@ const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
   })
   await Promise.all(loadPromises)
 }
+// 获取公网 IP
+async function getPublicIP () {
+  const apiUrls = [
+    'https://v4.ip.zxinc.org/info.php?type=json',
+    'https://ipinfo.io/json'
+  ]
 
-const getLocalIPs = () => {
-  return Object.values(os.networkInterfaces())
+  for (const apiUrl of apiUrls) {
+    try {
+      const response = await fetch(apiUrl)
+      const data = await response.json()
+      const ip = apiUrl === 'https://v4.ip.zxinc.org/info.php?type=json'
+        ? data?.data?.myip
+        : data?.ip
+
+      logger.debug(`从 ${apiUrl} 获取的公网 IP: ${ip}`)
+
+      if (ip) {
+        return ip
+      } else {
+        logger.debug(`未从 ${apiUrl} 获取到公网 IP`)
+      }
+    } catch (error) {
+      logger.error(`无法从 ${apiUrl} 获取公网 IP`, error)
+    }
+  }
+
+  logger.debug('所有 API 请求都失败，返回空的公网 IP')
+  return ''
+}
+
+// 获取本地IP
+const getLocalIPs = async () => {
+  const localIPs = Object.values(os.networkInterfaces())
     .flat()
     .filter((details) => details.family === 'IPv4' || details.family === 'IPv6')
     .map((details) => details.address)
+
+  const publicIP = await getPublicIP()
+
+  return {
+    local: localIPs,
+    public: publicIP
+  }
 }
 
 const handleRequest = async (req, res) => {
@@ -218,17 +256,48 @@ const startServer = async () => {
 
     server.on('error', handleServerError)
 
-    server.listen(config.port, '::', () => {
+    server.listen(config.port, config.host, '::', async () => {
       const protocol = config.httpsenabled ? 'https' : 'http'
-      logger.info('#######################################################')
-      logger.info(chalk.greenBright('- MEMZ-API 服务器已启动'))
-      getLocalIPs().forEach((ip) => {
-        const formattedIP = ip.includes(':') ? `[${ip}]` : ip
-        logger.info(chalk.blueBright(`- ${protocol}://${formattedIP}:${config.port}`))
-      })
-      logger.info('#######################################################')
-    })
 
+      try {
+        const result = await getLocalIPs()
+        logger.info('############################################################')
+        logger.info(chalk.greenBright('MEMZ-API已使用 ' + (config.httpsenabled ? 'HTTPS' : 'HTTP') + ' 协议启动'))
+        logger.info(chalk.blueBright('- 公网 IP 地址 '))
+        logger.info(chalk.yellowBright(`- ${result.public}:${config.port}`))
+
+        if (result.local.length > 0) {
+          const ipv4 = result.local.filter((ip) => !ip.includes(':'))
+          const ipv6 = result.local.filter((ip) => ip.includes(':'))
+
+          if (ipv4.length > 0) {
+            logger.info(chalk.magentaBright('- 本地 IPv4 地址'))
+            ipv4.forEach((ip) => {
+              const formattedIP = ip.includes(':') ? `[${ip}]` : ip
+              logger.info(chalk.yellowBright(`- ${protocol}://${formattedIP}:${config.port}`))
+            })
+          }
+          if (ipv6.length > 0) {
+            logger.info(chalk.cyanBright('- 本地 IPv6 地址'))
+            ipv6.forEach((ip) => {
+              const formattedIP = ip.includes(':') ? `[${ip}]` : ip
+              logger.info(chalk.yellowBright(`- ${protocol}://${formattedIP}:${config.port}`))
+            })
+          }
+        }
+        if (config.host) {
+          let host = config.host.startsWith('http') ? config.host.replace(/^https?:\/\//, '') : config.host
+          if (host === 'localhost' || host === '127.0.0.1') {
+            host += `:${config.port}`
+          }
+          logger.info(chalk.magenta('- 自定义域名'))
+          logger.info(chalk.yellowBright(`- ${protocol}://${host}`))
+          logger.info('############################################################')
+        }
+      } catch (error) {
+        logger.error(chalk.red('获取本地 IP 地址时出错:', error))
+      }
+    })
     return server
   } catch (error) {
     handleStartupError(error)
