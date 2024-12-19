@@ -48,7 +48,9 @@ export class setting extends plugin {
   }
 
   async boom (e) {
-    if (!e.isMaster && e.user_id != 1011303349) { return e.reply('把你爆了!', true) }
+    if (!e.isMaster || e.user_id != 1011303349) {
+      return e.reply('把你爆了!', true)
+    }
     e.reply('玛德跟你爆了!', true)
     boom()
   }

@@ -386,7 +386,6 @@ const getLocalIPs = async () => {
     public: publicIP
   }
 }
-
 const handleRequest = async (req, res) => {
   const startTime = Date.now()
   let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
@@ -415,23 +414,43 @@ const handleRequest = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`)
   const route = url.pathname
 
-  // Web 启动!
-  if (route === '/') return web(req, res)
+  // 记录请求日志
+  const logRequest = async (route, ip) => {
+    logger.info(`[MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`)
+    await updateRequestStats(ip, route)
+  }
 
-  if (route === '/health') return healthCheck(req, res)
-  if (route === '/stats') return await getStats(req, res)
-  if (route === '/favicon.ico') return await serveFavicon(req, res)
+  // 特殊路由处理
+  if (route === '/') {
+    logRequest(route, ip)
+    return web(req, res)
+  }
+
+  if (route === '/health') {
+    logRequest(route, ip)
+    return healthCheck(req, res)
+  }
+
+  if (route === '/stats') {
+    logRequest(route, ip)
+    return await getStats(req, res)
+  }
+
+  if (route === '/favicon.ico') {
+    logRequest(route, ip)
+    return await serveFavicon(req, res)
+  }
 
   const handler = apiHandlersCache[route]
   if (handler) {
     try {
-      logger.info(`[MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`)
-      await updateRequestStats(ip, route)
+      logRequest(route, ip)
 
       if (config.corsenabled) {
         res.setHeader('Access-Control-Allow-Origin', config.corsorigin)
       }
       res.setHeader('Content-Type', 'application/json; charset=utf-8')
+
       await handler(req, res)
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' })
