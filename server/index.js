@@ -105,6 +105,8 @@ const web = (req, res) => {
 
         /* API 服务列表容器 */
         .api-list {
+          position: relative;
+          display: flex;
           width: 90%;
           max-width: 1200px;
           padding: 20px;
@@ -227,7 +229,6 @@ const web = (req, res) => {
     </head>
     <body>
       <div class="container">
-        <h1>API 服务列表</h1>
   `
   const cardsHtml = apiList.map(api => {
     const apiName = escapeHtml(api.name)
