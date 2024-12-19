@@ -324,7 +324,13 @@ export function supportGuoba () {
         },
         {
           field: 'api.host',
-          label: 'API服务端地址',
+          label: 'host',
+          bottomHelpMessage: '0.0.0.0 表示监听所有IP(公网可访问)',
+          component: 'Input'
+        },
+        {
+          field: 'api.apidomain',
+          label: 'API自定义域名',
           bottomHelpMessage: '加载时显示,不填就不显示,目前无法自动绑定域名',
           component: 'Input'
         },

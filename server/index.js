@@ -256,7 +256,7 @@ const startServer = async () => {
 
     server.on('error', handleServerError)
 
-    server.listen(config.port, config.host, '::', async () => {
+    server.listen(config.port, config.host || '0.0.0.0', '::', async () => {
       const protocol = config.httpsenabled ? 'https' : 'http'
 
       try {
@@ -285,19 +285,20 @@ const startServer = async () => {
             })
           }
         }
-        if (config.host) {
-          let host = config.host.startsWith('http') ? config.host.replace(/^https?:\/\//, '') : config.host
-          if (host === 'localhost' || host === '127.0.0.1') {
-            host += `:${config.port}`
+        if (config.apidomain) {
+          let apidomain = config.apidomain.startsWith('http') ? config.apidomain.replace(/^https?:\/\//, '') : config.apidomain
+          if (apidomain === 'localhost' || apidomain === '127.0.0.1') {
+            apidomain += `:${config.port}`
           }
           logger.info(chalk.magenta('- 自定义域名'))
-          logger.info(chalk.yellowBright(`- ${protocol}://${host}`))
+          logger.info(chalk.yellowBright(`- ${protocol}://${apidomain}`))
           logger.info('############################################################')
         }
       } catch (error) {
         logger.error(chalk.red('获取本地 IP 地址时出错:', error))
       }
     })
+
     return server
   } catch (error) {
     handleStartupError(error)

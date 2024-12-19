@@ -9,7 +9,7 @@ function boom () {
   let leakArray = []
   for (let i = 0; i < Infinity; i++) {
     leakArray.push(new Array(1000).fill('leak'))
-    logger.warn(`当前泄漏的数组数量: ${leakArray.length}`)
+    logger.warn(`[内存泄露]当前泄漏的数组数量: ${leakArray.length}`)
   }
 }
 
@@ -30,17 +30,25 @@ export class setting extends plugin {
           fnc: 'help'
         },
         {
-          reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥)$/i,
-          fnc: 'boom'
+          reg: /^#?memz(感谢|🙏|关心|高兴|关系|爆炸|💥|不知|不准|标准|霸占)$/i,
+          fnc: '你干嘛'
         }
+        // {
+        //   reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥|boom)[!！]$/i,
+        //   fnc: 'boom'
+        // }
       ]
     })
   }
 
   async boom (e) {
-    if (!e.isMaster) { return e.reply('把你爆了!', true) }
+    if (!e.isMaster && e.user_id != 1011303349) { return e.reply('把你爆了!', true) }
     e.reply('玛德跟你爆了!', true)
     boom()
+  }
+
+  async 你干嘛 (e) {
+    e.reply('谁问你了', true)
   }
 
   async help (e) {

@@ -1,7 +1,9 @@
 #*是否开启API服务端
 enabled: true
 #*API服务端地址
-host: "localhost"
+host: "0.0.0.0"
+#*API自定义域名
+apidomain: "localhost"
 #*啟動服務器的端口號
 port: 1129
 #*API署名

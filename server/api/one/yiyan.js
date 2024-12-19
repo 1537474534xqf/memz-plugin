@@ -2,7 +2,7 @@ import { PluginData, copyright } from '#components'
 import { getRandomYiyan } from '#model'
 import path from 'path'
 
-const yiyanFilePath = path.join(PluginData, 'api', 'one', 'yiyan.txt')
+const yiyanFilePath = path.join(PluginData, 'one', 'yiyan.txt')
 
 export default async (req, res) => {
   try {
