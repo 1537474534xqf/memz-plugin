@@ -350,6 +350,12 @@ export function supportGuoba () {
           component: 'Input'
         },
         {
+          field: 'api.token',
+          label: '鉴权Token',
+          bottomHelpMessage: '在需要鉴权的API中需要传入此参数,留空则鉴权失败',
+          component: 'Input'
+        },
+        {
           field: 'api.redisExpire',
           label: '统计数据过期时间',
           bottomHelpMessage: '单位为秒,填入0表示永不过期',
@@ -409,6 +415,88 @@ export function supportGuoba () {
           componentProps: {
             placeholder: '请求数',
             addonAfter: '次'
+          }
+        },
+        {
+          field: 'api.apiList',
+          label: 'API列表',
+          component: 'GSubForm',
+          componentProps: {
+            multiple: true,
+            schemas: [
+              {
+                field: 'name',
+                label: 'API名字',
+                component: 'Input',
+                required: true
+              },
+              {
+                field: 'path',
+                label: '路由',
+                component: 'Input',
+                required: true
+              },
+              {
+                field: 'key',
+                label: '参数',
+                component: 'GSubForm',
+                componentProps: {
+                  multiple: true,
+                  schemas: [
+                    {
+                      field: 'name',
+                      label: '名称',
+                      component: 'Input',
+                      required: true
+                    },
+                    {
+                      field: 'type',
+                      label: '参数类型',
+                      component: 'RadioGroup',
+                      componentProps: {
+                        options: [
+                          { label: '字符串', value: 'string' },
+                          { label: '数字', value: 'number' }
+                        ]
+                      }
+                    },
+                    {
+                      field: 'required',
+                      label: '是否必须传入',
+                      component: 'Switch'
+                    },
+                    {
+                      field: 'description',
+                      label: '描述',
+                      component: 'Input'
+                    }
+                  ]
+                }
+              },
+              {
+                field: 'method',
+                label: '请求类型',
+                component: 'RadioGroup',
+                required: true,
+                componentProps: {
+                  options: [
+                    { label: 'GET', value: 'GET' },
+                    { label: 'POST', value: 'POST' }
+                  ]
+                }
+              },
+              {
+                field: 'description',
+                label: '描述',
+                component: 'Input'
+              },
+              {
+                field: 'authentication',
+                label: '鉴权',
+                bottomHelpMessage: '鉴权的接口需要传入token',
+                component: 'Switch'
+              }
+            ]
           }
         }
       ],

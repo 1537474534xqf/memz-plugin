@@ -26,7 +26,7 @@ export default async (req, res) => {
       type = 'json'
     }
 
-    const randomYiyan = getRandomYiyan(type, yiyanFilePath)
+    const randomYiyan = await getRandomYiyan(type, yiyanFilePath)
     logger.debug(`[MEMZ-API] 随机一言：${JSON.stringify(randomYiyan)}`)
 
     if (!randomYiyan) {
