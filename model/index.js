@@ -18,7 +18,9 @@ import {
   // 从Excel文件中加载数据
   loadDataFromExcelFiles,
   // 搜索资源
-  searchResources
+  searchResources,
+  // 磁力搜索
+  performCiliSearch
 } from './Search.js'
 import {
   // 规范化cron表达式
@@ -29,8 +31,8 @@ import {
   getRandomYiyan
 } from './one.js'
 import {
-  // 从Markdown文件中获取图片的base64编码
-  getMarkdownImageBase64FromFile
+  // 将Markdown文件转换图片
+  getMarkdownToImage
 } from './markdown.js'
 export {
   // 截图
@@ -44,10 +46,11 @@ export {
   // Search
   loadDataFromExcelFiles,
   searchResources,
+  performCiliSearch,
   // cron
   normalizeCronExpression,
   // 随机一?函数
   getRandomYiyan,
   // Markdown
-  getMarkdownImageBase64FromFile
+  getMarkdownToImage
 }

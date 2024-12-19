@@ -12,7 +12,7 @@ const tplFile = `${htmlDir}Markdown.html`
  * @param {string} filePath 文件路径，可以是本地路径或URL
  * @returns {Promise<string>} 返回图片
  */
-export async function getMarkdownImageBase64FromFile (filePath) {
+export async function getMarkdownToImage (filePath) {
   // 处理URL下载文件
   if (/^https?:\/\//.test(filePath)) {
     const localFilePath = `${process.cwd()}/data/cache.md`

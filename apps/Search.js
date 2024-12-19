@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { Config, PluginData } from '#components'
-import { loadDataFromExcelFiles, searchResources } from '#model'
+import { loadDataFromExcelFiles, searchResources, performCiliSearch } from '#model'
 const folderPath = path.join(PluginData, 'xlsx')
 
 /**
@@ -100,30 +100,19 @@ export class Search extends plugin {
   async CiliSearch (e) {
     const { SearchMagnet } = Config.getConfig('memz')
     if (!SearchMagnet && !e.isMaster) return logger.warn('[memz-plugin]磁力搜索状态当前为仅主人可用')
+
     const msg = e.msg
-    const searchQuery = msg.match(/^#?磁力搜索\s*(.+)$/)[1]
+    const searchQuery = msg.match(/^#?磁力搜索\s*(.+)$/)?.[1]
+
     if (!searchQuery) {
       return await e.reply('请输入有效的搜索关键词！', true)
     }
-    const url = `https://cili.site/search?q=${encodeURIComponent(searchQuery)}`
+
     try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error('请求失败，状态码：' + response.status)
-      }
-      const data = await response.text()
-      const results = []
-      const regex = /<tr>[\s\S]*?<td>[\s\S]*?<a href="([^"]+)">[\s\S]*?<p class="sample">([^<]+)<\/p>[\s\S]*?<\/a>[\s\S]*?<\/td>[\s\S]*?<td class="td-size">([^<]+)<\/td>/g
-      let match
-      while ((match = regex.exec(data)) !== null) {
-        const link = `https://cili.site${match[1]}`
-        const title = match[2].trim()
-        const size = match[3].trim()
-        results.push({ title, size, link })
-      }
+      const results = await performCiliSearch(searchQuery)
 
       if (results.length > 0) {
-        const forward = results.map((row) => ({
+        const forward = results.map(row => ({
           user_id: 2173302144,
           nickname: '为什么不玩原神',
           message: [

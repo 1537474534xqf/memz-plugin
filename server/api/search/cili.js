@@ -1,27 +1,7 @@
-import { searchResources, loadDataFromExcelFiles } from '#model'
-import { PluginData, copyright } from '#components'
-import path from 'path'
-
-const folderPath = path.join(PluginData, 'xlsx')
-
-// 加载数据
-async function loadData () {
-  try {
-    const data = await loadDataFromExcelFiles(folderPath)
-    return data
-  } catch (error) {
-    throw new Error('加载数据失败: ' + error.message)
-  }
-}
-
-async function searchData (key, data) {
-  const resultsJson = searchResources(key, data)
-  const results = JSON.parse(resultsJson).matchedResources
-  return results
-}
-
+import { performCiliSearch } from '#model'
+import { copyright } from '#components'
 export default async (req, res) => {
-  let time = new Date().toISOString()
+  const time = new Date().toISOString()
   try {
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
@@ -33,22 +13,20 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 400,
         message: '缺少必要的查询参数, 请在查询参数中添加key参数',
-        title: '游戏搜索',
+        title: '磁力搜索',
         time,
-        Copyright: copyright
+        copyright
       }))
     }
 
-    const data = await loadData()
-
-    const searchResults = await searchData(key, data)
+    const searchResults = await performCiliSearch(key)
 
     if (!searchResults || searchResults.length === 0) {
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' })
       return res.end(JSON.stringify({
         code: 404,
         message: '未找到相关的搜索结果',
-        title: '游戏搜索',
+        title: '磁力搜索',
         time,
         copyright
       }))
@@ -58,7 +36,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 0,
       message: '查询成功',
-      title: '游戏搜索',
+      title: '磁力搜索',
       time,
       data: searchResults,
       copyright
@@ -68,7 +46,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: '查询失败',
-      title: '游戏搜索',
+      title: '磁力搜索',
       time,
       error: error.message,
       copyright

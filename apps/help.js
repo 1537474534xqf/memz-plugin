@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import path from 'path'
 import { Render, Config, PluginPath } from '#components'
-import { getMarkdownImageBase64FromFile } from '#model'
+import { getMarkdownToImage } from '#model'
 import { helpCfg, helpList, ApihelpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 
@@ -58,7 +58,7 @@ export class setting extends plugin {
   async version (e) {
     try {
       let changelogPath = path.join(PluginPath, 'CHANGELOG.md')
-      let img = await getMarkdownImageBase64FromFile(changelogPath)
+      let img = await getMarkdownToImage(changelogPath)
       await e.reply(img, true)
     } catch (error) {
       logger.error(`[memz-plugin]获取版本信息时发生错误: ${error.message}`)

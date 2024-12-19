@@ -91,3 +91,13 @@ apiList:
     method: 'GET'
     description: '搜索单机破解游戏'
     authentication: false
+  - name: '磁力搜索'
+    path: '/search/cili'
+    key:
+      - name: 'key'
+        type: 'string'
+        required: true
+        description: '磁力搜索关键词'
+    method: 'GET'
+    description: '搜索磁力资源'
+    authentication: false

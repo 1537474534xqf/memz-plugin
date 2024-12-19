@@ -507,7 +507,7 @@ const startServer = async () => {
         logger.info('############################################################')
         logger.info(chalk.greenBright('MEMZ-API已使用 ' + (config.httpsenabled ? 'HTTPS' : 'HTTP') + ' 协议启动'))
         logger.info(chalk.blueBright('- 公网 IP 地址 '))
-        logger.info(chalk.yellowBright(`- ${result.public}:${config.port}`))
+        logger.info(chalk.yellowBright(`- ${protocol}://${result.public}:${config.port}`))
 
         if (result.local.length > 0) {
           const ipv4 = result.local.filter((ip) => !ip.includes(':'))

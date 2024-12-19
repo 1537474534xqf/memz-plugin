@@ -6,7 +6,7 @@ import path from 'node:path'
  * 加载所有 Excel 文件中的数据
  * @returns {Array} 数据数组
  */
-export function loadDataFromExcelFiles (folderPath) {
+export async function loadDataFromExcelFiles (folderPath) {
   return fs.readdirSync(folderPath)
     .filter(file => file.endsWith('.xlsx')) // 只加载 .xlsx 文件
     .flatMap(file => {
@@ -33,7 +33,7 @@ export function loadDataFromExcelFiles (folderPath) {
  * @param {Array} data 数据
  * @returns {Object} 返回包含匹配资源的JSON对象
  */
-export function searchResources (keyword, data) {
+export async function searchResources (keyword, data) {
   // 如果关键词小于3个字符不进行模糊搜索
   if (keyword.length < 3) {
     const result = data.filter(row =>
@@ -59,4 +59,33 @@ export function searchResources (keyword, data) {
   })
 
   return JSON.stringify({ matchedResources: result })
+}
+
+/**
+ * 执行磁力搜索
+ * @param {string} searchQuery 搜索关键词
+ * @returns {Promise<Array>} 返回搜索结果数组
+ */
+export async function performCiliSearch (searchQuery) {
+  const url = `https://cili.site/search?q=${encodeURIComponent(searchQuery)}`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error('请求失败，状态码：' + response.status)
+    }
+    const data = await response.text()
+    const results = []
+    const regex = /<tr>[\s\S]*?<td>[\s\S]*?<a href="([^"]+)">[\s\S]*?<p class="sample">([^<]+)<\/p>[\s\S]*?<\/a>[\s\S]*?<\/td>[\s\S]*?<td class="td-size">([^<]+)<\/td>/g
+    let match
+    while ((match = regex.exec(data)) !== null) {
+      const link = `https://cili.site${match[1]}`
+      const title = match[2].trim()
+      const size = match[3].trim()
+      results.push({ title, size, link })
+    }
+
+    return results
+  } catch (error) {
+    throw new Error('获取数据时出错: ' + error.message)
+  }
 }
