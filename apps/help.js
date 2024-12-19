@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Render, Version, Config } from '#components'
+import { Render, Config } from '#components'
 import { helpCfg, helpList, ApihelpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 
@@ -13,10 +13,6 @@ export class setting extends plugin {
       priority: 1,
       rule: [
         {
-          reg: /^#?memz(版本|version)(信息)?$/i,
-          fnc: 'version'
-        },
-        {
           reg: /^#?(memz)?(api|接口)(帮助|help|菜单|幫助|菜單)$/i,
           fnc: 'apihelp'
         },
@@ -26,20 +22,6 @@ export class setting extends plugin {
         }
       ]
     })
-  }
-
-  async version (e) {
-    return await Render.render(
-      'help/version-info',
-      {
-        currentVersion: Version.version,
-        changelogs: Version.changelogs,
-        elem: 'cryo'
-      },
-      {
-        e, scale: 1.2
-      }
-    )
   }
 
   async help (e) {

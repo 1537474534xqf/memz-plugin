@@ -26,7 +26,7 @@ const Render = {
           sys: {
             scale: scale(cfg.scale || 1)
           },
-          copyright: `Created By ${BotName}<span class="version">${Version.yunzai}</span> & ${PluginName}<span class="version">${data.pluginVersion || Version.version}</span>`,
+          copyright: `Created By ${BotName}<span class="version">${Version.yunzai}</span> & ${PluginName}<span class="version">${data.pluginVersion || Version.latestVersion}</span>`,
           pageGotoParams: {
             waitUntil: 'networkidle2'
           }
