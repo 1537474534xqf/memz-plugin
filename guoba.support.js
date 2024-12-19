@@ -418,6 +418,25 @@ export function supportGuoba () {
           }
         },
         {
+          field: 'api.maxFailAttempts',
+          label: '限制失败次数',
+          bottomHelpMessage: '鉴权时每个时间窗口内最大请求次数',
+          component: 'InputNumber',
+          componentProps: {
+            placeholder: '请求数',
+            addonAfter: '次'
+          }
+        },
+        {
+          field: 'api.timeWindow',
+          label: '鉴权时间窗口',
+          bottomHelpMessage: '鉴权时每个时间窗口内最大请求次数',
+          component: 'InputNumber',
+          componentProps: {
+            addonAfter: '毫秒'
+          }
+        },
+        {
           field: 'api.apiList',
           label: 'API列表',
           component: 'GSubForm',

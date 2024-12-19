@@ -22,10 +22,11 @@ const apiHandlersCache = {}
 const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
 const REDIS_STATS_KEY = 'MEMZ/API'
 
+// 日志记录
 const updateRequestStats = async (ip, route) => {
   const normalizedIp = ip.replace(/:/g, '.')
 
-  const ipKey = `${REDIS_STATS_KEY}:${normalizedIp}`
+  const ipKey = `${REDIS_STATS_KEY}:Stats:${normalizedIp}`
 
   const pipeline = redis.multi()
 
@@ -42,8 +43,72 @@ const updateRequestStats = async (ip, route) => {
     logger.error(chalk.red(`[MEMZ-API] [请求统计错误] 更新统计失败: IP=${ip}, Route=${route}, 错误=${err.message}`))
   }
 }
+/**
+ * 鉴权并检查 IP 是否黑名单
+ * @param {Object} req 请求对象
+ * @param {Object} res 响应对象
+ * @param {string} token 请求中的 token
+ * @returns {Promise<boolean>} 如果鉴权失败返回 false，否则返回 true
+ */
+export const checkAuthAndBlacklist = async (req, res, token) => {
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
+  // IP黑名单检查
+  const blacklisted = await redis.sismember(`${REDIS_STATS_KEY}:blacklistedIPs`, ip)
+  if (blacklisted) {
+    res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' })
+    res.end(JSON.stringify({ error: '您的IP已被黑名单限制访问' }))
+    return false
+  }
+
+  // 检查失败次数
+  const failKey = `${REDIS_STATS_KEY}:fail_attempts:${ip}`
+  const failData = await redis.hgetall(failKey)
+
+  // 获取失败次数
+  let failCount = 0
+  if (failData && failData.count) {
+    failCount = parseInt(failData.count, 10)
+  }
+
+  // 如果失败次数达到设定次数且时间在设定窗口内，则返回限制
+  if (failCount >= config.maxFailAttempts && Date.now() - failData.timestamp < config.timeWindow) {
+    res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' })
+    res.end(JSON.stringify({ error: `多次失败尝试，您的IP已被临时限制访问（超过 ${config.maxFailAttempts} 次失败，限制时长 ${config.timeWindow / 1000 / 60} 分钟）` }))
+    return false
+  }
+
+  // token 验证
+  if (token !== config.token) {
+    if (failData) {
+      failCount = failCount + 1
+      await redis.hset(failKey, 'count', failCount, 'timestamp', Date.now())
+    } else {
+      await redis.hset(failKey, 'count', 1, 'timestamp', Date.now())
+    }
+
+    res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' })
+    res.end(JSON.stringify({ error: '无效的访问令牌' }))
+    return false
+  }
+
+  if (failData) {
+    await redis.del(failKey)
+  }
+
+  return true
+}
+
+// 获取统计信息
 const getStats = async (req, res) => {
+  const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
+  const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
+
+  const token = parsedUrl.searchParams.get('token')
+
+  const isAuthorized = await checkAuthAndBlacklist(req, res, token)
+  if (!isAuthorized) return
+
   try {
     const keys = await redis.keys(`${REDIS_STATS_KEY}:*`)
     const statsPromises = keys.map(async (key) => ({
@@ -60,6 +125,7 @@ const getStats = async (req, res) => {
   }
 }
 
+// 简单的前端处理
 const escapeHtml = (str) => {
   return str.replace(/[&<>"']/g, (match) => {
     const escapeMap = {
@@ -73,6 +139,7 @@ const escapeHtml = (str) => {
   })
 }
 
+// 前端页面
 const web = (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
 
@@ -282,6 +349,7 @@ const web = (req, res) => {
   res.end(htmlContent)
 }
 
+// 健康检查
 const healthCheck = (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
   res.end(
@@ -292,6 +360,7 @@ const healthCheck = (req, res) => {
   )
 }
 
+// 获取favicon
 const serveFavicon = async (req, res) => {
   try {
     const faviconPath = path.join(PluginPath, 'server', 'favicon.ico')
@@ -305,6 +374,7 @@ const serveFavicon = async (req, res) => {
   }
 }
 
+// 加载 API 服务
 const loadApiHandler = async (filePath, routePrefix = '') => {
   const route = `${routePrefix}/${path.basename(filePath, '.js')}`
   const startTime = Date.now()
@@ -329,6 +399,7 @@ const loadApiHandler = async (filePath, routePrefix = '') => {
   }
 }
 
+// 递归加载 API 服务
 const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
   const entries = await fs.readdir(directory, { withFileTypes: true })
   const loadPromises = entries.map(async (entry) => {
@@ -386,6 +457,7 @@ const getLocalIPs = async () => {
     public: publicIP
   }
 }
+// 处理请求
 const handleRequest = async (req, res) => {
   const startTime = Date.now()
   let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
@@ -467,6 +539,7 @@ const handleRequest = async (req, res) => {
   logger.info(`[MEMZ-API] [请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`)
 }
 
+// 启动服务
 const startServer = async () => {
   try {
     const startTime = Date.now()
@@ -548,6 +621,7 @@ const startServer = async () => {
   }
 }
 
+// 处理服务器错误
 const handleServerError = (error) => {
   const errorMessages = {
     EADDRINUSE: `端口 ${config.port} 已被占用，请修改配置文件中的端口号或关闭占用该端口的程序。`,
@@ -557,6 +631,7 @@ const handleServerError = (error) => {
   logger.error(chalk.red(message))
 }
 
+// 处理启动错误
 const handleStartupError = (error) => {
   if (error.code === 'ENOENT') {
     logger.error(`[MEMZ-API] 文件未找到: ${error.path}。请检查配置文件中的路径是否正确。`)

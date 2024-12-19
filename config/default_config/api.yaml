@@ -25,6 +25,10 @@ rateLimitwindowMs: 60000 #*时间窗口，单位为毫秒
 rateLimitmax: 100 #*每秒最大请求数
 #*鉴权token
 token: "为什么不玩原神"
+#*鉴权在时间窗口内最大失败次数
+maxFailAttempts: 5
+#*鉴权时间窗口
+timeWindow: 600000 #*单位为毫秒
 #*黑名单 IP 列表
 blacklistedIPs: []
 #*白名单 IP 列表
@@ -100,4 +104,14 @@ apiList:
         description: '磁力搜索关键词'
     method: 'GET'
     description: '搜索磁力资源'
+    authentication: false
+  - name: '随机一言'
+    path: '/one/yiyan'
+    key:
+      - name: 'type'
+        type: 'string'
+        required: false
+        description: '类型，可选：json、text'
+    method: 'GET'
+    description: '获取随机一言'
     authentication: false
