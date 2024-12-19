@@ -9,7 +9,6 @@ import Redis from 'ioredis'
 import { PluginPath } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
-
 const redis = new Redis({
   host: RedisConfig.host,
   port: RedisConfig.port,
@@ -59,6 +58,227 @@ const getStats = async (req, res) => {
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify({ error: '获取统计信息失败', details: err.message }))
   }
+}
+
+const escapeHtml = (str) => {
+  return str.replace(/[&<>"']/g, (match) => {
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }
+    return escapeMap[match]
+  })
+}
+
+const web = (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+
+  let { apiList } = Config.getConfig('api')
+
+  let htmlContent = `
+    <html>
+    <head>
+      <title>MEMZ-API 服务列表</title>
+      <style>
+        /* 页面整体样式 */
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background-color: #f4f7fc;
+          background-image: url('https://image.admilk.us.kg/image/imgs/20241213144637342.png'); /* 背景图像 */
+          background-size: cover;
+          background-position: center center;
+          background-attachment: fixed;
+          background-repeat: no-repeat;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          min-height: 100vh;
+          overflow-x: hidden;
+          overflow-y: auto;
+          box-sizing: border-box;
+        }
+
+        /* API 服务列表容器 */
+        .api-list {
+          width: 90%;
+          max-width: 1200px;
+          padding: 20px;
+          background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+          border-radius: 12px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          backdrop-filter: blur(10px); /* 适度模糊效果 */
+          margin-top: 20px;
+          text-align: center;
+        }
+
+        /* 卡片容器 */
+        .card-container {
+          display: flex;
+          flex-wrap: wrap; /* 使卡片可以换行 */
+          gap: 20px; /* 卡片之间的间隔 */
+          justify-content: center; /* 居中排列卡片 */
+          margin-top: 20px;
+        }
+
+        /* 卡片样式 */
+        .card {
+          background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          width: calc(33.33% - 20px); /* 每行显示3个卡片，减去间隙 */
+          margin-bottom: 30px;
+          padding: 20px;
+          backdrop-filter: blur(10px); /* 模糊效果 */
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-8px); /* 卡片悬浮效果 */
+          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 标题样式 */
+        h1 {
+          color: #333;
+          margin-bottom: 40px;
+          font-size: 28px;
+          font-weight: bold;
+        }
+
+        /* 卡片标题样式 */
+        .card h2 {
+          margin: 0;
+          font-size: 24px;
+          color: #333;
+        }
+
+        /* 卡片描述文本 */
+        .card p {
+          font-size: 16px;
+          color: #555;
+          line-height: 1.6;
+          margin: 10px 0;
+        }
+
+        /* 认证样式 */
+        .card .auth {
+          font-size: 14px;
+          color: #888;
+        }
+
+        /* 请求参数样式 */
+        .key {
+          margin-top: 20px;
+          padding: 10px;
+          background-color: #f9f9f9;
+          border-radius: 6px;
+          border: 1px solid #ddd;
+        }
+
+        .key p {
+          margin: 5px 0;
+          font-size: 14px;
+          color: #666;
+        }
+
+        .key strong {
+          color: #333;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+          .card {
+            width: calc(50% - 20px); /* 平板显示每行2个卡片 */
+          }
+
+          h1 {
+            font-size: 24px; /* 调整标题大小 */
+          }
+        }
+
+        /* 更小屏幕适配 */
+        @media (max-width: 480px) {
+          .card {
+            width: 100%; /* 手机屏幕显示每行1个卡片 */
+          }
+
+          h1 {
+            font-size: 20px;
+          }
+
+          .card h2 {
+            font-size: 20px;
+          }
+
+          .card p {
+            font-size: 14px;
+          }
+
+          .key p {
+            font-size: 12px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>API 服务列表</h1>
+  `
+  const cardsHtml = apiList.map(api => {
+    const apiName = escapeHtml(api.name)
+    const apiPath = escapeHtml(api.path)
+    const apiMethod = escapeHtml(api.method)
+    const apiDescription = escapeHtml(api.description)
+    const auth = api.authentication ? '需要认证' : '不需要认证'
+
+    let keyHtml = ''
+    if (api.key && api.key.length > 0) {
+      keyHtml = `
+        <div class="key"><strong>请求参数:</strong>
+        ${api.key.map(param => {
+          const paramName = escapeHtml(param.name)
+          const paramDescription = escapeHtml(param.description)
+          const paramType = escapeHtml(param.type)
+          const paramRequired = param.required ? '是' : '否'
+          return `
+            <p><strong>${paramName}:</strong> ${paramDescription} (类型: ${paramType}, 必填: ${paramRequired})</p>
+          `
+        }).join('')}
+        </div>
+      `
+    }
+
+    return `
+      <div class="card">
+        <h2>${apiName}</h2>
+        <p><strong>路由:</strong> ${apiPath}</p>
+        <p><strong>方法:</strong> ${apiMethod}</p>
+        <p><strong>描述:</strong> ${apiDescription}</p>
+        <p class="auth"><strong>认证:</strong> ${auth}</p>
+        ${keyHtml}
+      </div>
+    `
+  }).join('')
+
+  // 包裹所有卡片的容器，使用 Flexbox 布局
+  htmlContent += `
+    <div class="card-container">
+      ${cardsHtml}
+    </div>
+  `
+
+  htmlContent += `
+    </div>
+  </body>
+  </html>
+  `
+
+  res.end(htmlContent)
 }
 
 const healthCheck = (req, res) => {
@@ -193,6 +413,9 @@ const handleRequest = async (req, res) => {
 
   const url = new URL(req.url, `http://${req.headers.host}`)
   const route = url.pathname
+
+  // Web 启动!
+  if (route === '/') return web(req, res)
 
   if (route === '/health') return healthCheck(req, res)
   if (route === '/stats') return await getStats(req, res)

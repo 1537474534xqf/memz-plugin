@@ -53,13 +53,18 @@ apiList:
     authentication: false
   - name: 'Whois查询'
     path: '/webtool/whois'
+    key:
+      - name: 'domain'
+        type: 'string'
+        required: true
+        description: '要查询的域名'
     method: 'GET'
     description: '获取域名的Whois信息'
     authentication: false
   - name: 'ICP备案查询'
     path: '/webtool/icp'
     key:
-      - name: '域名'
+      - name: 'domain'
         type: 'string'
         required: true
         description: '要查询的域名'
@@ -69,7 +74,7 @@ apiList:
   - name: 'SEO查询'
     path: '/webtool/seo'
     key:
-      - name: '链接'
+      - name: 'url'
         type: 'string'
         required: true
         description: '要查询的链接'
