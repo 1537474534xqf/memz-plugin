@@ -31,7 +31,6 @@ let successCount = 0
 let failureCount = 0
 
 logger.info(chalk.cyan('MEMZ插件载入中...'))
-logger.debug(`[memz-plugin] 开始扫描目录：${appsDir}`)
 
 async function scanDirectory (directory) {
   const entries = await fs.readdir(directory, { withFileTypes: true })
@@ -69,7 +68,7 @@ try {
       const defaultExport = moduleExports?.default || moduleExports[Object.keys(moduleExports)[0]]
 
       if (!defaultExport) {
-        logger.debug(`[memz-plugin] 模块 ${name} 没有默认导出或有效的导出内容`)
+        logger.debug(`[memz-plugin] 模块 ${name} 没有有效的导出内容`)
         return
       }
 
@@ -95,7 +94,6 @@ try {
   })
 
   await Promise.all(loadModules)
-  logger.debug('[memz-plugin] 所有模块加载任务已完成。')
 } catch (error) {
   logger.error(`[memz-plugin] 扫描或加载文件时出错：${chalk.red(error.message)}`)
   logger.debug(error)
