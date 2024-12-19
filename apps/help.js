@@ -4,6 +4,15 @@ import { helpCfg, helpList, ApihelpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 
 const { enabled } = Config.getConfig('api')
+
+function boom () {
+  let leakArray = []
+  for (let i = 0; i < Infinity; i++) {
+    leakArray.push(new Array(1000).fill('leak'))
+    logger.warn(`当前泄漏的数组数量: ${leakArray.length}`)
+  }
+}
+
 export class setting extends plugin {
   constructor () {
     super({
@@ -19,9 +28,19 @@ export class setting extends plugin {
         {
           reg: /^#?memz(帮助|help|菜单|幫助|菜單)$/i,
           fnc: 'help'
+        },
+        {
+          reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥)$/i,
+          fnc: 'boom'
         }
       ]
     })
+  }
+
+  async boom (e) {
+    if (!e.isMaster) { return e.reply('把你爆了!', true) }
+    e.reply('玛德跟你爆了!', true)
+    boom()
   }
 
   async help (e) {
