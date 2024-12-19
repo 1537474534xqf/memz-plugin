@@ -1,5 +1,7 @@
 import _ from 'lodash'
-import { Render, Config } from '#components'
+import path from 'path'
+import { Render, Config, PluginPath } from '#components'
+import { getMarkdownImageBase64FromFile } from '#model'
 import { helpCfg, helpList, ApihelpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 
@@ -32,6 +34,10 @@ export class setting extends plugin {
         {
           reg: /^#?memz(感谢|🙏|关心|高兴|关系|爆炸|💥|不知|不准|标准|霸占)$/i,
           fnc: '你干嘛'
+        },
+        {
+          reg: /^#?memz(版本|version)$/i,
+          fnc: 'version'
         }
         // {
         //   reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥|boom)[!！]$/i,
@@ -45,6 +51,17 @@ export class setting extends plugin {
     if (!e.isMaster && e.user_id != 1011303349) { return e.reply('把你爆了!', true) }
     e.reply('玛德跟你爆了!', true)
     boom()
+  }
+
+  async version (e) {
+    try {
+      let changelogPath = path.join(PluginPath, 'CHANGELOG.md')
+      let img = await getMarkdownImageBase64FromFile(changelogPath)
+      await e.reply(img, true)
+    } catch (error) {
+      logger.error(`[memz-plugin]获取版本信息时发生错误: ${error.message}`)
+      await e.reply('获取版本信息时发生错误，请稍后再试。', true)
+    }
   }
 
   async 你干嘛 (e) {

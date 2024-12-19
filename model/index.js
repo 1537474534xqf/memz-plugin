@@ -1,5 +1,5 @@
 import {
-  // 将HTML转换为图片
+  // 将HTML源码转换为图片
   generateScreenshot
 } from './Screenshot.js'
 import {
@@ -28,6 +28,10 @@ import {
   // 随机一言
   getRandomYiyan
 } from './one.js'
+import {
+  // 从Markdown文件中获取图片的base64编码
+  getMarkdownImageBase64FromFile
+} from './markdown.js'
 export {
   // 截图
   generateScreenshot,
@@ -43,5 +47,7 @@ export {
   // cron
   normalizeCronExpression,
   // 随机一?函数
-  getRandomYiyan
+  getRandomYiyan,
+  // Markdown
+  getMarkdownImageBase64FromFile
 }
