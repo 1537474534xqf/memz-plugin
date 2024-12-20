@@ -34,28 +34,24 @@ export function loadDataFromExcelFiles (folderPath) {
  * @returns {Object} 返回包含匹配资源的JSON对象
  */
 export async function searchResources (keyword, data) {
-  // 如果关键词小于3个字符不进行模糊搜索
-  if (keyword.length < 3) {
+  // 忽略大小写
+  const normalizedKeyword = keyword.toLowerCase()
+  // 判断关键词是否为英文
+  const isEnglish = /^[a-zA-Z]+$/.test(normalizedKeyword)
+  // 如果关键词小于3个字符，或者是英文，则不进行模糊搜索
+  if (keyword.length < 3 || isEnglish) {
     const result = data.filter(row =>
-      (row.关键词 && row.关键词.includes(keyword))
+      row.关键词 && row.关键词.toLowerCase().includes(normalizedKeyword)
     )
     return result
   }
-
-  // 如果关键词长度大于等于3个字符，进行模糊搜索
-  const keywordTriples = []
-  for (let i = 0; i < keyword.length - 2; i++) {
-    // 取相邻的三个字符
-    keywordTriples.push(keyword.slice(i, i + 3))
-  }
-
-  // 使用模糊匹配，检查每组三个字符是否出现在资源的相关字段中
-  const result = data.filter(row => {
-    return keywordTriples.some(triple =>
-      (row.关键词 && row.关键词.includes(triple))
-    )
-  })
-
+  // 如果是中文且长度大于等于3个字符，进行模糊搜索
+  const regexPattern = normalizedKeyword.split('').join('.*')
+  const regex = new RegExp(regexPattern, 'i')
+  // 正则匹配
+  const result = data.filter(row =>
+    row.关键词 && regex.test(row.关键词.toLowerCase())
+  )
   return result
 }
 
