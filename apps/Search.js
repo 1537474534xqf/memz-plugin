@@ -15,6 +15,8 @@ function countCategories (data) {
     return acc
   }, {})
 }
+// 缓存
+let cachedData = null
 
 export class Search extends plugin {
   constructor () {
@@ -42,46 +44,61 @@ export class Search extends plugin {
         }
       ]
     })
-    this.initializeData()
+    this.loadData()
   }
 
-  async initializeData () {
+  // 缓存一下,避免每次都加载数据
+  async loadData () {
+    if (cachedData) {
+      logger.debug('[memz-plugin] [搜资源] 缓存命中')
+      return cachedData
+    }
+
     try {
-      this.data = loadDataFromExcelFiles(folderPath)
-      logger.debug('[memz-plugin] xlsx文件加载成功')
+      logger.debug('[memz-plugin] [搜资源] 加载数据')
+      cachedData = await loadDataFromExcelFiles(folderPath)
+      return cachedData
     } catch (error) {
-      logger.error('[memz-plugin] xlsx文件加载失败:', error)
+      throw new Error('加载数据失败: ' + error.message)
     }
   }
 
   async handleSearch (e) {
     const { SearchResource } = Config.getConfig('memz')
-    if (!SearchResource) return logger.warn('[memz-plugin] 搜资源状态当前为关闭')
+    if (!SearchResource) {
+      return logger.warn('[memz-plugin] 搜资源状态当前为关闭')
+    }
 
     const keyword = e.msg.match(/^#?搜资源\s*(\S+)$/)?.[1]
-    if (!keyword) return e.reply('请输入关键词进行搜索！', true)
+    if (!keyword) {
+      return e.reply('请输入关键词进行搜索！', true)
+    }
 
     try {
-      const resultsJson = searchResources(keyword, this.data)
-      const results = JSON.parse(resultsJson).matchedResources
+      const resultsJson = await searchResources(keyword, cachedData)
 
-      if (results.length > 0) {
-        const forward = results.map(row => ({
-          user_id: e.user_id,
-          nickname: e.sender.nickname || '为什么不玩原神',
-          message: `名称: ${row.关键词}\n内容: ${row.内容}\n分类: ${row.分类}`
-        }))
+      if (resultsJson.length > 0) {
+        const forward = resultsJson.map(row => {
+          return {
+            user_id: e.user_id,
+            nickname: e.sender.nickname || '为什么不玩原神',
+            message: `名称: ${row.关键词}\n内容: ${row.内容}\n分类: ${row.分类}`
+          }
+        })
+
         forward.push({
           user_id: 382879217,
           nickname: 'ZSY11',
           message: '来源：十一实验室(QQ群632226555)\n官网：https://zsy11.com'
         })
+
         await e.reply(await Bot.makeForwardMsg(forward))
       } else {
         e.reply('没有找到你想要的哦~', true)
       }
     } catch (error) {
       e.reply(`搜索过程中发生错误：${error.message}`, true)
+      logger.error('搜索过程中发生错误:', error)
     }
   }
 

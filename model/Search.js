@@ -6,7 +6,7 @@ import path from 'node:path'
  * 加载所有 Excel 文件中的数据
  * @returns {Array} 数据数组
  */
-export async function loadDataFromExcelFiles (folderPath) {
+export function loadDataFromExcelFiles (folderPath) {
   return fs.readdirSync(folderPath)
     .filter(file => file.endsWith('.xlsx')) // 只加载 .xlsx 文件
     .flatMap(file => {
@@ -40,7 +40,7 @@ export async function searchResources (keyword, data) {
       (row.关键词 && row.关键词.includes(keyword)) ||
       (row.内容 && row.内容.includes(keyword))
     )
-    return JSON.stringify({ matchedResources: result })
+    return result
   }
 
   // 如果关键词长度大于等于3个字符，进行模糊搜索
@@ -58,7 +58,7 @@ export async function searchResources (keyword, data) {
     )
   })
 
-  return JSON.stringify({ matchedResources: result })
+  return result
 }
 
 /**
