@@ -31,6 +31,10 @@ export class Search extends plugin {
           fnc: 'handleSearch'
         },
         {
+          reg: '^#?清理(搜)?资源缓存$',
+          fnc: 'clearHandleSearch'
+        },
+        {
           reg: '^#?资源(分类|类别)?(统计|数量|总数|总计)$',
           fnc: 'handleCategoryCount'
         },
@@ -60,6 +64,25 @@ export class Search extends plugin {
       return cachedData
     } catch (error) {
       throw new Error('加载数据失败: ' + error.message)
+    }
+  }
+
+  async clearHandleSearch (e) {
+    if (!e.isMaster) {
+      return logger.warn('[memz-plugin] 无权限清理缓存')
+    }
+    try {
+      if (cachedData) {
+        logger.debug('[memz-plugin] [搜资源] 缓存命中,尝试清理')
+        cachedData = null
+
+        e.reply('缓存已清理。', true)
+      } else {
+        logger.debug('[memz-plugin] [搜资源] 缓存为空,无需清理')
+        e.reply('缓存为空,无需清理。', true)
+      }
+    } catch (error) {
+      throw new Error('清理缓存失败: ' + error.message)
     }
   }
 
