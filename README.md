@@ -50,7 +50,7 @@ pnpm install --filter=memz-plugin
 
 ## 交流与反馈
 
-直接提issue或者PR都行,暂时就没有交流群了,有也没有人来
+QQ交流群:745046386
 
 有事发邮件 `fengyeplus@outlook.com`
 
@@ -63,7 +63,7 @@ pnpm install --filter=memz-plugin
 
 > 🌟 星光闪烁，你们的智慧如同璀璨的夜空。感谢所有为 **MEMZ-Plugin** 做出贡献的人！
 
-  <img src="https://contrib.rocks/image?repo=MEMZ-MapleLeaf/memz-plugin" />
+<img src="https://contrib.rocks/image?repo=MEMZ-MapleLeaf/memz-plugin" />
 
 ![Alt](https://repobeats.axiom.co/api/embed/b8a76b0702cd42f06a3653ce1a15b175c298f27c.svg "Repobeats analytics image")
 

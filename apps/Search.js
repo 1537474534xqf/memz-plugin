@@ -3,11 +3,7 @@ import { Config, PluginData } from '#components'
 import { loadDataFromExcelFiles, searchResources, performCiliSearch } from '#model'
 const folderPath = path.join(PluginData, 'xlsx')
 
-/**
- * 统计分类数量
- * @param {Array} data 数据
- * @returns {Object} 分类统计结果
- */
+// 统计资源分类
 function countCategories (data) {
   return data.reduce((acc, row) => {
     const category = row.分类 || '未分类'
