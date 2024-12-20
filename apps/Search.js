@@ -104,7 +104,7 @@ export class Search extends plugin {
 
   async handleCategoryCount (e) {
     try {
-      const categoryCount = countCategories(this.data)
+      const categoryCount = countCategories(cachedData)
       const message = Object.entries(categoryCount)
         .map(([category, count]) => `${category}: ${count} 个资源`)
         .join('\n')
