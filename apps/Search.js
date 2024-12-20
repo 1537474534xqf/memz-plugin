@@ -54,12 +54,12 @@ export class Search extends plugin {
   // 缓存一下,避免每次都加载数据
   async loadData () {
     if (cachedData) {
-      logger.debug('[memz-plugin] [搜资源] 缓存命中')
+      logger.info('[memz-plugin] [搜资源] 缓存命中')
       return cachedData
     }
 
     try {
-      logger.debug('[memz-plugin] [搜资源] 加载数据')
+      logger.info('[memz-plugin] [搜资源] 加载数据')
       cachedData = await loadDataFromExcelFiles(folderPath)
       return cachedData
     } catch (error) {
@@ -98,6 +98,10 @@ export class Search extends plugin {
     }
 
     try {
+      if (!cachedData) {
+        logger.info('[memz-plugin] [搜资源] 缓存为空,尝试重新加载')
+        await this.loadData()
+      }
       const resultsJson = await searchResources(keyword, cachedData)
 
       if (resultsJson.length > 0) {

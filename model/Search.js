@@ -38,14 +38,14 @@ export async function searchResources (keyword, data) {
   const normalizedKeyword = keyword.toLowerCase()
   // 判断关键词是否为英文
   const isEnglish = /^[a-zA-Z]+$/.test(normalizedKeyword)
-  // 如果关键词小于3个字符，或者是英文，则不进行模糊搜索
+  // 如果关键词<3个字符，或者是英文，则不进行模糊搜索
   if (keyword.length < 3 || isEnglish) {
     const result = data.filter(row =>
       row.关键词 && row.关键词.toLowerCase().includes(normalizedKeyword)
     )
     return result
   }
-  // 如果是中文且长度大于等于3个字符，进行模糊搜索
+  // 如果是中文且长度>=3个字符，进行模糊搜索
   const regexPattern = normalizedKeyword.split('').join('.*')
   const regex = new RegExp(regexPattern, 'i')
   // 正则匹配
