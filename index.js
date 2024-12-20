@@ -87,7 +87,6 @@ try {
       successCount++
     } catch (error) {
       logger.error(chalk.red(`[memz-plugin] 加载模块失败：${name}`))
-      logger.debug(`[memz-plugin] 模块路径：${filePath}`)
       logger.error(error)
       failureCount++
     }
