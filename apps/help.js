@@ -32,10 +32,6 @@ export class setting extends plugin {
           fnc: 'help'
         },
         {
-          reg: /^#?memz(感谢|🙏|关心|高兴|关系|爆炸|💥|不知|不准|标准|霸占)$/i,
-          fnc: '你干嘛'
-        },
-        {
           reg: /^#?memz(版本|version)$/i,
           fnc: 'version'
         }
@@ -64,10 +60,6 @@ export class setting extends plugin {
       logger.error(`[memz-plugin]获取版本信息时发生错误: ${error.message}`)
       await e.reply('获取版本信息时发生错误，请稍后再试。', true)
     }
-  }
-
-  async 你干嘛 (e) {
-    e.reply('谁问你了', true)
   }
 
   async help (e) {
