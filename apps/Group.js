@@ -51,7 +51,7 @@ Bot.on('message.group', async (e) => {
         EX: parseInt(newTTL, 10)
       })
     } catch (err) {
-      logger.error(`Error processing AT data for user ${atQQ}:`, err)
+      logger.error(`Error when saving whoAtme data for group ${e.group_id} and user ${atQQ}:`, err)
     }
   }
 })
@@ -65,15 +65,15 @@ export class GroupPlugin extends plugin {
       priority: -114514,
       rule: [
         {
-          reg: '^#?(谁(艾特|@|at)(我|他|她|它)|哪个逼(艾特|@|at)我)$',
+          reg: '^[#/]?(谁(艾特|@|at)(我|他|她|它)|哪个逼(艾特|@|at)我)$',
           fnc: 'whoAtme'
         },
         {
-          reg: '^#?(/clear_at|清除(艾特|at)数据)$',
+          reg: '^[#/]?(/clear_at|清除(艾特|at)数据)$',
           fnc: 'clearAt'
         },
         {
-          reg: '^#?(/clear_all|清除全部(艾特|at)数据)$',
+          reg: '^[#/]?(/clear_all|清除全部(艾特|at)数据)$',
           fnc: 'clearAll',
           permission: 'master'
         },

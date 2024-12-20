@@ -54,7 +54,7 @@ export const helpList = [
         desc: '查询域名的SEO信息'
       },
       {
-        icon: 83,
+        icon: 88,
         title: '#ssl证书查询+域名',
         desc: '查询网站SSL证书信息'
       },
@@ -92,6 +92,11 @@ export const helpList = [
         icon: 67,
         title: '#谁艾特我',
         desc: '哪个叼毛艾特我'
+      },
+      {
+        icon: 68,
+        title: '#一键召唤全体',
+        desc: '一键@全体成员'
       }
     ]
   },
@@ -138,11 +143,6 @@ export const helpList = [
         icon: 48,
         title: '#系统状态(pro)',
         desc: '查看系统状态'
-      },
-      {
-        icon: 49,
-        title: '#memz检查仓库更新',
-        desc: '检查仓库更新'
       }
     ]
   }
@@ -161,7 +161,6 @@ export const ApihelpList = [
         title: '#Steam热榜',
         desc: '查询Steam热门游戏'
       }
-
     ]
   },
   {
