@@ -5,13 +5,6 @@ import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml,
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
-async function encodeToUrl (msg) {
-  return encodeURIComponent(msg)
-}
-
-async function decodeFromUrl (urlStr) {
-  return decodeURIComponent(urlStr)
-}
 async function encodeToUnicode (msg) {
   return msg
     .split('')
@@ -350,7 +343,7 @@ export class WebTools extends plugin {
     let result
     try {
       if (operation === 'url') {
-        result = action === '编码' ? encodeToUrl(input) : decodeFromUrl(input)
+        result = action === '编码' ? encodeURIComponent(input) : decodeURIComponent(input)
       }
 
       await e.reply(`结果: ${result}`, true)
