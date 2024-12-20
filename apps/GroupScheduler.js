@@ -42,7 +42,8 @@ export class executeGroupScheduler extends plugin {
     }
 
     const botIds = Bot.uin
-    const messages = GroupSchedulerMsg.split('|') // 分割消息
+    // 分割消息
+    const messages = GroupSchedulerMsg.split('|')
 
     for (let botId of botIds) {
       // 黑名单
@@ -61,6 +62,11 @@ export class executeGroupScheduler extends plugin {
       for (const groupId of GroupSchedulerGroup) {
         logger.info(`[memz-plugin] Bot (${botId}) 处理群组 ${groupId}`)
 
+        if (groupId.length > 11) {
+          logger.info('[memz-plugin] 定时群发跳过 QQBot 群号:', groupId)
+          continue
+        }
+
         for (const message of messages) {
           try {
             await Bot[botId].pickGroup(groupId).sendMsg(message.trim())
@@ -69,7 +75,7 @@ export class executeGroupScheduler extends plugin {
               `[memz-plugin] Bot ${botId} 消息已发送到群组 ${groupId}: ${message.trim()}`
             )
 
-            await Bot.sleep(2000) // 防止发送过快
+            await Bot.sleep(2000)
           } catch (err) {
             logger.error(
               `[memz-plugin] Bot (${botId}) 向群组 ${groupId} 发送消息时出错：`,

@@ -8,7 +8,8 @@ import path from 'node:path'
  */
 export function loadDataFromExcelFiles (folderPath) {
   return fs.readdirSync(folderPath)
-    .filter(file => file.endsWith('.xlsx')) // 只加载 .xlsx 文件
+  // 只加载 .xlsx 文件
+    .filter(file => file.endsWith('.xlsx'))
     .flatMap(file => {
       const filePath = path.join(folderPath, file)
       const workbook = xlsx.readFile(filePath)
