@@ -65,8 +65,8 @@ export class Search extends plugin {
 
   async handleSearch (e) {
     const { SearchResource } = Config.getConfig('memz')
-    if (!SearchResource) {
-      return logger.warn('[memz-plugin] 搜资源状态当前为关闭')
+    if (!SearchResource && !e.isMaster) {
+      return logger.warn('[memz-plugin] 搜资源状态当前为仅主人可用')
     }
 
     const keyword = e.msg.match(/^#?搜资源\s*(\S+)$/)?.[1]
@@ -108,7 +108,7 @@ export class Search extends plugin {
       const message = Object.entries(categoryCount)
         .map(([category, count]) => `${category}: ${count} 个资源`)
         .join('\n')
-      e.reply(`----资源分类统计----\n${message}`)
+      e.reply(`-----资源分类统计-----\n${message}`)
     } catch (error) {
       e.reply(`统计过程中发生错误：${error.message}`, true)
     }

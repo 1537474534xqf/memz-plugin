@@ -37,8 +37,7 @@ export async function searchResources (keyword, data) {
   // 如果关键词小于3个字符不进行模糊搜索
   if (keyword.length < 3) {
     const result = data.filter(row =>
-      (row.关键词 && row.关键词.includes(keyword)) ||
-      (row.内容 && row.内容.includes(keyword))
+      (row.关键词 && row.关键词.includes(keyword))
     )
     return result
   }
@@ -53,8 +52,7 @@ export async function searchResources (keyword, data) {
   // 使用模糊匹配，检查每组三个字符是否出现在资源的相关字段中
   const result = data.filter(row => {
     return keywordTriples.some(triple =>
-      (row.关键词 && row.关键词.includes(triple)) ||
-      (row.内容 && row.内容.includes(triple))
+      (row.关键词 && row.关键词.includes(triple))
     )
   })
 
