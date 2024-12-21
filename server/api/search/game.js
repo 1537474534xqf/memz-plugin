@@ -8,11 +8,13 @@ const folderPath = path.join(PluginData, 'xlsx')
 let cachedData = null
 async function loadData () {
   if (cachedData) {
+    logger.info('[memz-plugin] [API] [游戏搜索] 缓存命中')
     return cachedData
   }
 
   try {
     cachedData = loadDataFromExcelFiles(folderPath)
+    logger.info('[memz-plugin] [API] [游戏搜索] 缓存未命中, 加载数据成功')
     return cachedData
   } catch (error) {
     throw new Error('加载数据失败: ' + error.message)
@@ -25,7 +27,6 @@ export default async (req, res) => {
   const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
 
   const key = parsedUrl.searchParams.get('key')
-
   if (!key) {
     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
     return res.end(JSON.stringify({

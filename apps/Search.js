@@ -45,6 +45,7 @@ export class Search extends plugin {
       ]
     })
     this.loadData()
+    // 为什么会执行两次呢?
   }
 
   // 缓存一下,避免每次都加载数据

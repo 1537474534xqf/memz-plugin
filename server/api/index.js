@@ -10,7 +10,7 @@ export default async (req, res) => {
 
     const apiDocumentation = {
       name: 'MEMZ-API',
-      version: '1.0.3',
+      version: '1.0.12',
       description: '这是一个基于 MEMZ-API 搭建的服务',
       endpoints: await categorizedApiDocumentation,
       copyright

@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import chalk from 'chalk'
 import { fileURLToPath, pathToFileURL } from 'url'
-import startServer from './server/index.js'
+import { startServer, Gster } from './server/index.js'
 import Config from './components/Config.js'
 
 const { enabled } = Config.getConfig('api')
@@ -26,7 +26,7 @@ const coloredDashes = Array.from({ length: 23 }, () => {
 
 const startTime = Date.now()
 const apps = {}
-
+Gster()
 let successCount = 0
 let failureCount = 0
 

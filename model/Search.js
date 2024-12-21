@@ -4,29 +4,56 @@ import path from 'node:path'
 
 /**
  * 加载所有 Excel 文件中的数据
- * @returns {Array} 数据数组
+ * @param {string} folderPath - 存放 Excel 文件的文件夹路径
+ * @returns {Promise<Array>} - 数据数组 (Promise 形式)
  */
-export function loadDataFromExcelFiles (folderPath) {
-  return fs.readdirSync(folderPath)
-  // 只加载 .xlsx 文件
-    .filter(file => file.endsWith('.xlsx'))
-    .flatMap(file => {
+export async function loadDataFromExcelFiles (folderPath) {
+  try {
+    const files = await fs.promises.readdir(folderPath)
+
+    const excelFiles = files.filter(file => file.endsWith('.xlsx'))
+
+    const allData = await Promise.all(excelFiles.map(async (file) => {
       const filePath = path.join(folderPath, file)
+
       const workbook = xlsx.readFile(filePath)
       const sheet = workbook.Sheets[workbook.SheetNames[0]]
 
+      // 获取第一行作为列头
       const data = xlsx.utils.sheet_to_json(sheet, {
-        header: ['ID', '关键词', '内容', '分类'],
         defval: '',
-        range: 1
+        range: 0
       })
 
-      // 删除 ID 字段
-      return data.map(row => {
-        const { ID, ...rest } = row
-        return rest
+      if (data.length === 0) return []
+
+      const columnNames = Object.keys(data[0])
+
+      const cleanedData = data.map(row => {
+        return Object.fromEntries(
+          Object.entries(row).filter(([key, value]) => key !== '__EMPTY' && value !== '')
+        )
       })
-    })
+
+      const numRows = cleanedData.length
+      const numColumns = columnNames.length
+      const dataSize = numRows * numColumns * 2
+
+      logger.info('[memz-plugin] [搜资源] 加载 Excel 文件成功:', filePath)
+      logger.info('[memz-plugin] [搜资源] Excel 数据列名:', columnNames)
+      logger.info('[memz-plugin] [搜资源] Excel 数据列数:', numColumns)
+      logger.info('[memz-plugin] [搜资源] Excel 数据行数:', numRows)
+      logger.info('[memz-plugin] [搜资源] Excel 数据总大小:', dataSize)
+
+      return cleanedData
+    }))
+
+    // 扁平化所有数据并返回
+    return allData.flat()
+  } catch (error) {
+    logger.error('加载 Excel 文件出错:', error)
+    throw new Error('加载 Excel 文件失败')
+  }
 }
 /**
  * 根据关键词搜索资源（支持模糊匹配，最小匹配为三个字连续字符）
