@@ -1,7 +1,8 @@
 import fs from 'fs'
 import xlsx from 'xlsx'
 import path from 'node:path'
-
+import Fuse from 'fuse.js'
+import { Config } from '#components'
 /**
  * 加载所有 Excel 文件中的数据
  * @param {string} folderPath - 存放 Excel 文件的文件夹路径
@@ -56,7 +57,7 @@ export async function loadDataFromExcelFiles (folderPath) {
   }
 }
 /**
- * 根据关键词搜索资源（支持模糊匹配，最小匹配为三个字连续字符）
+ * 根据关键词搜索资源
  * @param {string} keyword 关键词
  * @param {Array} data 数据
  * @returns {Object} 返回包含匹配资源的JSON对象
@@ -64,25 +65,29 @@ export async function loadDataFromExcelFiles (folderPath) {
 export async function searchResources (keyword, data) {
   // 忽略大小写
   const normalizedKeyword = keyword.toLowerCase()
-  // 判断关键词是否为英文
-  const isEnglish = /^[a-zA-Z]+$/.test(normalizedKeyword)
-  // 如果关键词<3个字符，或者是英文，则不进行模糊搜索
-  if (keyword.length < 3 || isEnglish) {
-    const result = data.filter(row =>
-      row.关键词 && row.关键词.toLowerCase().includes(normalizedKeyword)
-    )
-    return result
+  // 加载配置
+  let { threshold } = Config.getConfig('memz')
+  // 配置Fuse.js
+  const options = {
+    keys: ['关键词'],
+    threshold, // 设置阈值,模糊匹配的宽松度
+    ignoreLocation: true, // 忽略匹配位置
+    includeScore: true // 包含匹配的评分，评分越低表示匹配越好
   }
-  // 如果是中文且长度>=3个字符，进行模糊搜索
-  const regexPattern = normalizedKeyword.split('').join('.*')
-  const regex = new RegExp(regexPattern, 'i')
-  // 正则匹配
+
+  const fuse = new Fuse(data, options)
+
+  if (keyword.length >= 3) {
+    const result = fuse.search(keyword)
+    return result.map(item => item.item)
+  }
+
   const result = data.filter(row =>
-    row.关键词 && regex.test(row.关键词.toLowerCase())
+    row.关键词 && row.关键词.toLowerCase().includes(normalizedKeyword)
   )
+
   return result
 }
-
 /**
  * 执行磁力搜索
  * @param {string} searchQuery 搜索关键词

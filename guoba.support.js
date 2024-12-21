@@ -297,14 +297,25 @@ export function supportGuoba () {
         {
           field: 'memz.SearchMovie',
           label: '搜影视',
-          bottomHelpMessage: '使用API搜索影视资源,关闭时所有人不可用',
+          bottomHelpMessage: '使用API搜索影视资源,关闭时仅主人可用',
           component: 'Switch'
         },
         {
           field: 'memz.SearchResource',
           label: '搜资源',
-          bottomHelpMessage: '搜索本地xlsx文件的游戏,关闭时所有人不可用',
+          bottomHelpMessage: '搜索本地xlsx文件的游戏,关闭时仅主人可用',
           component: 'Switch'
+        },
+        {
+          field: 'memz.threshold',
+          label: '搜资源阈值',
+          bottomHelpMessage: '搜资源阈值,模糊匹配的宽松度',
+          component: 'InputNumber',
+          componentProps: {
+            min: 0,
+            max: 1,
+            addonAfter: '单位'
+          }
         },
         {
           field: 'memz.SearchMagnet',
