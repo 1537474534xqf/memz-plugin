@@ -60,7 +60,7 @@ export class Search extends plugin {
       cachedData = await loadDataFromExcelFiles(folderPath)
       return cachedData
     } catch (error) {
-      throw new Error('加载数据失败: ' + error.message)
+      throw new Error('加载数据失败: ', error.message)
     }
   }
 
@@ -79,7 +79,7 @@ export class Search extends plugin {
         e.reply('缓存为空,无需清理。', true)
       }
     } catch (error) {
-      throw new Error('清理缓存失败: ' + error.message)
+      throw new Error('清理缓存失败: ', error.message)
     }
   }
 
@@ -173,34 +173,44 @@ export class Search extends plugin {
 
   async TheFilmAndTelevision (e) {
     const { SearchMovie } = Config.getConfig('memz')
-    if (!SearchMovie) return logger.warn('[memz-plugin] 搜影视功能已禁用')
+    if (!SearchMovie) { return logger.warn('[memz-plugin] 搜影视功能已禁用') }
 
     const keyword = e.msg.match(/^#?搜影视\s*(\S+)$/)?.[1]
-    if (!keyword) return e.reply('请输入关键词进行搜索！', true)
+    if (!keyword) { return e.reply('请输入关键词进行搜索！', true) }
 
     try {
       const apiUrl = `https://ysxjjkl.souyisou.top/api_searchtxt.php?name=${encodeURIComponent(keyword)}`
       const response = await fetch(apiUrl)
-      const text = await response.text()
 
-      if (text.includes('[可怜]对不起，本资源暂未收录')) return e.reply('未找到匹配的结果。', true)
-
-      const results = text.split('\n名称：').slice(1).map(item => {
-        const name = item.match(/^(.*?)\s*链接：/)?.[1]?.trim()
-        const link = item.match(/链接：(https:\/\/\S+)/)?.[1]
-        return { name, category: '影视资源', link }
-      }).filter(Boolean)
-
-      if (results.length > 0) {
-        const forward = results.map(row => ({
-          user_id: e.user_id,
-          nickname: 'ZSY11',
-          message: `名称: ${row.name}\n链接: ${row.link}\n分类: ${row.category}`
-        }))
-        await e.reply(await Bot.makeForwardMsg(forward))
-      } else {
-        e.reply('未找到匹配的结果。', true)
+      if (!response.ok) {
+        throw new Error(`API 请求失败，状态码：${response.status}`)
       }
+
+      const text = await response.text()
+      if (text.includes('[可怜]对不起，本资源暂未收录')) {
+        return e.reply('未找到匹配的结果。', true)
+      }
+
+      const results = text.split('\n名称：')
+        .slice(1)
+        .map(item => {
+          const name = item.match(/^(.*?)\s*链接：/)?.[1]?.trim()
+          const link = item.match(/链接：(https:\/\/\S+)/)?.[1]
+          return name && link ? { name, category: '影视资源', link } : null
+        })
+        .filter(Boolean)
+
+      if (results.length === 0) {
+        return e.reply('未找到匹配的结果。', true)
+      }
+
+      const forward = results.map(row => ({
+        user_id: e.user_id,
+        nickname: 'ZSY11',
+        message: `名称: ${row.name}\n链接: ${row.link}\n分类: ${row.category}`
+      }))
+
+      await e.reply(await Bot.makeForwardMsg(forward))
     } catch (error) {
       e.reply(`搜索过程中发生错误：${error.message}`, true)
     }
