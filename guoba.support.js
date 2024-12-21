@@ -55,7 +55,7 @@ export function supportGuoba () {
         {
           field: 'memz.atalltext',
           label: '艾特全体文本',
-          bottomHelpMessage: '艾特全体后面跟的文本,none为不添加文本',
+          bottomHelpMessage: '艾特全体后面跟的文本,留空为不添加文本',
           component: 'Input',
           componentProps: {
             placeholder: '请输入艾特全体文本'
