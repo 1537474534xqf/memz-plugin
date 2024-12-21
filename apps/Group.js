@@ -140,14 +140,11 @@ export class GroupPlugin extends plugin {
       if (segment.ICQQ) {
         atSegments.push(segment.ICQQ())
         atSegments.push(segment.at(qq))
-        if (!atalltext) {
-          atSegments.push(segment.text(atalltext))
-        }
       } else {
         atSegments.push(segment.at(qq))
-        if (!atalltext) {
-          atSegments.push(segment.text(atalltext))
-        }
+      }
+      if (!atalltext) {
+        atSegments.push(segment.text(atalltext))
       }
     })
 
