@@ -135,10 +135,19 @@ export class GroupPlugin extends plugin {
     const qqNumbers = [...members.keys()]
 
     const atSegments = []
+
     qqNumbers.forEach(qq => {
-      atSegments.push(segment.at(qq))
-      if (atalltext !== 'none') {
-        atSegments.push(segment.text(atalltext))
+      if (segment.ICQQ) {
+        atSegments.push(segment.ICQQ())
+        atSegments.push(segment.at(qq))
+        if (atalltext !== 'none') {
+          atSegments.push(segment.text(atalltext))
+        }
+      } else {
+        atSegments.push(segment.at(qq))
+        if (atalltext !== 'none') {
+          atSegments.push(segment.text(atalltext))
+        }
       }
     })
 
