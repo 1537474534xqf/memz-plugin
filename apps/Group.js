@@ -138,16 +138,12 @@ export class GroupPlugin extends plugin {
 
     qqNumbers.forEach(qq => {
       if (segment.ICQQ) {
-        atSegments.push(segment.ICQQ())
-        atSegments.push(segment.at(qq))
-        if (!atalltext) {
-          atSegments.push(segment.text(atalltext))
-        }
+        atSegments.push(segment.ICQQ(), segment.at(qq))
       } else {
         atSegments.push(segment.at(qq))
-        if (!atalltext) {
-          atSegments.push(segment.text(atalltext))
-        }
+      }
+      if (atalltext) {
+        atSegments.push(segment.text(atalltext))
       }
     })
 
