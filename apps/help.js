@@ -69,7 +69,7 @@ export class setting extends plugin {
   async apihelp (e) {
     if (!enabled) {
       e.reply('未启用API服务，无法使用api相关功能', true)
-      return logger.warn('[memz-plugin]API服务未启用，无法使用api相关功能')
+      return logger.warn('[memz-plugin] [MEMZ-API] API服务未启用，无法使用api相关功能')
     }
     await getHelp(e, ApihelpList)
   }
