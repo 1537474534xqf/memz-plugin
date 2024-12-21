@@ -29,10 +29,10 @@ export class PingScreenshot extends plugin {
       return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
     }
     if (PingApi === 1) {
-      logger.debug('PingApi 是 1，执行 Zhalema 函数')
+      logger.debug('使用Zhalema进行Ping')
       await this.Zhalema(e)
     } else if (PingApi === 2) {
-      logger.debug('PingApi 是 2，执行 itdog 函数')
+      logger.debug('使用itdog进行Ping')
       await this.itdog(e)
     } else {
       logger.error('PingApi 配置错误！')
