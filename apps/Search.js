@@ -54,10 +54,10 @@ export class Search extends plugin {
       logger.info('[memz-plugin] [搜资源] 缓存命中')
       return cachedData
     }
-
+    logger.info('[memz-plugin] [搜资源] 缓存未命中,尝试重新加载数据...')
     try {
-      logger.info('[memz-plugin] [搜资源] 加载数据')
       cachedData = await loadDataFromExcelFiles(folderPath)
+      logger.info('[memz-plugin] [搜资源] 重新缓存加载成功')
       return cachedData
     } catch (error) {
       throw new Error('加载数据失败: ', error.message)
@@ -65,15 +65,12 @@ export class Search extends plugin {
   }
 
   async clearHandleSearch (e) {
-    if (!e.isMaster) {
-      return logger.warn('[memz-plugin] 无权限清理缓存')
-    }
+    if (!e.isMaster) { return logger.warn('[memz-plugin] [搜资源] 无权限清理缓存') }
     try {
       if (cachedData) {
         logger.debug('[memz-plugin] [搜资源] 缓存命中,尝试清理')
         cachedData = null
-
-        e.reply('缓存已清理。', true)
+        e.reply('[memz-plugin] [搜资源] 缓存已清理。', true)
       } else {
         logger.debug('[memz-plugin] [搜资源] 缓存为空,无需清理')
         e.reply('缓存为空,无需清理。', true)
@@ -86,7 +83,7 @@ export class Search extends plugin {
   async handleSearch (e) {
     const { SearchResource } = Config.getConfig('memz')
     if (!SearchResource && !e.isMaster) {
-      return logger.warn('[memz-plugin] 搜资源状态当前为仅主人可用')
+      return logger.warn('[memz-plugin] [搜资源] 搜资源状态当前为仅主人可用')
     }
 
     const keyword = e.msg.match(/^#?搜资源\s*(\S+)$/)?.[1]
