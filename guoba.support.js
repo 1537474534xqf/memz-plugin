@@ -49,6 +49,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'memz.MEMZRestart',
+          label: '劫持重启',
+          bottomHelpMessage: '劫持Miao-Yunzai的重启,变成前台重启',
+          component: 'Switch'
+        },
+        {
           component: 'Divider',
           label: '群聊功能'
         },
