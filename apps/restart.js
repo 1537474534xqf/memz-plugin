@@ -44,9 +44,9 @@ if (MEMZRestart) {
     }
   }
 
-  global.劫持Miao重启 = true
+  global.劫持重启 = true
 } else {
-  global.劫持Miao重启 = false
+  global.劫持重启 = false
 }
 export class Mrestart extends plugin {
   constructor () {
