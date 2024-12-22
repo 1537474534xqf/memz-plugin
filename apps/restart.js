@@ -44,15 +44,15 @@ if (MEMZRestart) {
     }
   }
 
-  global.劫持重启逻辑 = true
+  global.劫持Miao重启 = true
 } else {
-  global.劫持重启逻辑 = false
+  global.劫持Miao重启 = false
 }
 export class Mrestart extends plugin {
   constructor () {
     super({
-      name: '更新MEMZ插件',
-      dsc: '更新MEMZ插件',
+      name: 'MEMZ专属重启',
+      dsc: 'MEMZ专属重启',
       event: 'message',
       priority: -10,
       rule: [
