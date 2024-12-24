@@ -8,23 +8,23 @@
 ## 📈 Ongoing Projects
 
 - [ ] 开发新的WebTool功能
-  - [x] 实现域名查询功能
-  - [x] 完成HTTP状态查询功能
-- [x] 优化系统状态Pro.ProMax逻辑判断
-  - [x] 编写测试用例
-  - [x] 代码审查
+  - [X] 实现域名查询功能
+  - [X] 完成HTTP状态查询功能
+- [X] 优化系统状态Pro.ProMax逻辑判断
+  - [X] 编写测试用例
+  - [X] 代码审查
 
 ## 🎯 Upcoming Features
 
 - [ ] 计划自动更新机制的实施
 - [ ] 设计新的群聊功能
-  - [x] 实现一键艾特全体功能
-  - [x] 开发谁艾特我功能
+  - [X] 实现一键艾特全体功能
+  - [X] 开发谁艾特我功能
 
 ## 🧩 Bugs to Fix
 
-- [x] 解决Ping功能在ITdog和ZHALEMA上的兼容性问题
-- [x] 修复MEMZ-API统计和日志中的异常
+- [X] 解决Ping功能在ITdog和ZHALEMA上的兼容性问题
+- [X] 修复MEMZ-API统计和日志中的异常
 
 ## 📚 Documentation
 
@@ -33,7 +33,7 @@
 
 ## 🛠️ Maintenance
 
-- [x] 插件底层逻辑重构
+- [X] 插件底层逻辑重构
 - [ ] 插件加载速度优化
 
 ## 📅 Scheduled Reviews
