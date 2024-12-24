@@ -2,6 +2,9 @@ import fs from 'fs'
 import whois from 'whois-json'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
+import dns from 'dns'
+import net from 'net'
+
 import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
@@ -217,6 +220,10 @@ export class WebTools extends plugin {
         {
           reg: '^#?(获取)?网站图标\\s*(\\S+.*)',
           fnc: 'getFavicon'
+        },
+        {
+          reg: '^#(ipinfo|ip信息)\\s*(\\S+)$',
+          fnc: 'ipinfo'
         }
       ]
     })
@@ -592,5 +599,85 @@ export class WebTools extends plugin {
       logger.error('获取网站图标失败:', error)
       e.reply('获取网站图标失败，请检查网址是否正确', true)
     }
+  }
+
+  // IP信息
+  async ipinfo (e) {
+    const { IpinfoToken, IpinfoAll } = Config.getConfig('memz')
+
+    if (!IpinfoAll && !e.isMaster) {
+      return logger.warn('[memz-plugin]IP信息功能当前为仅主人可用')
+    }
+
+    const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
+    if (!match) {
+      logger.warn('未匹配到正确的 IP 信息命令')
+      return await e.reply('请输入正确的 IP 信息命令，例如：#ipinfo IP/域名', true)
+    }
+
+    const [, , siteName] = match
+
+    logger.debug(`解析的目标: ${siteName}`)
+
+    if (!IpinfoToken) {
+      await e.reply('请前往 https://ipinfo.io 注册账号并获取 Token 后在配置文件中配置', true)
+      return false
+    }
+
+    let ipAddress = siteName
+    try {
+      if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
+        ipAddress = await this.resolveDomainToIp(siteName)
+        if (!ipAddress) {
+          await e.reply('无法解析域名的 IP 地址！', e.isGroup)
+          return false
+        }
+      }
+
+      logger.info(`目标 IP 地址: ${ipAddress}`)
+
+      const response = await fetch(`https://ipinfo.io/${ipAddress}?token=${IpinfoToken}`)
+      const ipInfo = await response.json()
+
+      if (ipInfo.bogon) {
+        await e.reply('目标地址为 Bogon IP（私有 IP，不可路由）。')
+        return false
+      }
+
+      const res = [
+        `IP 信息 - ${siteName}`,
+            `IP 地址：${ipInfo.ip || 'N/A'}`,
+            `国家/地区：${ipInfo.country || 'N/A'}`,
+            `区域：${ipInfo.region || 'N/A'}`,
+            `城市：${ipInfo.city || 'N/A'}`,
+            `邮政编码：${ipInfo.postal || 'N/A'}`,
+            `时区：${ipInfo.timezone || 'N/A'}`,
+            `经纬度：${ipInfo.loc || 'N/A'}`,
+            `运营商：${ipInfo.org || 'N/A'}`
+      ].join('\n')
+
+      await e.reply(res)
+      return true
+    } catch (error) {
+      logger.error(`获取 IP 信息出错: ${error.message}`)
+      await e.reply(`获取 IP 信息出错：${error.message}`)
+      return false
+    }
+  }
+
+  // 解析域名IP
+  async resolveDomainToIp (domain) {
+    return new Promise((resolve, reject) => {
+      dns.lookup(domain, (err, address) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(address)
+        }
+      })
+    }).catch((err) => {
+      logger.error(`域名解析出错: ${err.message}`)
+      return null
+    })
   }
 }
