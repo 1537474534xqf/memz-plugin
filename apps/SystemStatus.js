@@ -66,7 +66,7 @@ export class SystemStatus extends plugin {
       const responses = await Promise.all([
         // 基本信息
         this.basicInfo(),
-        // 扩展信息
+        // 硬盘和网络信息
         this.getAdditionalSystemInfo(),
         // GPU 信息
         this.getGPUInfo(),
@@ -91,14 +91,14 @@ export class SystemStatus extends plugin {
       const responses = await Promise.all([
         // 基本信息
         this.basicInfo(),
-        // 扩展信息
+        // 硬盘和网络信息
         this.getAdditionalSystemInfo(),
         // GPU 信息
         this.getGPUInfo(),
         // 电池信息
         this.getBatteryInfo(),
         // 进程信息
-        this.getProcessInfo(),
+        // this.getProcessInfo(),
         // 网络连接信息
         this.getNetworkConnections(),
         // 磁盘详细信息
@@ -141,7 +141,7 @@ export class SystemStatus extends plugin {
     }
   }
 
-  // 获取进程信息
+  // 获取硬盘和网络信息
   async getAdditionalSystemInfo () {
     try {
       const diskInfo = await si.diskLayout()
