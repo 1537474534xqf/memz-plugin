@@ -47,6 +47,8 @@ UnicodeAll: true
 UrlAll: true
 # 是否所有人可用进制转换
 BaseConversionAll: true
+# 是否所有人可用获取网站图标
+getFaviconAll: true
 
 ### 网络搜索设置
 # 是否开启搜影视

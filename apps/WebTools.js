@@ -560,6 +560,8 @@ export class WebTools extends plugin {
 
   // 获取网站图标
   async getFavicon (e) {
+    const { getFaviconAll } = Config.getConfig('memz')
+    if (!getFaviconAll && !e.isMaster) { return logger.warn('[memz-plugin]进制转换状态当前为仅主人可用') }
     let url = e.msg.match(/^#?(获取)?网站图标\s*(\S+.*)/)?.[2]?.trim()
 
     if (!url) {

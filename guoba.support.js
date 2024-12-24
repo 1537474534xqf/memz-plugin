@@ -297,6 +297,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'memz.getFaviconAll',
+          label: '获取网站图标',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
           component: 'Divider',
           label: '网络搜索设置'
         },
