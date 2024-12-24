@@ -84,7 +84,6 @@ export class Search extends plugin {
 
     try {
       if (!cachedData) {
-        logger.info('[memz-plugin] [搜资源] 缓存为空,尝试重新加载')
         await this.loadData()
       }
       const resultsJson = await searchResources(keyword, cachedData)
@@ -116,7 +115,9 @@ export class Search extends plugin {
 
   async handleCategoryCount (e) {
     try {
-      await this.loadData()
+      if (!cachedData) {
+        await this.loadData()
+      }
       const categoryCount = cachedData.reduce((acc, row) => {
         const category = row.分类 || '未分类'
         acc[category] = (acc[category] || 0) + 1
