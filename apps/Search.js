@@ -36,8 +36,6 @@ export class Search extends plugin {
         }
       ]
     })
-    this.loadData()
-    // 为什么会执行两次呢?
   }
 
   // 缓存一下,避免每次都加载数据
@@ -118,7 +116,8 @@ export class Search extends plugin {
 
   async handleCategoryCount (e) {
     try {
-      const categoryCount = e.data.reduce((acc, row) => {
+      await this.loadData()
+      const categoryCount = cachedData.reduce((acc, row) => {
         const category = row.分类 || '未分类'
         acc[category] = (acc[category] || 0) + 1
         return acc
