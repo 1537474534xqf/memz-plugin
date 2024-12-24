@@ -23,7 +23,7 @@ export class Search extends plugin {
       priority: 1,
       rule: [
         {
-          reg: '^#?搜资源\\s*(\\S+)$',
+          reg: '^#?搜(资源|游戏)\\s*(\\S+)$',
           fnc: 'handleSearch'
         },
         {
@@ -86,7 +86,7 @@ export class Search extends plugin {
       return logger.warn('[memz-plugin] [搜资源] 搜资源状态当前为仅主人可用')
     }
 
-    const keyword = e.msg.match(/^#?搜资源\s*(\S+)$/)?.[1]
+    const keyword = e.msg.match(/^#?搜(资源|游戏)\s*(\S+)$/)?.[2]
     if (!keyword) {
       return e.reply('请输入关键词进行搜索！', true)
     }

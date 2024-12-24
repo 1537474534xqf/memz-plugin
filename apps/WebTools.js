@@ -594,7 +594,7 @@ export class WebTools extends plugin {
         iconUrl = baseUrl.origin + iconUrl
       }
 
-      e.reply(['网站图标:', segment.image(iconUrl)])
+      e.reply(['获取到的网站图标:', segment.image(iconUrl)], true)
     } catch (error) {
       logger.error('获取网站图标失败:', error)
       e.reply('获取网站图标失败，请检查网址是否正确', true)
