@@ -62,6 +62,11 @@ export const helpList = [
         icon: 84,
         title: '#网页截图+域名',
         desc: '网页截图'
+      },
+      {
+        icon: 44,
+        title: '#网站图标+URL',
+        desc: '获取网站图标'
       }
     ]
   },

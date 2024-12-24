@@ -1,5 +1,10 @@
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
+/**
+ * 生成网页截图的异步函数
+ * @param {string} html - 要截图的网页的HTML内容
+ * @returns {Promise<string>} - 返回截图的Base64编码字符串
+ */
 export async function generateScreenshot (html) {
   try {
     if (!puppeteer.browser) {

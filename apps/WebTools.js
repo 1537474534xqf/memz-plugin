@@ -1,6 +1,7 @@
 import fs from 'fs'
 import whois from 'whois-json'
 import axios from 'axios'
+import * as cheerio from 'cheerio'
 import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
@@ -212,6 +213,10 @@ export class WebTools extends plugin {
         {
           reg: /^#?ssl证书查询\s*(.+)/i,
           fnc: 'SslInfo'
+        },
+        {
+          reg: '^#?(获取)?网站图标\\s*(\\S+.*)',
+          fnc: 'getFavicon'
         }
       ]
     })
@@ -550,6 +555,40 @@ export class WebTools extends plugin {
       e.reply(decodedString, true)
     } else {
       e.reply('请提供有效的 HEX 字符串。', true)
+    }
+  }
+
+  // 获取网站图标
+  async getFavicon (e) {
+    let url = e.msg.match(/^#?(获取)?网站图标\s*(\S+.*)/)?.[2]?.trim()
+
+    if (!url) {
+      return e.reply('请提供有效的网址', true)
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url
+    }
+
+    try {
+      const response = await axios.get(url)
+      const $ = cheerio.load(response.data)
+
+      let iconUrl = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href')
+
+      if (!iconUrl) {
+        return e.reply('未找到该网站图标', true)
+      }
+
+      if (iconUrl.startsWith('/')) {
+        const baseUrl = new URL(url)
+        iconUrl = baseUrl.origin + iconUrl
+      }
+
+      e.reply(['网站图标:', segment.image(iconUrl)])
+    } catch (error) {
+      logger.error('获取网站图标失败:', error)
+      e.reply('获取网站图标失败，请检查网址是否正确', true)
     }
   }
 }

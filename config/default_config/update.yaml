@@ -1,5 +1,5 @@
 # 是否自动更新插件
-autoupdate: true
+autoupdate: false
 # 自动更新Cron
 updatecron: "0 0 0 * * *"
 # 是否自动检查插件更新
