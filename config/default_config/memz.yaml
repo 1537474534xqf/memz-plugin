@@ -56,7 +56,7 @@ SearchMovie: true
 # 是否开启搜资源
 SearchResource: true
 # 搜资源阈值,模糊匹配的宽松度
-threshold: 0.4
+threshold: 0.3
 # 申请游戏是否开启
 apply_game: true
 # 是否开启磁力搜索
