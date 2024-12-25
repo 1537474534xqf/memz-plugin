@@ -29,7 +29,8 @@ export class PingScreenshot extends plugin {
       logger.debug('使用itdog进行Ping')
       await this.itdog(e)
     } else {
-      logger.error('PingApi 配置错误！')
+      logger.warn('PingApi配置错误, 默认使用Zhalema进行Ping')
+      await this.Zhalema(e)
     }
   }
 
