@@ -36,6 +36,60 @@ export async function loadDataFromExcelFiles (folderPath) {
         )
       })
 
+      // 给每行数据补充 ID
+      cleanedData.forEach((row, index) => {
+        row.ID = index + 1
+      })
+
+      const contentMap = new Map() // 用于检查重复内容
+      const exactDuplicateSet = new Set() // 用于检查完全重复的行
+      const seenRows = new Set() // 用于记录已处理的行
+      const duplicateContents = [] // 存储重复内容信息
+      const exactDuplicates = [] // 存储完全重复行信息
+
+      for (let i = 0; i < cleanedData.length; i++) {
+        const row = cleanedData[i]
+        const content = row.内容
+
+        // 检查内容重复
+        if (content) {
+          if (contentMap.has(content)) {
+            contentMap.get(content).push(row.ID)
+          } else {
+            contentMap.set(content, [row.ID])
+          }
+        }
+
+        // 检查是否有完全重复的行
+        const rowString = JSON.stringify(row)
+        if (seenRows.has(rowString)) {
+          exactDuplicateSet.add(row.ID)
+        } else {
+          seenRows.add(rowString)
+        }
+      }
+
+      // 查找重复的内容
+      contentMap.forEach((ids, content) => {
+        if (ids.length > 1) {
+          duplicateContents.push(`ID ${ids.join(' 和 ')} 的内容 "${content}" 重复`)
+        }
+      })
+
+      // 完全重复的行
+      if (exactDuplicateSet.size > 0) {
+        exactDuplicates.push(`ID ${[...exactDuplicateSet].join(' 和 ')} 的内容完全重复`)
+      }
+
+      // 重复信息
+      if (duplicateContents.length > 0) {
+        logger.warn(`[memz-plugin] [搜资源] 以下内容重复: ${duplicateContents.join('，')}`)
+      }
+
+      if (exactDuplicates.length > 0) {
+        logger.warn(`${exactDuplicates.join('，')}`)
+      }
+
       const numRows = cleanedData.length
       const numColumns = columnNames.length
       const dataSize = numRows * numColumns * 2
@@ -56,6 +110,7 @@ export async function loadDataFromExcelFiles (folderPath) {
     throw new Error('加载 Excel 文件失败')
   }
 }
+
 /**
  * 根据关键词搜索资源
  * @param {string} keyword 关键词
