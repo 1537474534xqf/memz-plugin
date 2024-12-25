@@ -19,7 +19,7 @@ export class Search extends plugin {
           fnc: 'handleSearch'
         },
         {
-          reg: '^#?清理(搜)?资源缓存$',
+          reg: '^#?清理(搜)?(资源|游戏)缓存$',
           fnc: 'clearHandleSearch'
         },
         {
@@ -67,7 +67,7 @@ export class Search extends plugin {
         e.reply('缓存为空,无需清理。', true)
       }
     } catch (error) {
-      throw new Error('清理缓存失败: ', error.message)
+      throw new Error('[memz-plugin] [搜资源] 清理缓存失败: ', error.message)
     }
   }
 
