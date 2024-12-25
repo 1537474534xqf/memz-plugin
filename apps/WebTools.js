@@ -594,7 +594,7 @@ export class WebTools extends plugin {
       $('meta[property="og:image"]').attr('content')
 
       if (!iconUrl) {
-        return e.reply('未找到该网站图标', true)
+        return e.reply('没有找到该网站图标', true)
       }
 
       if (iconUrl.startsWith('/')) {
@@ -609,7 +609,7 @@ export class WebTools extends plugin {
       e.reply(['获取到的网站图标:', segment.image(iconUrl)], true)
     } catch (error) {
       logger.error('获取网站图标失败:', error)
-      e.reply('获取网站图标失败，请检查网址是否正确', true)
+      e.reply('[ERROR]获取网站图标失败，请检查网址是否正确', true)
     }
   }
 
