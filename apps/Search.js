@@ -31,7 +31,7 @@ export class Search extends plugin {
           fnc: 'CiliSearch'
         },
         {
-          reg: '^#?搜影视\\s*(\\S+)$',
+          reg: '^#?搜(索)?影视\\s*(\\S+)$',
           fnc: 'TheFilmAndTelevision'
         }
       ]
@@ -134,7 +134,7 @@ export class Search extends plugin {
         .map(([category, count]) => `${category}: ${count} 个`)
         .join('\n')
 
-      e.reply(`-----资源分类统计-----\n${message}`)
+      e.reply(`----- 资源分类统计 -----\n${message}`)
     } catch (error) {
       e.reply(`统计过程中发生错误：${error.message}`, true)
     }
@@ -179,7 +179,7 @@ export class Search extends plugin {
       return logger.warn('[memz-plugin] 搜影视功能已禁用')
     }
 
-    const keyword = e.msg.match(/^#?搜影视\s*(\S+)$/)?.[1]
+    const keyword = e.msg.match(/^#?搜(索)?影视\s*(\S+)$/)?.[2]
     if (!keyword) {
       return e.reply('请输入关键词进行搜索！', true)
     }
