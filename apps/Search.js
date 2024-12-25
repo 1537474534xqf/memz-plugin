@@ -15,7 +15,7 @@ export class Search extends plugin {
       priority: 1,
       rule: [
         {
-          reg: '^#?搜(资源|游戏)\\s*(\\S+)$',
+          reg: '^#?搜(索)?(资源|游戏)\\s*(\\S+)$',
           fnc: 'handleSearch'
         },
         {
@@ -77,7 +77,7 @@ export class Search extends plugin {
       return logger.warn('[memz-plugin] [搜资源] 搜资源状态当前为仅主人可用')
     }
 
-    const keyword = e.msg.match(/^#?搜(资源|游戏)\s*(\S+)$/)?.[2]
+    const keyword = e.msg.match(/^#?搜(索)?(资源|游戏)\s*(\S+)$/)?.[3]
     if (!keyword) {
       return e.reply('请输入关键词进行搜索！', true)
     }
@@ -86,14 +86,20 @@ export class Search extends plugin {
       if (!cachedData) {
         await this.loadData()
       }
+
       const resultsJson = await searchResources(keyword, cachedData)
 
       if (resultsJson.length > 0) {
         const forward = resultsJson.map(row => {
+          let message = `名称: ${row.关键词}\n链接: ${row.内容}\n分类: ${row.分类}`
+          if (row.版本号) {
+            message += `\n版本号: ${row.版本号}`
+          }
+
           return {
             user_id: e.user_id,
             nickname: e.sender.nickname || '为什么不玩原神',
-            message: `名称: ${row.关键词}\n内容: ${row.内容}\n分类: ${row.分类}`
+            message
           }
         })
 
