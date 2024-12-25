@@ -55,7 +55,7 @@ getFaviconAll: true
 SearchMovie: true
 # 是否开启搜资源
 SearchResource: true
-# 搜资源阈值,模糊匹配的宽松度
+# 搜资源阈值,模糊匹配的宽松度,范围从 0 到 1，值越小，表示匹配的结果越严格，越大则表示匹配的宽松度越高。
 threshold: 0.3
 # 申请游戏是否开启
 apply_game: true

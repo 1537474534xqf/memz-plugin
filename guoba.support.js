@@ -321,12 +321,11 @@ export function supportGuoba () {
         {
           field: 'memz.threshold',
           label: '搜资源阈值',
-          bottomHelpMessage: '搜资源阈值,模糊匹配的宽松度',
+          bottomHelpMessage: '搜资源阈值,模糊匹配的宽松度,范围 0-1,值越小，表示匹配的结果越严格，越大则表示匹配的宽松度越高',
           component: 'InputNumber',
           componentProps: {
             min: 0,
-            max: 1,
-            addonAfter: '单位'
+            max: 1
           }
         },
         {

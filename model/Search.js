@@ -64,31 +64,30 @@ export async function loadDataFromExcelFiles (folderPath) {
  * @returns {Object} 返回包含匹配资源的JSON对象
  */
 export async function searchResources (keyword, data) {
-  // 忽略大小写
   const normalizedKeyword = keyword.toLowerCase()
-  // 加载配置
-  let { threshold } = Config.getConfig('memz')
-  // 配置Fuse.js
-  const options = {
-    keys: ['关键词'],
-    threshold, // 设置阈值,模糊匹配的宽松度
-    ignoreLocation: true, // 忽略匹配位置
-    includeScore: true // 包含匹配的评分，评分越低表示匹配越好
-  }
 
-  const fuse = new Fuse(data, options)
-
+  // 如果关键词长度大于等于3，使用 Fuse 进行模糊匹配
   if (keyword.length >= 3) {
-    const result = fuse.search(keyword)
-    return result.map(item => item.item)
+    // 配置 Fuse.js
+    let { threshold } = Config.getConfig('memz')
+    const fuseOptions = {
+      keys: ['关键词'],
+      threshold, // 设置阈值，模糊匹配的宽松度
+      ignoreLocation: true, // 忽略匹配位置
+      includeScore: true // 包含匹配的评分，评分越低表示匹配越好
+    }
+
+    const fuse = new Fuse(data, fuseOptions)
+    const result = fuse.search(normalizedKeyword)
+    return result.map(item => item.item) // 只返回匹配的项
   }
 
-  const result = data.filter(row =>
+  // 对于小于3个字符的关键词，使用原生的 includes 进行匹配
+  return data.filter(row =>
     row.关键词 && row.关键词.toLowerCase().includes(normalizedKeyword)
   )
-
-  return result
 }
+
 /**
  * 执行磁力搜索
  * @param {string} searchQuery 搜索关键词

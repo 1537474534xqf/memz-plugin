@@ -578,7 +578,7 @@ export async function startServer () {
       try {
         const result = await getLocalIPs()
         logger.info('############################################################')
-        logger.info(chalk.greenBright('MEMZ-API已使用 ' + (config.httpsenabled ? 'HTTPS' : 'HTTP') + ' 协议启动'))
+        logger.info(chalk.greenBright('MEMZ-API 已使用 ' + (config.httpsenabled ? 'HTTPS' : 'HTTP') + ' 协议启动'))
         logger.info(chalk.blueBright('- 公网 IP 地址 '))
         logger.info(chalk.yellowBright(`- ${protocol}://${result.public}:${config.port}`))
 
