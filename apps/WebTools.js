@@ -568,22 +568,30 @@ export class WebTools extends plugin {
   // 获取网站图标
   async getFavicon (e) {
     const { getFaviconAll } = Config.getConfig('memz')
-    if (!getFaviconAll && !e.isMaster) { return logger.warn('[memz-plugin]进制转换状态当前为仅主人可用') }
+
+    if (!getFaviconAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] 进制转换状态当前为仅主人可用')
+    }
+
     let url = e.msg.match(/^#?(获取)?网站图标\s*(\S+.*)/)?.[2]?.trim()
 
     if (!url) {
       return e.reply('请提供有效的网址', true)
     }
 
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!/^https?:\/\//i.test(url)) {
       url = 'https://' + url
     }
 
     try {
       const response = await axios.get(url)
+
       const $ = cheerio.load(response.data)
 
-      let iconUrl = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href')
+      let iconUrl =
+      $('link[rel="icon"]').attr('href') ||
+      $('link[rel="shortcut icon"]').attr('href') ||
+      $('meta[property="og:image"]').attr('content')
 
       if (!iconUrl) {
         return e.reply('未找到该网站图标', true)
@@ -592,6 +600,10 @@ export class WebTools extends plugin {
       if (iconUrl.startsWith('/')) {
         const baseUrl = new URL(url)
         iconUrl = baseUrl.origin + iconUrl
+      }
+
+      if (!/^https?:\/\//i.test(iconUrl)) {
+        return e.reply('图标地址无效', true)
       }
 
       e.reply(['获取到的网站图标:', segment.image(iconUrl)], true)
