@@ -51,7 +51,7 @@ export function supportGuoba () {
         {
           field: 'memz.MEMZRestart',
           label: '劫持重启',
-          bottomHelpMessage: '劫持Miao-Yunzai的重启,变成前台重启',
+          bottomHelpMessage: '劫持Miao-Yunzai的重启,变成前台重启,只支持Windows系统',
           component: 'Switch'
         },
         {

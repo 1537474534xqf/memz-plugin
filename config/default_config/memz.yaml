@@ -3,7 +3,7 @@
 SystemStatusAll: false
 # Redis状态是否所有人可用
 RedisStatusAll: false
-# 是否启用前台重启劫持(仅测试Miao-Yunzai)
+# 是否启用前台重启劫持(仅测试Miao-Yunzai),只支持Windows系统
 MEMZRestart: false
 # 自动点赞 主人默认在点赞名单
 AutoLike: true
