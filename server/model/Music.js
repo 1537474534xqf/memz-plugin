@@ -50,6 +50,7 @@ export async function executeShareCard (type, title, content, singer, image) {
   }
 
   try {
+    logger.info("音卡pb", 分享卡pb)
     let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
 
