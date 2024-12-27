@@ -38,7 +38,7 @@ export async function executeShareCard (type, title, content, singer, image) {
         15: 7451537341556772000
       },
       10: 1,
-      11: groupId,
+      11: Number(groupId),
       12: {
         10: title,
         11: content,
