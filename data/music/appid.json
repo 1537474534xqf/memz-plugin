@@ -345,5 +345,11 @@
         "name": "晋江文学城",
         "package_name": "com.jjwxc.reader",
         "sign": "629D5240C8F3E175E897C7844A8737F2"
+    },
+    "oppostore": {
+        "appid": 1108217754,
+        "name": "OPPO商城",
+        "package_name": "com.oppo.store",
+        "sign": "7815C5174154B7CE33F023602106ECC6"
     }
 }
