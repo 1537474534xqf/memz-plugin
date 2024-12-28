@@ -325,7 +325,7 @@ export function supportGuoba () {
           field: 'memz.IpinfoToken',
           label: 'Ipinfo的Token',
           bottomHelpMessage: '前往 https://ipinfo.io 注册账号并获取 Token',
-          component: 'Input',
+          component: 'InputPassword',
           componentProps: {
             placeholder: 'Token'
           }
