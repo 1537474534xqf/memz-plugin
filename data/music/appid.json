@@ -351,5 +351,11 @@
         "name": "OPPO商城",
         "package_name": "com.oppo.store",
         "sign": "7815C5174154B7CE33F023602106ECC6"
+    },
+    "pubgmhd": {
+        "appid": 1106467070,
+        "name": "和平精英",
+        "package_name": "com.tencent.tmgp.pubgmhd",
+        "sign": "38B26479E4B500E8161598315C4AD35C"
     }
 }
