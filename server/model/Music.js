@@ -69,6 +69,8 @@ export async function executeShareCard (type, title, content, singer, image) {
   try {
     结果 = await sendMethod('OidbSvc.0xb77_9', encodeMethod(分享卡pb))
 
+    logger.info(`结果: ${结果}`)
+
     let decodeMethod
     if (Bot[ICQQBotQQ]?.icqq?.core?.pb?.decode) {
       decodeMethod = Bot[ICQQBotQQ].icqq.core.pb.decode
@@ -78,7 +80,8 @@ export async function executeShareCard (type, title, content, singer, image) {
       return logger.error('未找到有效的解码方法: icqq.core.pb.decode 或 core.pb.decode')
     }
 
-    let result = decodeMethod(结果)
+    let result = await decodeMethod(结果)
+    logger.info(`解码结果: ${JSON.stringify(result, null, 2)}`)
 
     logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${groupId} 分享音乐卡片`)
     if (result[3] !== 0) {
