@@ -50,12 +50,20 @@ export async function executeShareCard (type, title, content, singer, image) {
   }
 
   try {
-    let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
+    let 结果
+    if (Bot[ICQQBotQQ].sdk.sendUni) {
+      结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
+    } else if (Bot[ICQQBotQQ].sendOidb) {
+      结果 = await Bot[ICQQBotQQ].sendOidb('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
+    } else {
+      logger.error('Bot[ICQQBotQQ].sdk.sendUni 或 Bot[ICQQBotQQ].sendOidb 未找到')
+      return
+    }
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
 
     logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${groupId} 分享音乐卡片`)
     if (result[3] !== 0) {
-      Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`歌曲分享失败：${result[3]}`,分享卡pb, true)
+      Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`歌曲分享失败：${result[3]}`, 分享卡pb, true)
       logger.error(`音卡失败：${result[3]}`)
     } else {
       let seq = result[4][8]
