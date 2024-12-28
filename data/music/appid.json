@@ -339,5 +339,11 @@
         "name": "少女前线",
         "package_name": "com.sunborn.girlsfrontline.cn",
         "sign": "fdd4834f3dd3194227384b88c74448ab"
+    },
+    "jinjiang": {
+        "appid": 1101956959,
+        "name": "晋江文学城",
+        "package_name": "com.jjwxc.reader",
+        "sign": "629D5240C8F3E175E897C7844A8737F2"
     }
 }
