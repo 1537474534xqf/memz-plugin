@@ -49,8 +49,25 @@ export async function executeShareCard (type, title, content, singer, image) {
     6: 'android 9.1.25'
   }
 
+  let 结果
+
+  const sendMethod = Bot[ICQQBotQQ].sdk?.sendUni || Bot[ICQQBotQQ].sendOidb
+
+  let encodeMethod
+  if (Bot.icqq?.core?.pb?.encode) {
+    encodeMethod = Bot.icqq.core.pb.encode
+  } else if (core?.pb?.encode) {
+    encodeMethod = core.pb.encode
+  } else {
+    logger.error('未找到有效的编码方法: icqq.core.pb.encode 或 core.pb.encode')
+    return
+  }
+
+  if (!sendMethod) {
+    return logger.error('未找到有效的发送方法: sdk.sendUni 或 sendOidb')
+  }
   try {
-    let 结果 = await Bot[ICQQBotQQ].sendOidb('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
+    结果 = await sendMethod('OidbSvc.0xb77_9', encodeMethod(分享卡pb))
 
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
 
