@@ -11,6 +11,12 @@ AutoLike: true
 AutoLikeList: []
 # 谁艾特我保留时长(小时)
 whoAtmeTime: 24
+# 主人被禁言自动解禁
+helpMaster: true
+# 主人被禁言自动解禁提示语
+helpMasterText: "我来救你了主人！！！！！"
+# 主人被禁言救不了提示语
+nohelpMasterText: "主人~我救不了你啊！"
 # 艾特全体文本
 atalltext: "不🈷️"
 # 艾特全体分片

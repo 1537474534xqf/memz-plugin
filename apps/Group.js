@@ -154,3 +154,44 @@ export class GroupPlugin extends plugin {
     }
   }
 }
+export class helpMaster extends plugin {
+  constructor () {
+    super({
+      name: '主人解禁',
+      dsc: '主人解禁',
+      event: 'notice.group.ban',
+      priority: 1,
+      rule: [
+        {
+          fnc: '主人被禁言解禁'
+        }
+      ]
+    }
+    )
+  }
+
+  async 主人被禁言解禁 (e) {
+    if (!e.isMaster) return false
+
+    const { helpMaster, helpMasterText, nohelpMasterText } = Config.getConfig('memz')
+
+    if (!helpMaster) return logger.warn('[memz-plugin] 主人解禁功能未开启')
+
+    if ((e.group.pickMember(this.e.user_id, true).is_admin && !e.group.is_owner) || (!e.bot.pickGroup(e.group_id).is_admin && !e.group.is_owner)) {
+      if (nohelpMasterText) {
+        return e.reply(nohelpMasterText)
+      } else {
+        return false
+      }
+    }
+
+    if (e.duration === 0) return false
+
+    await e.group.muteMember(e.user_id, 0)
+    if (helpMasterText) {
+      return e.reply(helpMasterText)
+    } else {
+      return false
+    }
+  }
+}

@@ -66,8 +66,8 @@ export function supportGuoba () {
         },
         {
           field: 'music.ICQQBotQQ',
-          label: '使用ICQQ的QQ号',
-          bottomHelpMessage: '使用ICQQ适配器的机器人QQ号(必须协议端!)',
+          label: '签卡Bot',
+          bottomHelpMessage: '使用 ICQQ 适配器的机器人QQ号(必须协议端!)',
           component: 'Input',
           componentProps: {
             placeholder: '请输入Bot的QQ号'
@@ -111,6 +111,30 @@ export function supportGuoba () {
           component: 'InputNumber',
           componentProps: {
             addonAfter: '小时'
+          }
+        },
+        {
+          field: 'memz.helpMaster',
+          label: '主人解禁',
+          bottomHelpMessage: '主人被禁言自动解禁',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.helpMasterText',
+          label: '解禁提示语',
+          bottomHelpMessage: '主人被禁言自动解禁提示语',
+          component: 'Input',
+          componentProps: {
+            placeholder: '请输入自动解禁提示语,留空为不发送提示语'
+          }
+        },
+        {
+          field: 'memz.nohelpMasterText',
+          label: '无法解禁提示语',
+          bottomHelpMessage: '主人被禁言救不了提示语',
+          component: 'Input',
+          componentProps: {
+            placeholder: '请输入无法解禁提示语,留空为不发送提示语'
           }
         },
         {
