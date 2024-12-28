@@ -56,29 +56,22 @@ export async function executeShareCard (type, title, content, singer, image) {
   let encodeMethod
   if (core?.pb?.encode) {
     encodeMethod = core.pb.encode
-  } else if (Bot.icqq?.core?.pb?.encode) {
-    encodeMethod = Bot.icqq.core.pb.encode
   } else {
-    return logger.error('未找到有效的编码方法: icqq.core.pb.encode 或 core.pb.encode')
+    encodeMethod = Bot.icqq.core.pb.encode
   }
 
-  if (!sendMethod) {
-    return logger.error('未找到有效的发送方法: sdk.sendUni 或 sendOidb')
+  let decodeMethod
+  if (core.pb.decode) {
+    decodeMethod = core.pb.decode
+  } else {
+    decodeMethod = Bot[ICQQBotQQ].icqq.core.pb.decode
   }
 
+  logger.info(`编码方法: ${encodeMethod}, 解码方法: ${decodeMethod}`)
   try {
     结果 = await sendMethod('OidbSvc.0xb77_9', encodeMethod(分享卡pb))
 
     logger.info(`结果: ${结果}`)
-
-    let decodeMethod
-    if (Bot[ICQQBotQQ]?.icqq?.core?.pb?.decode) {
-      decodeMethod = Bot[ICQQBotQQ].icqq.core.pb.decode
-    } else if (core?.pb?.decode) {
-      decodeMethod = core.pb.decode
-    } else {
-      return logger.error('未找到有效的解码方法: icqq.core.pb.decode 或 core.pb.decode')
-    }
 
     let result = await decodeMethod(结果)
     logger.info(`解码结果: ${JSON.stringify(result, null, 2)}`)
