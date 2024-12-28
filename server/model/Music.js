@@ -54,7 +54,7 @@ export async function executeShareCard (type, title, content, singer, image) {
   const sendMethod = Bot[ICQQBotQQ].sdk?.sendUni || this.e.bot.sendUni
 
   let encodeMethod
-  if (core.pb.encode) {
+  if (core?.pb?.encode) {
     encodeMethod = core.pb.encode
   } else if (Bot.icqq?.core?.pb?.encode) {
     encodeMethod = Bot.icqq.core.pb.encode
@@ -65,10 +65,20 @@ export async function executeShareCard (type, title, content, singer, image) {
   if (!sendMethod) {
     return logger.error('未找到有效的发送方法: sdk.sendUni 或 sendOidb')
   }
+
   try {
     结果 = await sendMethod('OidbSvc.0xb77_9', encodeMethod(分享卡pb))
 
-    let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
+    let decodeMethod
+    if (Bot[ICQQBotQQ]?.icqq?.core?.pb?.decode) {
+      decodeMethod = Bot[ICQQBotQQ].icqq.core.pb.decode
+    } else if (core?.pb?.decode) {
+      decodeMethod = core.pb.decode
+    } else {
+      return logger.error('未找到有效的解码方法: icqq.core.pb.decode 或 core.pb.decode')
+    }
+
+    let result = decodeMethod(结果)
 
     logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${groupId} 分享音乐卡片`)
     if (result[3] !== 0) {
