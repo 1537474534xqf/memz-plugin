@@ -50,15 +50,7 @@ export async function executeShareCard (type, title, content, singer, image) {
   }
 
   try {
-    let 结果
-
-    if (Bot[ICQQBotQQ].sdk?.sendUni) {
-      结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
-    } else if (Bot[ICQQBotQQ].sendOidb) {
-      结果 = await Bot[ICQQBotQQ].sendOidb('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
-    } else {
-      return logger.error('未找到有效的发送方法: sdk.sendUni 或 sendOidb')
-    }
+    let 结果 = await Bot[ICQQBotQQ].sendOidb('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
 
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
 
