@@ -54,13 +54,12 @@ export async function executeShareCard (type, title, content, singer, image) {
   const sendMethod = Bot[ICQQBotQQ].sdk?.sendUni || Bot[ICQQBotQQ].sendOidb
 
   let encodeMethod
-  if (Bot.icqq?.core?.pb?.encode) {
-    encodeMethod = Bot.icqq.core.pb.encode
-  } else if (core?.pb?.encode) {
+  if (core?.pb?.encode) {
     encodeMethod = core.pb.encode
+  } else if (Bot.icqq?.core?.pb?.encode) {
+    encodeMethod = Bot.icqq.core.pb.encode
   } else {
-    logger.error('未找到有效的编码方法: icqq.core.pb.encode 或 core.pb.encode')
-    return
+    return logger.error('未找到有效的编码方法: icqq.core.pb.encode 或 core.pb.encode')
   }
 
   if (!sendMethod) {
