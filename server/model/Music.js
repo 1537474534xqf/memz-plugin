@@ -51,10 +51,10 @@ export async function executeShareCard (type, title, content, singer, image) {
 
   let 结果
 
-  const sendMethod = Bot[ICQQBotQQ].sdk?.sendUni || Bot[ICQQBotQQ].sendOidb
+  const sendMethod = Bot[ICQQBotQQ].sdk?.sendUni || this.e.bot.sendUni
 
   let encodeMethod
-  if (core?.pb?.encode) {
+  if (core.pb.encode) {
     encodeMethod = core.pb.encode
   } else if (Bot.icqq?.core?.pb?.encode) {
     encodeMethod = Bot.icqq.core.pb.encode
