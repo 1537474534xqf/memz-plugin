@@ -67,10 +67,18 @@ export class WebStatus extends plugin {
   }
 
   async checkServiceStatusAndReport (service, userInfo) {
-    const { name, url, status, timeout, ignoreSSL, retry } = service
-
-    if (!name || !url || !status || !timeout || !retry) {
-      return `服务: ${name || '未知'} 缺少必需的字段。`
+    let { name, url, status, timeout, ignoreSSL, retry } = service
+    if (!timeout) {
+      timeout = 5
+    }
+    if (!retry) {
+      retry = 3
+    }
+    if (!ignoreSSL) {
+      ignoreSSL = false
+    }
+    if (!status) {
+      status = 200
     }
 
     try {
