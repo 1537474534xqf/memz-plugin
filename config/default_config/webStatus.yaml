@@ -1,17 +1,1 @@
-list:
-  - name: 柳大师
-    content:
-      - name: 百度
-        url: https://baidu.com
-        status: 200
-        timeout: 10
-        ignoreSSL: false
-        retry: 3
-  - name: 第二个柳大师
-    content:
-      - name: 第二个百度
-        url: https://baidu.com
-        status: 200
-        timeout: 10
-        ignoreSSL: false
-        retry: 3
+list: []

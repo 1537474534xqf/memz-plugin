@@ -1,7 +1,6 @@
 import { Config } from '#components'
 import axios from 'axios'
 import https from 'https'
-import pLimit from 'p-limit'
 
 export class WebStatus extends plugin {
   constructor () {
@@ -31,7 +30,6 @@ export class WebStatus extends plugin {
     if (!list || list.length === 0) return
 
     const forwardMessages = []
-    const limit = pLimit(5)
 
     for (const group of list) {
       const groupName = group.name || '未知分组'
@@ -43,7 +41,7 @@ export class WebStatus extends plugin {
       })
 
       const serviceChecks = group.content.map((service) =>
-        limit(() => this.checkServiceStatusAndReport(service, userInfo))
+        this.checkServiceStatusAndReport(service, userInfo)
       )
 
       try {
