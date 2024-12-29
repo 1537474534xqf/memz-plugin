@@ -2,12 +2,12 @@ import fs from 'fs'
 import Redis from 'ioredis'
 import { Config, PluginPath } from '#components'
 import { generateScreenshot } from '#model'
-
+import { RedisConfig } from '../components/Redis.js'
 export class RedisStatus extends plugin {
   constructor () {
     super({
-      name: 'Redis状态',
-      dsc: 'Redis状态',
+      name: 'Redis',
+      dsc: 'Redis',
       event: 'message',
       priority: 6,
       rule: [
@@ -15,8 +15,33 @@ export class RedisStatus extends plugin {
           reg: /^#?redis(状态|统计|狀態|統計)(\s*pro)?/i,
           fnc: 'getRedisInfo'
         }
+        // {
+        //   reg: /^#*redis(一键)?(清理|释放|归零|清空)$/i,
+        //   fnc: 'clearMemory'
+        // }
       ]
     })
+  }
+
+  async clearMemory (e) {
+    if (!e.isMaster) return logger.warn('[memz-plugin] 清理内存仅限主人使用')
+
+    const redisClient = new Redis({
+      host: RedisConfig.host,
+      port: RedisConfig.port,
+      username: RedisConfig.username,
+      password: RedisConfig.password
+    })
+
+    try {
+      await redisClient.flushdb()
+      e.reply('Redis清理成功！恭喜你,你存在Redis的数据全没了~')
+    } catch (err) {
+      logger.error('[memz-plugin] 清理Redis内存失败:', err)
+      e.reply('Redis清理失败', err)
+    } finally {
+      redisClient.disconnect()
+    }
   }
 
   async getRedisInfo (e) {
