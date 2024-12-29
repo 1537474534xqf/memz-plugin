@@ -1,7 +1,9 @@
 import { Config, PluginData } from '#components'
 import path from 'path'
 import fs from 'fs'
+
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
+
 export class 音卡 extends plugin {
   constructor () {
     super({
@@ -11,7 +13,7 @@ export class 音卡 extends plugin {
       priority: -9,
       rule: [
         {
-          reg: /^#音卡测试\s*(\S+)\s*,\s*(.*)$/i,
+          reg: /^#音卡测试\s*(\S+)\s*(.*)$/i,
           fnc: '音卡测试',
           permission: 'master'
         }
@@ -22,7 +24,7 @@ export class 音卡 extends plugin {
   async 音卡测试 (e) {
     const { ICQQBotQQ } = Config.getConfig('music')
 
-    const match = e.msg.match(/^#音卡测试\s*(\S+)\s*,\s*(.*)$/i)
+    const match = e.msg.match(/^#音卡测试\s*(\S+)\s*(.*)$/i)
 
     if (!match) {
       e.reply('请提供有效的类型和其他参数', true)
