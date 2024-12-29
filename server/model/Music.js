@@ -1,5 +1,6 @@
-import appidData from '../../data/music/appid.json' with { type: 'json' }
-import { Config } from '#components'
+import path from 'path'
+import { Config, PluginData } from '#components'
+const appidData = await import(path.join(PluginData, 'music', 'appid.json'))
 /**
  * 执行分享卡片操作
  * @param {string} type - 卡片类型
