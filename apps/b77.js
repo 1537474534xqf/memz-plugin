@@ -1,7 +1,7 @@
 import { Config, PluginData } from '#components'
 import path from 'path'
-
-const appidData = await import(path.join(PluginData, 'music', 'appid.json'))
+import fs from 'fs'
+const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
 
 export class 音卡 extends plugin {
   constructor () {

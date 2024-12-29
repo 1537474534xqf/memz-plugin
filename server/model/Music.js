@@ -1,6 +1,7 @@
 import path from 'path'
+import fs from 'fs'
 import { Config, PluginData } from '#components'
-const appidData = await import(path.join(PluginData, 'music', 'appid.json'))
+const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
 /**
  * 执行分享卡片操作
  * @param {string} type - 卡片类型
