@@ -1,5 +1,16 @@
 import puppeteer from 'puppeteer'
 import { Config } from '#components'
+// 避免每次都重新启动puppeteer
+let globalBrowserInstance
+// 浏览器实例
+async function getBrowserInstance (launchOptions) {
+  if (globalBrowserInstance) {
+    return globalBrowserInstance
+  } else {
+    globalBrowserInstance = await puppeteer.launch(launchOptions)
+    return globalBrowserInstance
+  }
+}
 
 export class PingScreenshot extends plugin {
   constructor () {
@@ -62,7 +73,7 @@ export class PingScreenshot extends plugin {
     }
 
     logger.debug('启动 Puppeteer 浏览器...')
-    const browser = await puppeteer.launch(launchOptions)
+    const browser = await getBrowserInstance(launchOptions)
     const page = await browser.newPage()
     logger.debug('已创建新页面')
 
@@ -174,7 +185,8 @@ export class PingScreenshot extends plugin {
     }
 
     logger.debug('启动 Puppeteer 浏览器')
-    const browser = await puppeteer.launch(launchOptions)
+
+    const browser = await getBrowserInstance(launchOptions)
 
     let page
     try {
