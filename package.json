@@ -13,6 +13,7 @@
         "iconv-lite": "^0.6.3",
         "ioredis": "*",
         "markdown-it": "^14.1.0",
+        "p-limit": "^6.2.0",
         "systeminformation": "*",
         "whois-json": "*",
         "xlsx": "*",
