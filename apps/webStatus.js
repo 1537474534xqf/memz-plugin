@@ -23,10 +23,13 @@ export class webStatus extends plugin {
   async webStatus (e) {
     const forwardMessages = []
 
-    await Promise.all(list.map(async (group) => {
+    // 顺序
+    for (const group of list) {
       try {
         const groupName = group.name
-        const groupStatusMessages = await Promise.all(group.content.map(async (service) => {
+        const groupStatusMessages = []
+
+        for (const service of group.content) {
           try {
             const { name, url, status, timeout, ignoreSSL, retry } = service
 
@@ -37,21 +40,23 @@ export class webStatus extends plugin {
             const response = await this.checkServiceStatus(url, status, timeout, ignoreSSL, retry)
 
             if (response) {
-              return `服务: ${name} 状态: ✅ (${response.status})`
+              groupStatusMessages.push(`服务: ${name} 状态: ✅ (${response.status})`)
             } else {
-              return `服务: ${name} 状态: ❌`
+              groupStatusMessages.push(`服务: ${name} 状态: ❌`)
             }
           } catch (error) {
-            return `服务: ${service.name || '未知'} 状态: ❌ (${error.message})`
+            groupStatusMessages.push(`服务: ${service.name || '未知'} 状态: ❌ (${error.message})`)
           }
-        }))
+        }
 
+        // 分组标题
         forwardMessages.push({
           user_id: e.user_id,
           nickname: e.sender.nickname || '为什么不玩原神',
           message: `---${groupName}---`
         })
 
+        // 服务状态
         if (groupStatusMessages.length > 0) {
           forwardMessages.push({
             user_id: e.user_id,
@@ -66,7 +71,7 @@ export class webStatus extends plugin {
           message: `分组: ${group.name || '未知'} 状态: ❌ (${error.message})`
         })
       }
-    }))
+    }
 
     if (forwardMessages.length > 0) {
       await e.reply(await Bot.makeForwardMsg(forwardMessages))
