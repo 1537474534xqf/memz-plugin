@@ -19,6 +19,13 @@ export class WebStatus extends plugin {
     })
   }
 
+  getUserInfo (e) {
+    return {
+      user_id: e.user_id,
+      nickname: e.sender.nickname || '为什么不玩原神'
+    }
+  }
+
   async webStatus (e) {
     const { list } = Config.getConfig('webStatus')
     const forwardMessages = []
@@ -26,45 +33,29 @@ export class WebStatus extends plugin {
 
     for (const group of list) {
       const groupName = group.name || '未知分组'
+      const userInfo = this.getUserInfo(e)
+
+      forwardMessages.push({
+        ...userInfo,
+        message: `-----${groupName}-----`
+      })
+
+      const serviceChecks = group.content.map((service) =>
+        limit(() => this.checkServiceStatusAndReport(service, userInfo))
+      )
 
       try {
-        forwardMessages.push({
-          user_id: e.user_id,
-          nickname: e.sender.nickname || '为什么不玩原神',
-          message: `-----${groupName}-----`
-        })
-
-        const serviceChecks = group.content.map(service =>
-          limit(async () => {
-            const { name, url, status, timeout, ignoreSSL, retry } = service
-            if (!name || !url || !status || !timeout || !retry) {
-              return `服务: ${name || '未知'} 缺少必需的字段。`
-            }
-
-            try {
-              const response = await this.checkServiceStatus(url, status, timeout, ignoreSSL, retry)
-              return response
-                ? `服务: ${name} \n状态: ✅ (${response.status})`
-                : `服务: ${name} \n状态: ❌`
-            } catch (error) {
-              return `服务: ${name} \n状态: ❌ (${error.message})`
-            }
-          })
-        )
-
         const results = await Promise.all(serviceChecks)
 
-        results.forEach(result => {
+        results.forEach((result) => {
           forwardMessages.push({
-            user_id: e.user_id,
-            nickname: e.sender.nickname || '为什么不玩原神',
+            ...userInfo,
             message: result
           })
         })
       } catch (error) {
         forwardMessages.push({
-          user_id: e.user_id,
-          nickname: e.sender.nickname || '为什么不玩原神',
+          ...userInfo,
           message: `分组: ${groupName} \n状态: ❌ (${error.message})`
         })
       }
@@ -72,6 +63,23 @@ export class WebStatus extends plugin {
 
     if (forwardMessages.length > 0) {
       await e.reply(await Bot.makeForwardMsg(forwardMessages))
+    }
+  }
+
+  async checkServiceStatusAndReport (service, userInfo) {
+    const { name, url, status, timeout, ignoreSSL, retry } = service
+
+    if (!name || !url || !status || !timeout || !retry) {
+      return `服务: ${name || '未知'} 缺少必需的字段。`
+    }
+
+    try {
+      const response = await this.checkServiceStatus(url, status, timeout, ignoreSSL, retry)
+      return response
+        ? `服务: ${name} \n状态: ✅ \n状态码: ${response.status}`
+        : `服务: ${name} \n状态: ❌`
+    } catch (error) {
+      return `服务: ${name} \n状态: ❌ \n${error.message}`
     }
   }
 
@@ -100,7 +108,9 @@ export class WebStatus extends plugin {
         }
       } catch (error) {
         if (attempts === retry) {
-          throw new Error(`请求失败: ${error.message} \n重试 ${attempts}/${retry}\nURL: ${url}\nTimeout: ${timeout}s\nSSL: ${ignoreSSL}`)
+          throw new Error(
+            `请求失败: ${error.message} \n重试 ${attempts}/${retry}\nURL: ${url}\nTimeout: ${timeout}s\nSSL: ${ignoreSSL}`
+          )
         }
       }
     }
