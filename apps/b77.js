@@ -34,7 +34,11 @@ export class 音卡 extends plugin {
     const type = match[1]
     const customParams = match[2].split(',')
 
+    logger.info(`捕获的参数: type = ${type}, customParams = ${JSON.stringify(customParams)}`)
+
     const [title = 'MapleLeaf', content = '玩原神玩的', singer = 'MapleLeaf', image = 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg', groupId = e.group_id] = customParams
+
+    logger.info(`最终参数: title = ${title}, content = ${content}, singer = ${singer}, image = ${image}, groupId = ${groupId}`)
 
     await executeShareCard(
       ICQQBotQQ,
@@ -91,8 +95,11 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
   }
 
   try {
+    logger.info(`开始分享音卡: ${分享卡pb}`)
     let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
+
+    logger.info(`音卡分享结果: ${JSON.stringify(result)}`)
 
     if (result[3] !== 0) {
       Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`歌曲分享失败：${result[3]}`, true)
