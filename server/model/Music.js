@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import { Config, PluginData } from '#components'
+import { Config, PluginData, BotName } from '#components'
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
 /**
  * 执行分享卡片操作
@@ -52,8 +52,11 @@ export async function executeShareCard (type, title, content, singer, image) {
   }
 
   try {
-    let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
-    let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
+    let 结果;
+    结果 = BotName === 'Trss-Yunzai' 
+        ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].sdk.sendUnir(分享卡pb)) 
+        : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡pb));    
+        let result = BotName === 'Trss-Yunzai' ? Bot[ICQQBotQQ].sdk.sendUnir(结果) : Bot[ICQQBotQQ].sendUni(结果)
 
     logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${groupId} 分享音乐卡片`)
     if (result[3] !== 0) {
@@ -63,7 +66,7 @@ export async function executeShareCard (type, title, content, singer, image) {
       let seq = result[4][8]
       logger.info(`音卡分享成功，seq=${seq}`)
 
-      let msgHistory = await Bot[3310434307].pickGroup(groupId).getChatHistory(seq, 1)
+      let msgHistory = await Bot[ICQQBotQQ].pickGroup(groupId).getChatHistory(seq, 1)
 
       if (msgHistory && msgHistory.length > 0) {
         let messageData = msgHistory[0].message.find(msg => msg.type === 'json')
