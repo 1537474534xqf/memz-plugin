@@ -2,7 +2,6 @@ import { Config, PluginData } from '#components'
 import path from 'path'
 import fs from 'fs'
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
-
 export class 音卡 extends plugin {
   constructor () {
     super({
@@ -12,7 +11,7 @@ export class 音卡 extends plugin {
       priority: -9,
       rule: [
         {
-          reg: /^#?音卡测试\s*(\S+)\s*(.*)$/i,
+          reg: /^#音卡测试\s*(\S+)\s*,\s*(.*)$/i,
           fnc: '音卡测试',
           permission: 'master'
         }
@@ -22,10 +21,11 @@ export class 音卡 extends plugin {
 
   async 音卡测试 (e) {
     const { ICQQBotQQ } = Config.getConfig('music')
-    const match = e.msg.match(/^#?音卡测试\s*(\S+)\s*(.*)$/i)
+
+    const match = e.msg.match(/^#音卡测试\s*(\S+)\s*,\s*(.*)$/i)
 
     if (!match) {
-      e.reply('请提供有效的类型', true)
+      e.reply('请提供有效的类型和其他参数', true)
       return
     }
 
@@ -56,6 +56,11 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
 
   const { appid, package_name: packageName, sign } = appInfo
 
+  title = title || 'MapleLeaf'
+  content = content || '玩原神玩的'
+  singer = singer || 'https://MapleLeaf.icu'
+  image = image || 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg'
+
   let 分享卡pb = {
     1: 2935,
     2: 9,
@@ -84,7 +89,6 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
   }
 
   try {
-    logger.info('分享卡pb', 分享卡pb)
     let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
 
