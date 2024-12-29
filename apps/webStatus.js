@@ -2,8 +2,6 @@ import { Config } from '#components'
 import axios from 'axios'
 import https from 'https'
 
-const { list } = Config.getConfig('webStatus')
-
 export class webStatus extends plugin {
   constructor () {
     super({
@@ -21,6 +19,7 @@ export class webStatus extends plugin {
   }
 
   async webStatus (e) {
+    const { list } = Config.getConfig('webStatus')
     const forwardMessages = []
 
     // 顺序
@@ -53,7 +52,7 @@ export class webStatus extends plugin {
         forwardMessages.push({
           user_id: e.user_id,
           nickname: e.sender.nickname || '为什么不玩原神',
-          message: `---${groupName}---`
+          message: `-----${groupName}-----`
         })
 
         // 服务状态
