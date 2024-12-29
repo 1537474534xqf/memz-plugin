@@ -52,11 +52,14 @@ export async function executeShareCard (type, title, content, singer, image) {
   }
 
   try {
-    let 结果;
-    结果 = BotName === 'Trss-Yunzai' 
-        ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].sdk.sendUnir(分享卡pb)) 
-        : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡pb));    
-        let result = BotName === 'Trss-Yunzai' ? Bot[ICQQBotQQ].sdk.sendUnir(结果) : Bot[ICQQBotQQ].sendUni(结果)
+    let 结果 = BotName === 'Trss-Yunzai'
+      ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].sdk.sendUnir(分享卡pb))
+      // eslint-disable-next-line
+      : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡pb))
+    let result = BotName === 'Trss-Yunzai'
+      ? Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
+      // eslint-disable-next-line
+      : core.pb.decode(结果)
 
     logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${groupId} 分享音乐卡片`)
     if (result[3] !== 0) {

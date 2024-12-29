@@ -1,4 +1,4 @@
-import { Config, PluginData } from '#components'
+import { Config, PluginData, BotName } from '#components'
 import path from 'path'
 import fs from 'fs'
 
@@ -97,9 +97,14 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
   }
 
   try {
-    logger.info(`分享卡数据: ${JSON.stringify(分享卡pb)}`)
-    let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
-    let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
+    let 结果 = BotName === 'Trss-Yunzai'
+      ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].sdk.sendUnir(分享卡pb))
+      // eslint-disable-next-line
+      : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡pb))
+    let result = BotName === 'Trss-Yunzai'
+      ? Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
+      // eslint-disable-next-line
+      : core.pb.decode(结果)
 
     logger.info(`音卡分享结果: ${JSON.stringify(result)}`)
 
