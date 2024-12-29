@@ -357,5 +357,11 @@
         "name": "和平精英",
         "package_name": "com.tencent.tmgp.pubgmhd",
         "sign": "38B26479E4B500E8161598315C4AD35C"
+    },
+    "gov": {
+        "appid": 1105066195,
+        "name": "国务院",
+        "package_name": "com.gov.cn",
+        "sign": "EC18B4135488732564581A0C2DACC1DE"
     }
 }
