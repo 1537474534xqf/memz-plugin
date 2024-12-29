@@ -27,7 +27,9 @@ export class WebStatus extends plugin {
   }
 
   async webStatus (e) {
-    const { list } = Config.getConfig('webStatus')
+    const { list } = Config.getConfig('webStatus') || {}
+    if (!list || list.length === 0) return
+
     const forwardMessages = []
     const limit = pLimit(5)
 
@@ -67,19 +69,7 @@ export class WebStatus extends plugin {
   }
 
   async checkServiceStatusAndReport (service, userInfo) {
-    let { name, url, status, timeout, ignoreSSL, retry } = service
-    if (!timeout) {
-      timeout = 5
-    }
-    if (!retry) {
-      retry = 3
-    }
-    if (!ignoreSSL) {
-      ignoreSSL = false
-    }
-    if (!status) {
-      status = 200
-    }
+    const { name, url, status = 200, timeout = 5, ignoreSSL = false, retry = 3 } = service
 
     try {
       const response = await this.checkServiceStatus(url, status, timeout, ignoreSSL, retry)
@@ -116,17 +106,7 @@ export class WebStatus extends plugin {
         }
       } catch (error) {
         if (attempts === retry) {
-          let errorMessage = `请求失败: ${error.message}`
-
-          if (error.code === 'ECONNABORTED') {
-            errorMessage = '请求超时'
-          } else if (error.code === 'ENOTFOUND') {
-            errorMessage = `网络不可达: 无法连接到 URL: ${url}`
-          } else if (error.response) {
-            errorMessage = `服务器响应错误: 状态码 ${error.response.status} `
-          } else {
-            errorMessage = `请求失败: ${error.message}`
-          }
+          let errorMessage = this.getErrorMessage(error, url)
 
           throw new Error(errorMessage)
         }
@@ -134,5 +114,17 @@ export class WebStatus extends plugin {
     }
 
     return response
+  }
+
+  getErrorMessage (error, url) {
+    if (error.code === 'ECONNABORTED') {
+      return '请求超时'
+    } else if (error.code === 'ENOTFOUND') {
+      return `网络不可达: 无法连接到 URL: ${url}`
+    } else if (error.response) {
+      return `服务器响应错误: 状态码 ${error.response.status}`
+    } else {
+      return `请求失败: ${error.message}`
+    }
   }
 }
