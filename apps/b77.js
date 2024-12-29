@@ -13,7 +13,7 @@ export class 音卡 extends plugin {
       priority: -9,
       rule: [
         {
-          reg: /^#音卡测试\s*(\S+)\s*(.*)$/i,
+          reg: /^#音卡测试(.*)$/i,
           fnc: '音卡测试',
           permission: 'master'
         }
@@ -24,21 +24,24 @@ export class 音卡 extends plugin {
   async 音卡测试 (e) {
     const { ICQQBotQQ } = Config.getConfig('music')
 
-    const match = e.msg.match(/^#音卡测试\s*(\S+)\s*(.*)$/i)
+    const match = e.msg.match(/^#音卡测试(.*)$/i)
 
     if (!match) {
       e.reply('请提供有效的类型和其他参数', true)
       return
     }
 
-    const type = match[1]
-    const customParams = match[2].split(',')
+    const customParams = match[1].split(',').map(param => param.trim())
 
-    logger.info(`捕获的参数: type = ${type}, customParams = ${JSON.stringify(customParams)}`)
+    let [type = '163', title = 'MapleLeaf', content = '玩原神玩的', singer = 'https://MapleLeaf.icu', image = 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg', groupId = e.group_id] = customParams
 
-    const [title = 'MapleLeaf', content = '玩原神玩的', singer = 'MapleLeaf', image = 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg', groupId = e.group_id] = customParams
+    if (title === '') title = 'MapleLeaf'
+    if (content === '') content = '玩原神玩的'
+    if (singer === '') singer = 'https://MapleLeaf.icu'
+    if (image === '') image = 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg'
+    if (groupId === '') groupId = e.group_id
 
-    logger.info(`最终参数: title = ${title}, content = ${content}, singer = ${singer}, image = ${image}, groupId = ${groupId}`)
+    logger.info(`最终参数:type = ${type}, title = ${title}, content = ${content}, singer = ${singer}, image = ${image}, groupId = ${groupId}`)
 
     await executeShareCard(
       ICQQBotQQ,
@@ -62,10 +65,9 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
 
   const { appid, package_name: packageName, sign } = appInfo
 
-  title = title || 'MapleLeaf'
-  content = content || '玩原神玩的'
-  singer = singer || 'https://MapleLeaf.icu'
-  image = image || 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg'
+  logger.info(`分享卡数据: ${JSON.stringify({
+    type, title, content, singer, image, groupId, appid, packageName, sign
+  })}`)
 
   let 分享卡pb = {
     1: 2935,
@@ -95,7 +97,6 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
   }
 
   try {
-    logger.info(`开始分享音卡: ${分享卡pb}`)
     let 结果 = await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
     let result = Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
 
