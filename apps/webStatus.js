@@ -108,12 +108,23 @@ export class WebStatus extends plugin {
         }
       } catch (error) {
         if (attempts === retry) {
-          throw new Error(
-            `请求失败: ${error.message} \n重试 ${attempts}/${retry}\nURL: ${url}\nTimeout: ${timeout}s\nSSL: ${ignoreSSL}`
-          )
+          let errorMessage = `请求失败: ${error.message}`
+
+          if (error.code === 'ECONNABORTED') {
+            errorMessage = '请求超时'
+          } else if (error.code === 'ENOTFOUND') {
+            errorMessage = `网络不可达: 无法连接到 URL: ${url}`
+          } else if (error.response) {
+            errorMessage = `服务器响应错误: 状态码 ${error.response.status} `
+          } else {
+            errorMessage = `请求失败: ${error.message}`
+          }
+
+          throw new Error(errorMessage)
         }
       }
     }
+
     return response
   }
 }
