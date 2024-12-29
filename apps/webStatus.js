@@ -2,7 +2,7 @@ import { Config } from '#components'
 import axios from 'axios'
 import https from 'https'
 
-export class webStatus extends plugin {
+export class WebStatus extends plugin {
   constructor () {
     super({
       name: 'webStatus',
@@ -22,52 +22,43 @@ export class webStatus extends plugin {
     const { list } = Config.getConfig('webStatus')
     const forwardMessages = []
 
-    // 顺序
     for (const group of list) {
+      const groupName = group.name || '未知分组'
+      const groupStatusMessages = []
+
       try {
-        const groupName = group.name
-        const groupStatusMessages = []
-
-        for (const service of group.content) {
-          try {
-            const { name, url, status, timeout, ignoreSSL, retry } = service
-
-            if (!name || !url || !status || !timeout || !retry) {
-              throw new Error(`服务 ${name || '未知'} 缺少必需的字段。`)
-            }
-
-            const response = await this.checkServiceStatus(url, status, timeout, ignoreSSL, retry)
-
-            if (response) {
-              groupStatusMessages.push(`服务: ${name} 状态: ✅ (${response.status})`)
-            } else {
-              groupStatusMessages.push(`服务: ${name} 状态: ❌`)
-            }
-          } catch (error) {
-            groupStatusMessages.push(`服务: ${service.name || '未知'} 状态: ❌ (${error.message})`)
+        const serviceChecks = group.content.map(async (service) => {
+          const { name, url, status, timeout, ignoreSSL, retry } = service
+          if (!name || !url || !status || !timeout || !retry) {
+            return `服务: ${name || '未知'} 缺少必需的字段。`
           }
-        }
 
-        // 分组标题
-        forwardMessages.push({
-          user_id: e.user_id,
-          nickname: e.sender.nickname || '为什么不玩原神',
-          message: `-----${groupName}-----`
+          try {
+            const response = await this.checkServiceStatus(url, status, timeout, ignoreSSL, retry)
+            return response
+              ? `服务: ${name} 状态: ✅ (${response.status})`
+              : `服务: ${name} 状态: ❌`
+          } catch (error) {
+            return `服务: ${name} 状态: ❌ (${error.message})`
+          }
         })
 
-        // 服务状态
+        const results = await Promise.all(serviceChecks)
+
+        groupStatusMessages.push(...results)
+
         if (groupStatusMessages.length > 0) {
           forwardMessages.push({
             user_id: e.user_id,
             nickname: e.sender.nickname || '为什么不玩原神',
-            message: groupStatusMessages.join('\n')
+            message: `-----${groupName}-----\n${groupStatusMessages.join('\n')}`
           })
         }
       } catch (error) {
         forwardMessages.push({
           user_id: e.user_id,
           nickname: e.sender.nickname || '为什么不玩原神',
-          message: `分组: ${group.name || '未知'} 状态: ❌ (${error.message})`
+          message: `分组: ${groupName} 状态: ❌ (${error.message})`
         })
       }
     }
@@ -78,19 +69,20 @@ export class webStatus extends plugin {
   }
 
   async checkServiceStatus (url, validStatuses, timeout, ignoreSSL, retry) {
-    let attempts = 0
-    let response = null
-
     const validStatusArray = Array.isArray(validStatuses)
       ? validStatuses
       : validStatuses.toString().split(':').map(Number)
+
+    const agent = new https.Agent({ rejectUnauthorized: !ignoreSSL })
+    let attempts = 0
+    let response = null
 
     while (attempts < retry) {
       attempts++
       try {
         const result = await axios.get(url, {
           timeout: timeout * 1000,
-          httpsAgent: new https.Agent({ rejectUnauthorized: !ignoreSSL })
+          httpsAgent: agent
         })
 
         if (validStatusArray.includes(result.status)) {
@@ -101,7 +93,7 @@ export class webStatus extends plugin {
         }
       } catch (error) {
         if (attempts === retry) {
-          throw new Error(`请求失败: ${error.message}`)
+          throw new Error(`请求失败: ${error.message} (重试 ${attempts}/${retry})\nURL: ${url}\nTimeout: ${timeout}s\nSSL: ${ignoreSSL}`)
         }
       }
     }
