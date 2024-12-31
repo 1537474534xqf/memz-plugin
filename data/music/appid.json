@@ -369,5 +369,17 @@
         "name": "三角洲行动",
         "package_name": "com.tencent.tmgp.dfm",
         "sign": "2b0a9ebd4896db62bef3f79d7496c19f"
+    },
+    "hunyuan": {
+        "appid": 102115491,
+        "name": "腾讯元宝",
+        "package_name": "com.tencent.hunyuan.app.chat",
+        "sign": "088a2bd0cbccac84927c722cf374ecba"
+    },
+    "huoying": {
+        "appid": 1104307008,
+        "name": "火影忍者",
+        "package_name": "com.tencent.KiHan",
+        "sign": "68ce8a967463a2c34b38adc48d0d373d"
     }
 }
