@@ -30,7 +30,7 @@ async function killChromeProcesses (groupId) {
 
     logger.info(`系统中的Chrome进程数量为: ${chromeProcesses}`)
     logger.info(`Chrome进程总内存使用量: ${totalMemory} KB`)
-    Bot.pickGroup(groupId).sendMsg(`Chrome进程数量: ${chromeProcesses}, 总内存使用: ${totalMemory} KB`)
+    Bot.pickGroup(groupId).sendMsg(`Chrome进程数量: ${chromeProcesses}\nChrome进程总内存使用: ${totalMemory} KB`)
 
     if (chromeProcesses > 0) {
       await execPromise('pkill chrome')
