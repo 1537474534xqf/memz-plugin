@@ -76,7 +76,6 @@ pnpm install --filter=memz-plugin
 | 系统状态     | #系统状态(pro)(max) | 查看系统当前状态        | 不建议promax           | Master & 可开放权限 |
 | 检查插件更新 | #memz检查更新       | 获取最新的提交          | 发送给每个主人!        | Master              |
 | 重启         | #memz重启           | 前台重启,先开启劫持重启 | 仅限Windows使用!!!     | Master              |
-| 设置主人     | #(新增/删除)主人    | 快捷设置主人            | 暂时注释掉             | Master              |
 
 ### 群聊功能
 
