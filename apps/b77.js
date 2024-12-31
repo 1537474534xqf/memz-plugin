@@ -4,11 +4,11 @@ import fs from 'fs'
 
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
 
-export class 音卡 extends plugin {
+export class b779 extends plugin {
   constructor () {
     super({
-      name: '音卡',
-      dsc: '音卡',
+      name: 'b77_9',
+      dsc: 'b77_9',
       event: 'message',
       priority: -9,
       rule: [
@@ -27,8 +27,7 @@ export class 音卡 extends plugin {
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
     if (!match) {
-      e.reply('请提供有效的类型和其他参数', true)
-      return
+      return e.reply('请提供有效的类型和其他参数', true)
     }
 
     const customParams = match[1].split(',').map(param => param.trim())

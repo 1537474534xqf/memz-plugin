@@ -17,6 +17,10 @@ export function supportGuoba () {
     configInfo: {
       schemas: [
         {
+          label: '基础配置',
+          component: 'SOFT_GROUP_BEGIN'
+        },
+        {
           component: 'Divider',
           label: '插件设置'
         },
@@ -49,10 +53,44 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          component: 'Divider',
+          label: '仓库更新推送'
+        },
+        {
+          field: 'update.checkupdate',
+          label: '自动检查仓库更新',
+          bottomHelpMessage: '检查插件更新并推送到主人',
+          component: 'Switch'
+        },
+        {
+          field: 'update.CUSTOM_REPOSITORY',
+          label: '仓库链接',
+          bottomHelpMessage: '填入仓库链接,如https://gitee.com/memzjs/memz-plugin,支持Gitee/Github',
+          component: 'GTags',
+          componentProps: {
+            allowAdd: true,
+            allowDel: true
+          }
+        },
+        {
+          field: 'update.cron',
+          label: '自动检查仓库更新',
+          helpMessage: '修改后重启生效',
+          bottomHelpMessage: '自动检查仓库更新Cron表达式',
+          component: 'EasyCron',
+          componentProps: {
+            placeholder: '请输入Cron表达式'
+          }
+        },
+        {
           field: 'memz.MEMZRestart',
           label: '劫持重启',
           bottomHelpMessage: '劫持Miao-Yunzai的重启,变成前台重启,只支持Windows系统',
           component: 'Switch'
+        },
+        {
+          label: '音卡签名',
+          component: 'SOFT_GROUP_BEGIN'
         },
         {
           component: 'Divider',
@@ -81,6 +119,10 @@ export function supportGuoba () {
           componentProps: {
             placeholder: '请输入群号'
           }
+        },
+        {
+          label: '服务状态',
+          component: 'SOFT_GROUP_BEGIN'
         },
         {
           component: 'Divider',
@@ -151,6 +193,10 @@ export function supportGuoba () {
               }
             ]
           }
+        },
+        {
+          label: '群聊功能',
+          component: 'SOFT_GROUP_BEGIN'
         },
         {
           component: 'Divider',
@@ -260,6 +306,10 @@ export function supportGuoba () {
           }
         },
         {
+          label: '个人功能',
+          component: 'SOFT_GROUP_BEGIN'
+        },
+        {
           component: 'Divider',
           label: '个人功能'
         },
@@ -276,34 +326,8 @@ export function supportGuoba () {
           component: 'GTags'
         },
         {
-          component: 'Divider',
-          label: '仓库更新推送'
-        },
-        {
-          field: 'update.checkupdate',
-          label: '自动检查仓库更新',
-          bottomHelpMessage: '检查插件更新并推送到主人',
-          component: 'Switch'
-        },
-        {
-          field: 'update.CUSTOM_REPOSITORY',
-          label: '仓库链接',
-          bottomHelpMessage: '填入仓库链接,如https://gitee.com/memzjs/memz-plugin,支持Gitee/Github',
-          component: 'GTags',
-          componentProps: {
-            allowAdd: true,
-            allowDel: true
-          }
-        },
-        {
-          field: 'update.cron',
-          label: '自动检查仓库更新',
-          helpMessage: '修改后重启生效',
-          bottomHelpMessage: '自动检查仓库更新Cron表达式',
-          component: 'EasyCron',
-          componentProps: {
-            placeholder: '请输入Cron表达式'
-          }
+          label: '工具设置',
+          component: 'SOFT_GROUP_BEGIN'
         },
         {
           component: 'Divider',
@@ -425,6 +449,10 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          label: '网络搜索',
+          component: 'SOFT_GROUP_BEGIN'
+        },
+        {
           component: 'Divider',
           label: '网络搜索设置'
         },
@@ -455,6 +483,10 @@ export function supportGuoba () {
           label: '磁力搜索',
           bottomHelpMessage: '由于内容涉及违规, 不建议开启,关闭时仅主人可用',
           component: 'Switch'
+        },
+        {
+          label: 'API服务',
+          component: 'SOFT_GROUP_BEGIN'
         },
         {
           component: 'Divider',
