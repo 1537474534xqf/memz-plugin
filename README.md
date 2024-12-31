@@ -64,7 +64,6 @@ pnpm install --filter=memz-plugin
 | 版本         | #memz版本           | 获取版本信息            | 需要先安装TRSS-Plugin  | All                 |
 | 更新日志     | #memz更新日志       | 获取Git提交信息         | 无                     | All                 |
 | 更新         | #memz更新           | 更新插件                | 无                     | Master              |
-| 设置         | #memz设置           | 简单的设置              | 不如锅巴!              | Master              |
 | Redis状态    | #redis状态(pro)     | 查看Redis的状态         | 支持自定义ip,端口,密码 | Master & 可开放权限 |
 | 系统状态     | #系统状态(pro)(max) | 查看系统当前状态        | 不建议promax           | Master & 可开放权限 |
 | 检查插件更新 | #memz检查更新       | 获取最新的提交          | 发送给每个主人!        | Master              |
