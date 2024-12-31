@@ -33,10 +33,18 @@ Yunzai系列Bot插件,本插件基于TRSS-Yunzai作为开发环境,其他框架�
 git clone --depth=1 https://令牌@github.com/MEMZ-MapleLeaf/memz-plugin.git ./plugins/memz-plugin/
 ```
 
-#### 使用Gitee安装
+如果无法访问GitHub,可以使用Ghproxy进行安装
 
 ```bash
-git clone --depth=1 https://令牌@gitee.com/memzjs/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://令牌@ghp.ci/https://github.com/MEMZ-MapleLeaf/memz-plugin.git ./plugins/memz-plugin/
+```
+
+#### 使用Gitee安装
+
+不用看了,反正你也没权限
+
+```bash
+git clone --depth=1 https://@令牌gitee.com/memz-maple-leaf/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 ### 安装依赖
