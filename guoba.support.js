@@ -104,7 +104,7 @@ export function supportGuoba () {
         },
         {
           field: 'music.ICQQBotQQ',
-          label: '签卡Bot',
+          label: 'Bot',
           bottomHelpMessage: '使用 ICQQ 适配器的机器人QQ号(必须协议端!)',
           component: 'Input',
           componentProps: {

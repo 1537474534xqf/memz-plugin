@@ -33,7 +33,7 @@ Yunzai系列Bot插件,本插件基于TRSS-Yunzai作为开发环境,其他框架�
 git clone --depth=1 https://令牌@github.com/MEMZ-MapleLeaf/memz-plugin.git ./plugins/memz-plugin/
 ```
 
-如果无法访问GitHub,可以使用Ghproxy进行安装
+如果无法访问GitHub,可以使用**Ghproxy**进行安装
 
 ```bash
 git clone --depth=1 https://令牌@ghp.ci/https://github.com/MEMZ-MapleLeaf/memz-plugin.git ./plugins/memz-plugin/
@@ -44,7 +44,7 @@ git clone --depth=1 https://令牌@ghp.ci/https://github.com/MEMZ-MapleLeaf/memz
 不用看了,反正你也没权限
 
 ```bash
-git clone --depth=1 https://@令牌gitee.com/memz-maple-leaf/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://@令牌gitee.com/memz-mapleleaf/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 ### 安装依赖
@@ -76,6 +76,7 @@ pnpm install --filter=memz-plugin
 | 系统状态     | #系统状态(pro)(max) | 查看系统当前状态        | 不建议promax           | Master & 可开放权限 |
 | 检查插件更新 | #memz检查更新       | 获取最新的提交          | 发送给每个主人!        | Master              |
 | 重启         | #memz重启           | 前台重启,先开启劫持重启 | 仅限Windows使用!!!     | Master              |
+| 设置主人     | #(新增/删除)主人    | 快捷设置主人            | 暂时注释掉             | Master              |
 
 ### 群聊功能
 
