@@ -363,5 +363,11 @@
         "name": "国务院",
         "package_name": "com.gov.cn",
         "sign": "EC18B4135488732564581A0C2DACC1DE"
+    },
+    "dfm": {
+        "appid": 1110543085,
+        "name": "三角洲行动",
+        "package_name": "com.tencent.tmgp.dfm",
+        "sign": "2b0a9ebd4896db62bef3f79d7496c19f"
     }
 }

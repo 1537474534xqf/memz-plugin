@@ -65,7 +65,7 @@ export class GroupPlugin extends plugin {
       priority: -114514,
       rule: [
         {
-          reg: '^[#/]?(谁(艾特|@|at)(我|他|她|它)|哪个逼(艾特|@|at)我)$',
+          reg: '^[#/]?((谁|哪个叼毛|哪个傻逼|哪个sb)(艾特|@|at)(我|他|她|它)|哪个逼(艾特|@|at)我)$',
           fnc: 'whoAtme'
         },
         {
