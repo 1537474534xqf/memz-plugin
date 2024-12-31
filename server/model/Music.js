@@ -53,7 +53,7 @@ export async function executeShareCard (type, title, content, singer, image) {
 
   try {
     let 结果 = BotName === 'Trss-Yunzai'
-      ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].sdk.sendUni(分享卡pb))
+      ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
       // eslint-disable-next-line
       : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡pb))
     let result = BotName === 'Trss-Yunzai'
