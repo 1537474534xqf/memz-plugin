@@ -23,34 +23,27 @@ export class b779 extends plugin {
 
   async 音卡测试 (e) {
     const { ICQQBotQQ } = Config.getConfig('music')
-
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
-    if (!match) {
-      return e.reply('请提供有效的类型和其他参数', true)
-    }
+    if (!match) { return e.reply('请提供有效的类型和其他参数', true) }
 
     const customParams = match[1].split(',').map(param => param.trim())
 
-    let [type = '163', title = 'MapleLeaf', content = '玩原神玩的', singer = 'https://MapleLeaf.icu', image = 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg', groupId = e.group_id] = customParams
+    const [type, title, content, singer, image, groupId] = [
+      customParams[0] || '163',
+      customParams[1] || 'MapleLeaf',
+      customParams[2] || '玩原神玩的',
+      customParams[3] || 'https://MapleLeaf.icu',
+      customParams[4] || 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg',
+      customParams[5] || e.group_id
+    ]
 
-    if (title === '') title = 'MapleLeaf'
-    if (content === '') content = '玩原神玩的'
-    if (singer === '') singer = 'https://MapleLeaf.icu'
-    if (image === '') image = 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg'
-    if (groupId === '') groupId = e.group_id
-
-    logger.info(`最终参数:type = ${type}, title = ${title}, content = ${content}, singer = ${singer}, image = ${image}, groupId = ${groupId}`)
-
-    await executeShareCard(
-      ICQQBotQQ,
-      type,
-      title,
-      content,
-      singer,
-      image,
-      groupId
-    )
+    try {
+      await executeShareCard(ICQQBotQQ, type, title, content, singer, image, groupId)
+    } catch (err) {
+      logger.error(`音卡测试执行失败: ${err.message}`)
+      e.reply('音卡测试执行失败', err.message, true)
+    }
   }
 }
 

@@ -55,7 +55,7 @@ export class 浏览器消失术 extends plugin {
       event: 'message',
       rule: [
         {
-          reg: /^#?结束(all|所有)(chrome|浏览器|puppeteer)(进程)?/i,
+          reg: /^#?结束(all|所有)?(chrome|浏览器|puppeteer)(进程)?/i,
           fnc: 'js',
           permission: 'master'
         }
