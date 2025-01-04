@@ -4,7 +4,6 @@ import fs from 'node:fs'
 import YamlReader from './YamlReader.js'
 import _ from 'lodash'
 import { PluginPath } from './Path.js'
-import { cfgSchema } from '../config/admin.js'
 class Config {
   constructor () {
     this.config = {}
@@ -165,21 +164,6 @@ class Config {
       ...music,
       ...webStatus
     }
-  }
-
-  getCfgSchemaMap () {
-    let ret = {}
-    _.forEach(cfgSchema, (cfgGroup) => {
-      _.forEach(cfgGroup.cfg, (cfgItem, cfgKey) => {
-        ret[cfgItem.key] = cfgItem
-        cfgItem.cfgKey = cfgKey
-      })
-    })
-    return ret
-  }
-
-  getCfgSchema () {
-    return cfgSchema
   }
 
   /**
