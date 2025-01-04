@@ -147,9 +147,7 @@ export class Search extends plugin {
     const msg = e.msg
     const searchQuery = msg.match(/^#?磁力搜索\s*(.+)$/)?.[1]
 
-    if (!searchQuery) {
-      return await e.reply('请输入有效的搜索关键词！', true)
-    }
+    if (!searchQuery) { return await e.reply('请输入有效的搜索关键词！', true) }
 
     try {
       const results = await performCiliSearch(searchQuery)

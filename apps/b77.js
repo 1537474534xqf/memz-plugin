@@ -98,15 +98,10 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
       // eslint-disable-next-line
       : core.pb.decode(结果)
 
-    logger.info(`音卡分享结果: ${JSON.stringify(result)}`)
-
     if (result[3] !== 0) {
-      Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`歌曲分享失败：${result[3]}`, true)
-      logger.error(`音卡失败：${result[3]}`)
+      Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`音卡分享失败：${result[3]}`, true)
+      logger.error(`音卡分享失败：${result[3]}`)
       return { message: `音卡分享失败: ${result[3]}`, error: true }
-    } else {
-      logger.info(`音卡分享成功，seq=${result[1]}`)
-      return { message: '音卡分享成功！', error: false }
     }
   } catch (error) {
     Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`音卡分享过程中出错: ${error.message}`)

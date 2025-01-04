@@ -4,7 +4,7 @@ import { Config } from '#components'
 let globalBrowserInstance
 // 浏览器实例
 async function getBrowserInstance (launchOptions) {
-  if (globalBrowserInstance) {
+  if (globalBrowserInstance && globalBrowserInstance.isConnected()) {
     return globalBrowserInstance
   } else {
     globalBrowserInstance = await puppeteer.launch(launchOptions)
