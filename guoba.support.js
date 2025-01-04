@@ -423,14 +423,14 @@ export function supportGuoba () {
           componentProps: {
             options: [
               { label: 'IpInfo.io', value: 1 },
-              { label: 'BiliBili', value: 2 }
+              { label: 'BiliBili接口', value: 2 }
             ],
             placeholder: '请选择使用的IpInfo接口'
           }
         },
         {
           field: 'memz.IpinfoToken',
-          label: 'Ipinfo的Token',
+          label: 'Ipinfo.io的Token',
           bottomHelpMessage: '前往 https://ipinfo.io 注册账号并获取 Token',
           component: 'InputPassword',
           componentProps: {
