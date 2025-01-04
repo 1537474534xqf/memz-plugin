@@ -131,7 +131,7 @@ export class SystemStatus extends plugin {
 
       if (!osInfo || !cpuInfo || !currentLoad || !memoryInfo) return null
 
-      const systemInfo = `📊 系统状态\n适配器: ${this.e?.adapter_name || this.e.bot?.version?.id || '我不知道'}\n操作系统: ${osInfo.distro}\n系统架构: ${osInfo.codename} ${osInfo.kernel} ${osInfo.arch}\n主机名: ${osInfo.hostname}\nNode.js 版本: ${process.version}\nCPU 信息: ${cpuInfo.physicalCores}核 ${cpuInfo.brand}\nCPU 使用率: ${currentLoad.currentLoad.toFixed(2)}%\n内存: ${(memoryInfo.active / 1024 ** 3).toFixed(2)} GiB / ${(memoryInfo.total / 1024 ** 3).toFixed(2)} GiB (${((memoryInfo.active / memoryInfo.total) * 100).toFixed(2)}%)\n系统运行时间: ${(os.uptime() / 86400).toFixed(2)} 天\nCPU 频率: ${cpuInfo.speed} GHz\n内存交换: ${(memoryInfo.swaptotal / 1024 ** 3).toFixed(2)} GiB`
+      const systemInfo = `📊 系统状态\n\n适配器: ${this.e?.adapter_name || this.e.bot?.version?.id || '我不知道'}\n操作系统: ${osInfo.distro}\n系统架构: ${osInfo.codename} ${osInfo.kernel} ${osInfo.arch}\n主机名: ${osInfo.hostname}\nNode.js 版本: ${process.version}\nCPU 信息: ${cpuInfo.physicalCores}核 ${cpuInfo.brand}\nCPU 使用率: ${currentLoad.currentLoad.toFixed(2)}%\n内存: ${(memoryInfo.active / 1024 ** 3).toFixed(2)} GiB / ${(memoryInfo.total / 1024 ** 3).toFixed(2)} GiB (${((memoryInfo.active / memoryInfo.total) * 100).toFixed(2)}%)\n系统运行时间: ${(os.uptime() / 86400).toFixed(2)} 天\nCPU 频率: ${cpuInfo.speed} GHz\n内存交换: ${(memoryInfo.swaptotal / 1024 ** 3).toFixed(2)} GiB`
 
       logger.debug(`[memz-plugin] 基本系统信息获取成功: ${systemInfo}`)
       return systemInfo

