@@ -589,9 +589,9 @@ export class WebTools extends plugin {
       const $ = cheerio.load(response.data)
 
       let iconUrl =
-      $('link[rel="icon"]').attr('href') ||
-      $('link[rel="shortcut icon"]').attr('href') ||
-      $('meta[property="og:image"]').attr('content')
+        $('link[rel="icon"]').attr('href') ||
+        $('link[rel="shortcut icon"]').attr('href') ||
+        $('meta[property="og:image"]').attr('content')
 
       if (!iconUrl) {
         return e.reply('没有找到该网站图标', true)
@@ -615,11 +615,73 @@ export class WebTools extends plugin {
 
   // IP信息
   async ipinfo (e) {
-    const { IpinfoToken, IpinfoAll } = Config.getConfig('memz')
-
+    const { IpinfoAll, IpinfoApi } = Config.getConfig('memz')
     if (!IpinfoAll && !e.isMaster) {
-      return logger.warn('[memz-plugin]IP信息功能当前为仅主人可用')
+      return logger.warn('[memz-plugin] IPInfo 功能当前为仅主人可用')
     }
+    if (IpinfoApi === 1) {
+      logger.debug('使用Ipinfo.io接口查询ip信息')
+      await this.ipinfoIo(e)
+    } else if (IpinfoApi === 2) {
+      logger.debug('使用bilibili接口查询ip信息')
+      await this.bilibiliIpinfo(e)
+    } else {
+      logger.warn('IPInfo 配置错误, 默认使用bilibili接口查询ip信息')
+      await this.Zhalema(e)
+    }
+  }
+
+  async bilibiliIpinfo (e) {
+    const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
+    if (!match) {
+      logger.warn('未匹配到正确的 IP 信息命令')
+      return await e.reply('请输入正确的 IP 信息命令，例如：#ipinfo IP/域名', true)
+    }
+
+    const [, , siteName] = match
+
+    logger.debug(`解析的目标: ${siteName}`)
+
+    let ipAddress = siteName
+    try {
+      if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
+        ipAddress = await this.resolveDomainToIp(siteName)
+        if (!ipAddress) {
+          await e.reply('无法解析域名的 IP 地址！', e.isGroup)
+          return false
+        }
+      }
+
+      logger.info(`目标 IP 地址: ${ipAddress}`)
+
+      const response = await fetch(`https://api.live.bilibili.com/ip_service/v1/ip_service/get_ip_addr?ip=${ipAddress}`)
+      const ipInfo = await response.json()
+
+      if (ipInfo.code !== 0) {
+        await e.reply('获取 IP 信息出错：' + (ipInfo.message || ipInfo.msg), true)
+        return false
+      }
+
+      const res = [
+        `IP 信息 - ${siteName}`,
+        `IP 地址：${ipInfo.data.addr || 'N/A'}`,
+        `国家/地区：${ipInfo.data.country || 'N/A'}`,
+        `省/州：${ipInfo.data.province || 'N/A'}`,
+        `运营商：${ipInfo.data.isp || 'N/A'}`,
+        `经纬度：${ipInfo.data.latitude || 'N/A'}, ${ipInfo.data.longitude || 'N/A'}`
+      ].join('\n')
+
+      await e.reply(res)
+      return true
+    } catch (error) {
+      logger.error(`获取 IP 信息出错: ${error.message}`)
+      await e.reply(`获取 IP 信息出错：${error.message}`, true)
+      return false
+    }
+  }
+
+  async ipinfoIo (e) {
+    const { IpinfoToken } = Config.getConfig('memz')
 
     const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
     if (!match) {

@@ -45,6 +45,8 @@ PingProxyAddress: ""
 PingApi: 2
 # Ipinfo是否所有人可用
 IpinfoAll: true
+# Ipinfo使用的接口,1为`ipinfo.io`接口,2为`bilibili`接口
+IpinfoApi: 1
 # Ping功能Ipinfo.io的token
 IpinfoToken: ""
 # 是否所有人可用Unicode编码解码

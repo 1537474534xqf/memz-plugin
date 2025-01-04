@@ -376,12 +376,6 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
-          field: 'memz.IpinfoAll',
-          label: 'Ipinfo',
-          bottomHelpMessage: '关闭时仅主人可用',
-          component: 'Switch'
-        },
-        {
           field: 'memz.PingAll',
           label: 'Ping功能',
           bottomHelpMessage: '关闭时仅主人可用',
@@ -413,6 +407,25 @@ export function supportGuoba () {
           component: 'Input',
           componentProps: {
             placeholder: '代理地址'
+          }
+        },
+        {
+          field: 'memz.IpinfoAll',
+          label: 'Ipinfo',
+          bottomHelpMessage: '关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          field: 'memz.IpinfoApi',
+          label: 'IpInfo接口',
+          bottomHelpMessage: 'Ipinfo.io需要先配置token',
+          component: 'Select',
+          componentProps: {
+            options: [
+              { label: 'IpInfo.io', value: 1 },
+              { label: 'BiliBili', value: 2 }
+            ],
+            placeholder: '请选择使用的IpInfo接口'
           }
         },
         {
