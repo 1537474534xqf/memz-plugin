@@ -80,9 +80,27 @@ export class GroupPlugin extends plugin {
         {
           reg: /^[#/](一键)?(召唤|艾特|@|at)(全体|所有|全部|all)(成员)?$/i,
           fnc: 'atAll'
+        },
+        {
+          reg: '^[#/](群聊?)?一键(群聊?)?打卡$',
+          fnc: 'groupSign',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async groupSign (e) {
+    try {
+      for (let group of Bot[e.self_id].gl.keys()) {
+        Bot.pickGroup(group).sign()
+        // Bot.sleep(100)
+      }
+      await e.reply('打卡完成', true)
+    } catch (err) {
+      logger.error('[memz-plugin] 群聊打卡失败:', err)
+      await e.reply('打卡失败', err, true)
+    }
   }
 
   async whoAtme (e) {

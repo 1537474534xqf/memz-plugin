@@ -102,6 +102,11 @@ export const helpList = [
         icon: 68,
         title: '#一键召唤全体',
         desc: '一键@全体成员'
+      },
+      {
+        icon: 69,
+        title: '#一键打卡',
+        desc: '所有群聊一键打卡'
       }
     ]
   },
