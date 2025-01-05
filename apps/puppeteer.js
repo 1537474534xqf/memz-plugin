@@ -56,14 +56,14 @@ export class 浏览器消失术 extends plugin {
       rule: [
         {
           reg: /^#?结束(all|所有)?(chrome|浏览器|puppeteer)(进程)?/i,
-          fnc: 'js',
+          fnc: 'kallChrome',
           permission: 'master'
         }
       ]
     })
   }
 
-  async js (e) {
+  async kallChrome (e) {
     await killChromeProcesses(e.group_id)
     return false
   }

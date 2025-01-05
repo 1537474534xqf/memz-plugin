@@ -258,9 +258,7 @@ export class PingScreenshot extends plugin {
         width: 1245,
         height: 1000
       }
-      logger.debug(
-            `设置截图区域 - x: ${clipOptions.x}, y: ${clipOptions.y}, width: ${clipOptions.width}, height: ${clipOptions.height}`
-      )
+      logger.debug(`设置截图区域 - x: ${clipOptions.x}, y: ${clipOptions.y}, width: ${clipOptions.width}, height: ${clipOptions.height}`)
 
       const screenshot = await page.screenshot({ encoding: 'base64', clip: clipOptions })
       logger.info('截图成功，准备发送图片')

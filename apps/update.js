@@ -49,7 +49,6 @@ export class Updates extends plugin {
     if (!autoupdate) return logger.warn('[memz-plugin]自动更新已关闭')
 
     this.task = []
-
     this.task.push({
       name: '[memz-plugin]自动更新]',
       cron: normalizeCronExpression(updatecron),

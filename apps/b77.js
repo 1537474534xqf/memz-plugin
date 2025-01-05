@@ -25,7 +25,7 @@ export class b779 extends plugin {
     const { ICQQBotQQ } = Config.getConfig('music')
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
-    if (!match) { return e.reply('请提供有效的类型和其他参数', true) }
+    if (!match) { return e.reply('请提供有效的类型和其他参数,参数#音卡测试Appid,标题,内容,跳转链接,图片链接,群号', true) }
 
     const customParams = match[1].split(',').map(param => param.trim())
 
