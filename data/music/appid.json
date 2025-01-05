@@ -387,5 +387,11 @@
         "name": "豆包",
         "package_name": "com.larus.nova",
         "sign": "f32d2daae92240ffeb6660f5f3325009"
-        }
+    },
+    "mrzh": {
+        "appid": 1104748094,
+        "name": "明日之后",
+        "package_name": "com.netease.mrzh",
+        "sign": "d30e73775a4458557c5af97d0946db98"
+    }
 }
