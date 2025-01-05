@@ -1,7 +1,0 @@
-{
-    "npm.enableRunFromFolder": false,
-    "explorer.fileNesting.enabled": true,
-    "scm.alwaysShowRepositories": true,
-    "editor.fontFamily": "Fira Code Light,JetBrains Mono, 'Alimama FangYuanTi VF'",
-    "totvsLanguageServer.welcomePage": false
-}
