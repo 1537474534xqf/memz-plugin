@@ -34,11 +34,11 @@ export class setting extends plugin {
         {
           reg: /^#?memz(版本|version)$/i,
           fnc: 'version'
-        },
-        {
-          reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥|boom)[!！]$/i,
-          fnc: 'boom'
         }
+        // {
+        //   reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥|boom)[!！]$/i,
+        //   fnc: 'boom'
+        // }
       ]
     })
   }
