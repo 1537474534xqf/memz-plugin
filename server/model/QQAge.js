@@ -3,10 +3,10 @@ import { Config } from '#components'
 const { ICQQBotQQ } = Config.getConfig('icqq')
 /**
  * 获取QQ注册日期
- * @param {number} qqNumber - 需要查询注册日期的QQ号码
+ * @param {number} QQ - 需要查询注册日期的QQ号码
  * @returns {Promise<object|null>} 返回一个包含QQ号码和注册日期的对象，如果查询失败则返回null
  */
-export async function fetchQQRegistrationDate (qqNumber) {
+export async function fetchQQRegistrationDate (QQ) {
   const { fetchQQAgeAll } = Config.getConfig('icqq')
   if (!fetchQQAgeAll) {
     logger.warn('[memz-plugin] 未开启Q龄查询功能')
@@ -19,7 +19,7 @@ export async function fetchQQRegistrationDate (qqNumber) {
   }
 
   let body = {
-    1: Number(qqNumber),
+    1: Number(QQ),
     2: 0,
     3: [{ 1: 20026 }]
   }
@@ -31,7 +31,7 @@ export async function fetchQQRegistrationDate (qqNumber) {
     if (registrationTimestamp) {
       let registrationDate = new Date(registrationTimestamp * 1000)
       let formattedDate = registrationDate.toISOString().replace('T', ' ').slice(0, 19)
-      return { qqNumber, registrationDate: formattedDate }
+      return { QQ, registrationDate: formattedDate }
     } else {
       logger.warn('未能获取到注册时间戳或数据格式不正确')
       return null
