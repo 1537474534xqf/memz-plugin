@@ -27,7 +27,7 @@ export class ICQQ extends plugin {
 
   async fetchQQAge (e) {
     const { fetchQQAgeAll } = Config.getConfig('icqq')
-    if (!fetchQQAgeAll && !e.isMaster) return logger.warn('未开启Q龄查询功能')
+    if (!fetchQQAgeAll && !e.isMaster) return logger.warn('[memz-plugin] 未开启Q龄查询功能')
     let qqNumber = e.at || (e.msg.match(/^#查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
     const { ICQQBotQQ } = Config.getConfig('icqq')
     try {
@@ -35,7 +35,9 @@ export class ICQQ extends plugin {
         1: Number(qqNumber),
         2: 0,
         3: [
-          { 1: 20026 }
+          {
+            1: 20026
+          }
         ]
       }, {
         message_type: 32
