@@ -30,15 +30,11 @@ export class ICQQ extends plugin {
     if (!fetchQQAgeAll && !e.isMaster) return logger.warn('[memz-plugin] 未开启Q龄查询功能')
     let qqNumber = e.at || (e.msg.match(/^#?查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
     const { ICQQBotQQ } = Config.getConfig('icqq')
-    if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQBotQQ', true)
+    if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
     let body = {
       1: Number(qqNumber),
       2: 0,
-      3: [
-        {
-          1: 20026
-        }
-      ]
+      3: [{ 1: 20026 }]
     }
     try {
       let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', body, { message_type: 32 })
@@ -59,6 +55,7 @@ export class ICQQ extends plugin {
 
   async 音卡测试 (e) {
     const { ICQQBotQQ } = Config.getConfig('icqq')
+    if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
     if (!match) { return e.reply('请提供有效的类型和其他参数,参数#音卡测试Appid,标题,内容,跳转链接,图片链接,群号', true) }
