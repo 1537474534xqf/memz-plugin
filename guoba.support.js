@@ -107,6 +107,16 @@ export function supportGuoba () {
         },
         {
           component: 'Divider',
+          label: 'Q龄查询'
+        },
+        {
+          field: 'icqq.fetchQQAgeAll',
+          label: '启用Q龄查询',
+          bottomHelpMessage: '是否启用音卡签名,关闭时仅主人可用',
+          component: 'Switch'
+        },
+        {
+          component: 'Divider',
           label: '音卡签名'
         },
         {

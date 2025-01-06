@@ -26,6 +26,8 @@ export class ICQQ extends plugin {
   }
 
   async fetchQQAge (e) {
+    const { fetchQQAgeAll } = Config.getConfig('icqq')
+    if (!fetchQQAgeAll && !e.isMaster) return logger.warn('未开启Q龄查询功能')
     let qqNumber = e.at || (e.msg.match(/^#查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
     const { ICQQBotQQ } = Config.getConfig('icqq')
     try {
@@ -43,7 +45,7 @@ export class ICQQ extends plugin {
       if (registrationTimestamp) {
         let registrationDate = new Date(registrationTimestamp * 1000)
         let formattedDate = registrationDate.toISOString().replace('T', ' ').slice(0, 19)
-        e.reply(`QQ ${qqNumber} 注册日期\n${formattedDate}`, true)
+        e.reply(`QQ ${qqNumber} \n注册日期\n${formattedDate}`, true)
       } else {
         e.reply('未能获取到注册时间戳或数据格式不正确')
       }

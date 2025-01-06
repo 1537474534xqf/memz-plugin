@@ -2,6 +2,9 @@
 
 # 使用ICQQ适配器的机器人QQ号(必须协议端!)用于发送业务包等
 ICQQBotQQ: ""
+## Q龄查询
+# 是否启用Q龄查询
+fetchQQAgeAll: true
 
 ## 音卡签名
 # 是否启用音卡签名
