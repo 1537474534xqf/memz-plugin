@@ -27,29 +27,37 @@ export class b779 extends plugin {
 
   async fetchQQAge (e) {
     const { ICQQBotQQ } = Config.getConfig('music')
-    let qqNumber = e.user_id
-    let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', {
-      1: qqNumber,
-      2: 0,
-      3: [
-        { 1: 20026 }
-      ]
-    }, {
-      message_type: 32
-    })
 
-    logger.info(qqResponse)
+    let qqNumber = e.at || (e.msg.match(/^#查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
 
-    if (qqResponse && qqResponse[1] && qqResponse[1][2] && qqResponse[1][2][1]) {
-      let registrationTimestamp = qqResponse[1][2][1][2]
-      if (registrationTimestamp) {
-        let registrationDate = new Date(registrationTimestamp * 1000)
-        e.reply(`QQ号${qqNumber}的注册日期是${registrationDate.toLocaleDateString()}`)
+    try {
+      let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', {
+        1: qqNumber,
+        2: 0,
+        3: [
+          { 1: 20026 }
+        ]
+      }, {
+        message_type: 32
+      })
+
+      logger.info(qqResponse)
+
+      if (qqResponse && qqResponse[1] && qqResponse[1][2] && qqResponse[1][2][1]) {
+        let registrationTimestamp = qqResponse[1][2][1][2]
+        if (registrationTimestamp) {
+          let registrationDate = new Date(registrationTimestamp * 1000)
+          let formattedDate = registrationDate.toISOString().replace('T', ' ').slice(0, 19)
+          e.reply(`QQ号 ${qqNumber} 的注册日期是 ${formattedDate}`)
+        } else {
+          e.reply('未能获取到注册时间戳')
+        }
       } else {
-        e.reply('未能获取到注册时间戳')
+        e.reply('获取QQ注册时间失败，响应数据结构可能不正确')
       }
-    } else {
-      e.reply('获取QQ注册时间失败，响应数据结构可能不正确')
+    } catch (error) {
+      logger.error('获取QQ注册时间时发生错误', error)
+      e.reply('获取QQ注册时间时发生错误')
     }
   }
 
