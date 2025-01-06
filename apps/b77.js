@@ -27,11 +27,10 @@ export class b779 extends plugin {
 
   async fetchQQAge (e) {
     let qqNumber = e.at || (e.msg.match(/^#查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
-    logger.info(`查询QQ号 ${qqNumber} 的注册时间`)
     const { ICQQBotQQ } = Config.getConfig('music')
     try {
       let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', {
-        1: qqNumber,
+        1: Number(qqNumber),
         2: 0,
         3: [
           { 1: 20026 }
