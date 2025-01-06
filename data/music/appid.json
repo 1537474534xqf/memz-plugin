@@ -393,5 +393,11 @@
         "name": "明日之后",
         "package_name": "com.netease.mrzh",
         "sign": "d30e73775a4458557c5af97d0946db98"
+    },
+    "baidumap": {
+        "appid": 101458979,
+        "name": "百度地图",
+        "package_name": "com.baidu.BaiduMap",
+        "sign": "c2b0b497d0389e6de1505e7fd8f4d539"
     }
 }
