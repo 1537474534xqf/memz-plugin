@@ -111,6 +111,16 @@ export const helpList = [
     ]
   },
   {
+    group: 'QQ功能',
+    list: [
+      {
+        icon: 67,
+        title: '#查Q龄',
+        desc: '查询QQ注册时间'
+      }
+    ]
+  },
+  {
     group: '搜索功能',
     list: [
       {

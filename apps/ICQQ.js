@@ -18,7 +18,7 @@ export class ICQQ extends plugin {
           permission: 'master'
         },
         {
-          reg: /^#查Q龄(.*)$/i,
+          reg: /^#?查Q龄(.*)$/i,
           fnc: 'fetchQQAge'
         }
       ]
@@ -28,20 +28,24 @@ export class ICQQ extends plugin {
   async fetchQQAge (e) {
     const { fetchQQAgeAll } = Config.getConfig('icqq')
     if (!fetchQQAgeAll && !e.isMaster) return logger.warn('[memz-plugin] 未开启Q龄查询功能')
-    let qqNumber = e.at || (e.msg.match(/^#查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
+    let qqNumber = e.at || (e.msg.match(/^#?查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
     const { ICQQBotQQ } = Config.getConfig('icqq')
+    let body = {
+      1: Number(qqNumber),
+      2: 0,
+      3: [
+        {
+          1: 20026
+        }
+      ]
+    }
+    logger.debug('[memz-plugin] fetchQQAge', body)
     try {
-      let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', {
-        1: Number(qqNumber),
-        2: 0,
-        3: [
-          {
-            1: 20026
-          }
-        ]
-      }, {
-        message_type: 32
-      })
+      let qqResponse = BotName === 'Trss-Yunzai'
+      logger.debug('[memz-plugin] BotName:', BotName)
+        ? await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', body, { message_type: 32 })
+        : await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', body, { message_type: 32 })
+      logger.debug('[memz-plugin] fetchQQAge', qqResponse)
 
       const registrationTimestamp = qqResponse?.[1]?.[2]?.[1]?.[2]
       if (registrationTimestamp) {
