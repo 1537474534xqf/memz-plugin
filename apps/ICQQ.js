@@ -94,7 +94,7 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
     type, title, content, singer, image, groupId, appid, packageName, sign
   })}`)
 
-  let 分享卡pb = {
+  let 分享卡 = {
     1: 2935,
     2: 9,
     4: {
@@ -123,9 +123,9 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
 
   try {
     let 结果 = BotName === 'Trss-Yunzai'
-      ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡pb))
+      ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡))
       // eslint-disable-next-line
-      : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡pb))
+      : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡))
     let result = BotName === 'Trss-Yunzai'
       ? Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
       // eslint-disable-next-line
