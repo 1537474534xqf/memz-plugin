@@ -117,6 +117,11 @@ export const helpList = [
         icon: 67,
         title: '#查Q龄',
         desc: '查询QQ注册时间'
+      },
+      {
+        icon: 68,
+        title: '#全体假禁',
+        desc: '全体禁言,但是假的'
       }
     ]
   },

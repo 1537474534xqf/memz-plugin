@@ -20,9 +20,20 @@ export class ICQQ extends plugin {
         {
           reg: /^#?查Q龄(.*)$/i,
           fnc: 'fetchQQAge'
+        },
+        {
+          // eslint-disable-next-line
+          reg: '^#?全体假禁(\d+)?$',
+          fnc: 'jiajin',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async jiajin (e) {
+    let time = e.msg.match(/(\d+)/) ? e.msg.match(/(\d+)/) : 1
+    this.e.group._setting({ 17: time })
   }
 
   async fetchQQAge (e) {
