@@ -16,9 +16,41 @@ export class b779 extends plugin {
           reg: /^#音卡测试(.*)$/i,
           fnc: '音卡测试',
           permission: 'master'
+        },
+        {
+          reg: /^#查Q龄(.*)$/i,
+          fnc: 'fetchQQAge'
         }
       ]
     })
+  }
+
+  async fetchQQAge (e) {
+    const { ICQQBotQQ } = Config.getConfig('music')
+    let qqNumber = e.user_id
+    let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', {
+      1: qqNumber,
+      2: 0,
+      3: [
+        { 1: 20026 }
+      ]
+    }, {
+      message_type: 32
+    })
+
+    logger.info(qqResponse)
+
+    if (qqResponse && qqResponse[1] && qqResponse[1][2] && qqResponse[1][2][1]) {
+      let registrationTimestamp = qqResponse[1][2][1][2]
+      if (registrationTimestamp) {
+        let registrationDate = new Date(registrationTimestamp * 1000)
+        e.reply(`QQ号${qqNumber}的注册日期是${registrationDate.toLocaleDateString()}`)
+      } else {
+        e.reply('未能获取到注册时间戳')
+      }
+    } else {
+      e.reply('获取QQ注册时间失败，响应数据结构可能不正确')
+    }
   }
 
   async 音卡测试 (e) {
