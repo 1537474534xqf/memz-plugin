@@ -4,11 +4,11 @@ import fs from 'fs'
 
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
 
-export class b779 extends plugin {
+export class ICQQ extends plugin {
   constructor () {
     super({
-      name: 'b77_9',
-      dsc: 'b77_9',
+      name: 'ICQQ',
+      dsc: 'ICQQ',
       event: 'message',
       priority: -9,
       rule: [
