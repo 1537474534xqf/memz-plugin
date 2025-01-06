@@ -27,7 +27,7 @@ export class b779 extends plugin {
 
   async fetchQQAge (e) {
     let qqNumber = e.at || (e.msg.match(/^#查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
-    const { ICQQBotQQ } = Config.getConfig('music')
+    const { ICQQBotQQ } = Config.getConfig('icqq')
     try {
       let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', {
         1: Number(qqNumber),
@@ -43,7 +43,7 @@ export class b779 extends plugin {
       if (registrationTimestamp) {
         let registrationDate = new Date(registrationTimestamp * 1000)
         let formattedDate = registrationDate.toISOString().replace('T', ' ').slice(0, 19)
-        e.reply(`QQ ${qqNumber} 的注册日期\n ${formattedDate}`)
+        e.reply(`QQ ${qqNumber} 注册日期\n${formattedDate}`, true)
       } else {
         e.reply('未能获取到注册时间戳或数据格式不正确')
       }
@@ -54,7 +54,7 @@ export class b779 extends plugin {
   }
 
   async 音卡测试 (e) {
-    const { ICQQBotQQ } = Config.getConfig('music')
+    const { ICQQBotQQ } = Config.getConfig('icqq')
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
     if (!match) { return e.reply('请提供有效的类型和其他参数,参数#音卡测试Appid,标题,内容,跳转链接,图片链接,群号', true) }

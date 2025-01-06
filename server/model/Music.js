@@ -12,8 +12,8 @@ const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'app
  * @returns {Promise<string>} - 返回分享成功的JSON数据
  */
 export async function executeShareCard (type, title, content, singer, image) {
-  const { MusicSign, groupId, ICQQBotQQ } = Config.getConfig('music')
-  if (!MusicSign || !groupId || !ICQQBotQQ) {
+  const { MusicSign, MusicSignGroupId, ICQQBotQQ } = Config.getConfig('icqq')
+  if (!MusicSign || !MusicSignGroupId || !ICQQBotQQ) {
     return logger.error('当前未启用音乐签名或未配置群号或机器人QQ号')
   }
   let appInfo = appidData[type]
@@ -40,7 +40,7 @@ export async function executeShareCard (type, title, content, singer, image) {
         15: 7451537341556772000
       },
       10: 1,
-      11: Number(groupId),
+      11: Number(MusicSignGroupId),
       12: {
         10: title,
         11: content,
@@ -61,15 +61,15 @@ export async function executeShareCard (type, title, content, singer, image) {
       // eslint-disable-next-line
       : core.pb.decode(结果)
 
-    logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${groupId} 分享音乐卡片`)
+    logger.info(`使用ICQQ_Bot: ${ICQQBotQQ} 发送群号: ${MusicSignGroupId} 分享音乐卡片`)
     if (result[3] !== 0) {
-      Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`歌曲分享失败：${result[3]}`, 分享卡pb, true)
+      Bot[ICQQBotQQ].pickGroup(MusicSignGroupId).sendMsg(`歌曲分享失败：${result[3]}`, 分享卡pb, true)
       logger.error(`音卡失败：${result[3]}`)
     } else {
       let seq = result[4][8]
       logger.info(`音卡分享成功，seq=${seq}`)
 
-      let msgHistory = await Bot[ICQQBotQQ].pickGroup(groupId).getChatHistory(seq, 1)
+      let msgHistory = await Bot[ICQQBotQQ].pickGroup(MusicSignGroupId).getChatHistory(seq, 1)
 
       if (msgHistory && msgHistory.length > 0) {
         let messageData = msgHistory[0].message.find(msg => msg.type === 'json')
@@ -88,7 +88,7 @@ export async function executeShareCard (type, title, content, singer, image) {
       }
     }
   } catch (error) {
-    Bot[ICQQBotQQ].pickGroup(groupId).sendMsg(`音卡分享过程中出错: ${error.message}`)
+    Bot[ICQQBotQQ].pickGroup(MusicSignGroupId).sendMsg(`音卡分享过程中出错: ${error.message}`)
     logger.error(`音卡分享异常：${error.stack}`)
   }
 }

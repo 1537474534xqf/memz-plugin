@@ -1,7 +1,10 @@
-### 音卡签名设置
-# 是否启用音卡签名
-MusicSign: false
+### 协议端设置
+
 # 使用ICQQ适配器的机器人QQ号(必须协议端!)
 ICQQBotQQ: ""
+
+## 音卡签名
+# 是否启用音卡签名
+MusicSign: false
 # 签名用的群号,每次签名都需要发送音乐卡片到这个群
-groupId: ""
+MusicSignGroupId: ""

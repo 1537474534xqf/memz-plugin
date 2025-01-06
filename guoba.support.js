@@ -89,21 +89,15 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
-          label: '音卡签名',
+          label: '协议端功能',
           component: 'SOFT_GROUP_BEGIN'
         },
         {
           component: 'Divider',
-          label: '音卡签名'
+          label: '必须配置'
         },
         {
-          field: 'music.MusicSign',
-          label: '启用音卡签名',
-          bottomHelpMessage: '是否启用音卡签名,开启前先配置使用ICQQ的QQ号和签卡群号',
-          component: 'Switch'
-        },
-        {
-          field: 'music.ICQQBotQQ',
+          field: 'icqq.ICQQBotQQ',
           label: 'Bot',
           bottomHelpMessage: '使用 ICQQ 适配器的机器人QQ号(必须协议端!)',
           component: 'Input',
@@ -112,7 +106,17 @@ export function supportGuoba () {
           }
         },
         {
-          field: 'music.groupId',
+          component: 'Divider',
+          label: '音卡签名'
+        },
+        {
+          field: 'icqq.MusicSign',
+          label: '启用音卡签名',
+          bottomHelpMessage: '是否启用音卡签名,开启前先配置使用ICQQ的QQ号和签卡群号',
+          component: 'Switch'
+        },
+        {
+          field: 'icqq.groupId',
           label: '签卡群号',
           bottomHelpMessage: '签名用的群号,每次签名都需要发送音乐卡片到这个群',
           component: 'Input',
@@ -714,7 +718,7 @@ export function supportGuoba () {
           memz: Config.getDefOrConfig('memz'),
           update: Config.getDefOrConfig('update'),
           api: Config.getDefOrConfig('api'),
-          music: Config.getDefOrConfig('music'),
+          icqq: Config.getDefOrConfig('icqq'),
           webStatus: Config.getDefOrConfig('webStatus')
         }
       },
