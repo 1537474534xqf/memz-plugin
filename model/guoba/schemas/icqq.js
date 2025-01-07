@@ -44,5 +44,46 @@ export default [
     componentProps: {
       placeholder: '请输入群号'
     }
+  },
+  {
+    field: 'icqq.MusicSignPlatform',
+    label: '默认平台',
+    bottomHelpMessage: '详情可在data/music/appid.json中查看',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入默认平台'
+    }
+  },
+  {
+    field: 'icqq.MusicSignTitle',
+    label: '默认标题',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入默认标题'
+    }
+  },
+  {
+    field: 'icqq.MusicSignContent',
+    label: '默认内容',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入默认内容'
+    }
+  },
+  {
+    field: 'icqq.MusicSignUrl',
+    label: '默认跳转链接',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入跳转链接(必须是链接)'
+    }
+  },
+  {
+    field: 'icqq.MusicSignImageUrl',
+    label: '默认图片链接',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入图片链接(必须是链接)'
+    }
   }
 ]

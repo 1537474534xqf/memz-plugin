@@ -71,7 +71,7 @@ export const helpList = [
     ]
   },
   {
-    group: '加解码功能',
+    group: '编码解码功能',
     list: [
       {
         icon: 67,
@@ -101,7 +101,7 @@ export const helpList = [
       {
         icon: 68,
         title: '#一键召唤全体',
-        desc: '一键@全体成员'
+        desc: '一键@全体成员?'
       },
       {
         icon: 69,

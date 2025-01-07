@@ -65,7 +65,14 @@ export class ICQQ extends plugin {
   }
 
   async 音卡测试 (e) {
-    const { ICQQBotQQ } = Config.getConfig('icqq')
+    const {
+      ICQQBotQQ,
+      MusicSignPlatform,
+      MusicSignTitle,
+      MusicSignContent,
+      MusicSignUrl,
+      MusicSignImageUrl
+    } = Config.getConfig('icqq')
     if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
@@ -74,11 +81,11 @@ export class ICQQ extends plugin {
     const customParams = match[1].split(',').map(param => param.trim())
 
     const [type, title, content, singer, image, groupId] = [
-      customParams[0] || '163',
-      customParams[1] || 'MapleLeaf',
-      customParams[2] || '玩原神玩的',
-      customParams[3] || 'https://MapleLeaf.icu',
-      customParams[4] || 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg',
+      customParams[0] || MusicSignPlatform || '163',
+      customParams[1] || MusicSignTitle || 'MapleLeaf',
+      customParams[2] || MusicSignContent || '玩原神玩的',
+      customParams[3] || MusicSignUrl || 'https://MapleLeaf.icu',
+      customParams[4] || MusicSignImageUrl || 'http://q.qlogo.cn/headimg_dl?dst_uin=1011303349&spec=640&img_type=jpg',
       customParams[5] || e.group_id
     ]
 

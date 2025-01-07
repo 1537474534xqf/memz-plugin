@@ -12,3 +12,13 @@ fetchQQAgeAll: true
 MusicSign: false
 # 签名用的群号,每次签名都需要发送音乐卡片到这个群
 MusicSignGroupId: ""
+# 默认平台
+MusicSignPlatform: ""
+# 默认标题
+MusicSignTitle: ""
+# 默认内容
+MusicSignContent: ""
+# 默认跳转链接
+MusicSignUrl: ""
+# 默认图片链接
+MusicSignImageUrl: ""
