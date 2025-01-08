@@ -1,7 +1,6 @@
 import { Config, PluginData, BotName } from '#components'
 import path from 'path'
 import fs from 'fs'
-
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
 
 export class ICQQ extends plugin {
@@ -33,7 +32,7 @@ export class ICQQ extends plugin {
 
   async jiajin (e) {
     let time = e.msg.match(/(\d+)/) ? e.msg.match(/(\d+)/) : 1
-    this.e.group._setting({ 17: time })
+    e.group._setting({ 17: time })
   }
 
   async fetchQQAge (e) {

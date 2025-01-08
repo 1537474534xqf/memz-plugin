@@ -4,7 +4,7 @@ const { ICQQBotQQ } = Config.getConfig('icqq')
 /**
  * 获取QQ注册日期
  * @param {number} QQ - 需要查询注册日期的QQ号码
- * @returns {Promise<object|null>} 返回一个包含QQ号码和注册日期的对象，如果查询失败则返回null
+ * @returns {Promise<object|null>} 返回一个包含QQ号码和注册日期的Json对象，如果查询失败则返回null
  */
 export async function fetchQQRegistrationDate (QQ) {
   const { fetchQQAgeAll } = Config.getConfig('icqq')
