@@ -1,5 +1,5 @@
 import { copyright } from '#components'
-import { getUserInfo } from '../../model/info.js'
+import { getUserInfo } from '../../model/QQ/info.js'
 
 export default async (req, res) => {
   try {

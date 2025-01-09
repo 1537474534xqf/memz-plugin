@@ -1,4 +1,4 @@
-import { executeShareCard } from '../../model/Music.js'
+import { executeShareCard } from '../../model/QQ/b77.js'
 import { copyright } from '#components'
 
 export default async (req, res) => {

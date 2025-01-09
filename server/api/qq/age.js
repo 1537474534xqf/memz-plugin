@@ -1,5 +1,5 @@
 import { copyright } from '#components'
-import { fetchQQRegistrationDate } from '../../model/QQAge.js'
+import { fetchQQRegistrationDate } from '../../model/QQ/QQAge.js'
 export default async (req, res) => {
   try {
     const time = new Date().toISOString()

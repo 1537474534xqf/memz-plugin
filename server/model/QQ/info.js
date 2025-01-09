@@ -16,7 +16,6 @@ if (!Bot.UserInfo) {
  * 获取用户信息
  * @param {string} qq - QQ号
  * @param {boolean} force - 是否强制刷新缓存
- * @param {boolean} debug - 是否开启调试模式
  * @returns {Object} - 返回用户信息对象
  */
 export async function getUserInfo (qq, force = false) {
