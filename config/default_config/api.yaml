@@ -1,5 +1,5 @@
 #*是否开启API服务端
-enabled: true
+enabled: false
 #*API服务端地址
 host: "0.0.0.0"
 #*API自定义域名
