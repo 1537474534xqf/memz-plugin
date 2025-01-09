@@ -1,6 +1,7 @@
 import fs from 'fs'
 import moment from 'moment'
 import { Config } from '#components'
+
 // 缓存用户信息
 const UserInfoPath = 'resources/查询信息.json'
 if (!Bot.UserInfo) {
@@ -20,10 +21,10 @@ if (!Bot.UserInfo) {
  */
 export async function getUserInfo (qq, force = false) {
   const { ICQQBotQQ } = Config.getConfig('icqq')
-  // 判断是否需要强制刷新缓存
+
   if ((Bot.UserInfo?.[qq] && Date.now() - Bot.UserInfo[qq].updateTime < 1 * 60 * 60 * 1000) && !force) {
-    return Bot.UserInfo[qq]
     // 如果缓存有效且不强制刷新，则直接返回缓存
+    return Bot.UserInfo[qq]
   }
 
   logger.info('[查询] 更新数据')
@@ -204,28 +205,30 @@ export async function getUserInfo (qq, force = false) {
     }
   }
 
+  // 将结果保存到缓存
   let result = {
-    qq: ret[1][3]?.toString() || qq,
-    nickname: bytesProperties[20002] || '未知',
-    qid: bytesProperties[27394] || '未知',
-    sex: numberProperties[20009] === 2 ? '男' : '女',
-    birthday: getBirthday(bytesProperties[20031]),
-    status: getStatus(statusId),
-    avatar: bytesProperties[101],
-    introduce: bytesProperties[102],
-    school: bytesProperties[20021],
-    region: bytesProperties[20003],
-    city: bytesProperties[20020],
-    joinTime: bytesProperties[20026],
-    tag: bytesProperties[104],
-    level: bytesProperties[105],
-    business,
-    custom,
-    updateTime: Date.now()
+    QQ号: ret[1][3]?.toString() || qq,
+    msg: '查询成功',
+    昵称: bytesProperties[20002],
+    QID: bytesProperties[27394],
+    性别: bytesProperties[20009],
+    生日: getBirthday(bytesProperties[20031]),
+    头像: bytesProperties[101],
+    签名: bytesProperties[102],
+    address: {
+      国家: bytesProperties[20003],
+      省份: bytesProperties[20004],
+      城市: bytesProperties[20020]
+    },
+    业务列表: business,
+    在线状态: getStatus(statusId),
+    自定义状态: custom,
+    等级: numberProperties[105],
+    标签列表: bytesProperties[104],
+    注册时间: numberProperties[20026],
+    更新时间: Date.now()
   }
 
   Bot.UserInfo[result.qq] = result
-  fs.writeFileSync(UserInfoPath, JSON.stringify(Bot.UserInfo), 'utf8')
-
   return result
 }
