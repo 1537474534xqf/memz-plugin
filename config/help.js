@@ -132,6 +132,11 @@ export const helpList = [
         icon: 72,
         title: '#保存群员名单',
         desc: '保存群员名单'
+      },
+      {
+        icon: 73,
+        title: '#一键禁言+QQ',
+        desc: '所有群一键禁言'
       }
     ]
   },

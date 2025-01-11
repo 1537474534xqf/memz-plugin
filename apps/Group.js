@@ -103,9 +103,57 @@ export class GroupPlugin extends plugin {
           reg: '[#/]保存群员名单\\s*(\\d+)?$',
           fnc: 'getMemberList',
           permission: 'master'
+        },
+        {
+          reg: '^#一键(封杀|禁言)(\\d+)?( )?(\\d+)?$',
+          fnc: 'MassMuteAll',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async MassMuteAll (e) {
+    let match = this.e.msg.match(/^#一键(封杀|禁言)(\d+)( )?(\d+)?/)
+    if (!match) { return e.reply('命令格式不正确，请检查并重新发送') }
+
+    await e.reply('开始禁言操作...')
+
+    const targetId = e.at || match[2]
+    let muteTime = e.at ? (match[2] ? parseInt(match[2], 10) : 600) : (match[4] ? parseInt(match[4], 10) : 600)
+
+    const groupList = Array.from(await Bot[e.self_id].gl.values())
+    let successCount = 0
+    let failedCount = 0
+    const messages = []
+
+    for (const group of groupList) {
+      try {
+        const groupId = group.group_id
+        const isAdmin = group.admin_flag
+        let success = await Bot[e.self_id].pickGroup(groupId).muteMember(targetId, muteTime)
+        if (isAdmin) {
+          if (success) {
+            successCount++
+            messages.push(`在群 ${groupId} 成功禁言 ${targetId} ${muteTime}秒`)
+          } else {
+            failedCount++
+            messages.push(`在群 ${groupId} 禁言失败 - ${isAdmin ? '是管理员' : '不是管理员'}`)
+          }
+        } else {
+          failedCount++
+          messages.push(`在群 ${groupId} 禁言失败 - ${isAdmin ? '是管理员' : '不是管理员'}`)
+        }
+      } catch (error) {
+        failedCount++
+        messages.push(`在群 ${group.group_id} 执行禁言操作时发生错误: ${error.message}`)
+      }
+    }
+
+    messages.push(`操作完成: 成功禁言 ${successCount} 个群，失败 ${failedCount} 个群`)
+
+    const forwardMessage = e.runtime.common.makeForwardMsg(e, messages, '操作结果')
+    e.reply(forwardMessage)
   }
 
   async getMemberList (e) {
