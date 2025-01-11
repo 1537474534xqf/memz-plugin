@@ -1,35 +1,26 @@
 import fs from 'fs'
 import { PluginPath } from './Path.js'
 import path from 'path'
-const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
-const getPackageJsonVersion = (root) => {
+const readJsonFile = (filePath) => {
   try {
-    const packageJsonPath = path.join(root, 'package.json')
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      return packageJson.version || null
-    }
-  } catch (error) {
-    logger.error('Error reading package.json:', error)
+    return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : null
+  } catch {
+    return null
   }
-  return null
 }
 
-const latestVersion = getPackageJsonVersion(PluginPath)
-const yunzaiVersion = packageJson.version
-
-const isMiao = Boolean(packageJson.dependencies?.sequelize)
-const isTrss = Array.isArray(Bot.uin)
+const packageJson = readJsonFile('package.json')
+const pluginPackageJson = readJsonFile(path.join(PluginPath, 'package.json'))
 
 const Version = {
-  isMiao,
-  isTrss,
+  isMiao: Boolean(packageJson?.dependencies?.sequelize),
+  isTrss: Array.isArray(Bot.uin),
   get latestVersion () {
-    return latestVersion
+    return pluginPackageJson?.version || null
   },
   get yunzai () {
-    return yunzaiVersion
+    return packageJson?.version || null
   }
 }
 
