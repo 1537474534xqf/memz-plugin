@@ -1,19 +1,19 @@
 import lodash from 'lodash'
-import config from './config.js'
 import memz from './memz.js'
-import update from './update.js'
 import api from './api.js'
 import icqq from './icqq.js'
-import webStatus from './webStatus.js'
+import group from './group.js'
+import Search from './Search.js'
+import webTools from './webTools.js'
 import { Config } from '#components'
 
 export const schemas = [
-  config,
   memz,
-  update,
   api,
   icqq,
-  webStatus
+  group,
+  Search,
+  webTools
 ].flat()
 
 export function getConfigData () {
