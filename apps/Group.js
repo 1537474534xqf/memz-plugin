@@ -132,14 +132,10 @@ export class GroupPlugin extends plugin {
         const groupId = group.group_id
         const isAdmin = group.admin_flag
         let success = await Bot[e.self_id].pickGroup(groupId).muteMember(targetId, muteTime)
-        if (isAdmin) {
-          if (success) {
-            successCount++
-            messages.push(`在群 ${groupId} 成功禁言 ${targetId} ${muteTime}秒`)
-          } else {
-            failedCount++
-            messages.push(`在群 ${groupId} 禁言失败 - ${isAdmin ? '是管理员' : '不是管理员'}`)
-          }
+
+        if (success) {
+          successCount++
+          messages.push(`在群 ${groupId} 成功禁言 ${targetId} ${muteTime}秒`)
         } else {
           failedCount++
           messages.push(`在群 ${groupId} 禁言失败 - ${isAdmin ? '是管理员' : '不是管理员'}`)
