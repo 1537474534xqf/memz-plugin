@@ -159,11 +159,11 @@ export class GroupPlugin extends plugin {
       let responseMessages = []
 
       if (match && match[2]) {
-        groupIds = [match[2]] || [e.group_id]
+        groupIds = [match[2]]
       } else if (e.msg.trim() === '#保存全部群员名单') {
         groupIds = Array.from(Bot[e.self_id].gl.keys())
       } else {
-        return e.reply('未识别的命令格式。请检查并重新发送。', true)
+        groupIds = [e.group_id]
       }
 
       for (let groupId of groupIds) {
