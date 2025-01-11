@@ -134,9 +134,9 @@ export class GroupPlugin extends plugin {
         const isAdmin = group.admin_flag
         const memberMap = await Bot[e.self_id].pickGroup(group.group_id).getMemberMap()
 
-        const member = memberMap.get(targetId)
+        const targetUser = memberMap.find(member => member[1].user_id == targetId)
 
-        if (member) {
+        if (targetUser) {
           if (isAdmin) {
             await Bot[e.self_id].pickGroup(group.group_id).muteMember(targetId, muteTime)
             successCount++
