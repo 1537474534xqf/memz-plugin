@@ -287,6 +287,12 @@ export default [
     component: 'Switch'
   },
   {
+    field: 'memz.removeSpacesAll',
+    label: '文本去空格',
+    bottomHelpMessage: '关闭时仅主人可用',
+    component: 'Switch'
+  },
+  {
     field: 'memz.getFaviconAll',
     label: '获取网站图标',
     bottomHelpMessage: '关闭时仅主人可用',

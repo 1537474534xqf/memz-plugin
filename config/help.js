@@ -87,6 +87,11 @@ export const helpList = [
         icon: 69,
         title: '#unicode(编码|解码)+内容',
         desc: 'unicode(解|编)码'
+      },
+      {
+        icon: 70,
+        title: '#去空格+内容',
+        desc: '去除空格'
       }
     ]
   },
@@ -168,33 +173,6 @@ export const helpList = [
         icon: 48,
         title: '#系统状态(pro)',
         desc: '查看系统状态'
-      }
-    ]
-  }
-]
-export const ApihelpList = [
-  {
-    group: '热榜',
-    list: [
-      {
-        icon: 80,
-        title: '#bilibili热榜',
-        desc: '查询B站热榜'
-      },
-      {
-        icon: 50,
-        title: '#Steam热榜',
-        desc: '查询Steam热门游戏'
-      }
-    ]
-  },
-  {
-    group: '工具',
-    list: [
-      {
-        icon: 70,
-        title: '#whois+域名',
-        desc: '查询域名信息'
       }
     ]
   }

@@ -206,6 +206,10 @@ export class WebTools extends plugin {
           fnc: 'HexToUtf'
         },
         {
+          reg: '^#去空格\\s*(.*)$',
+          fnc: 'removeSpaces'
+        },
+        {
           reg: /^#?域名查询\s*(\S+)$/i,
           fnc: 'DomainMinPricing'
         },
@@ -227,6 +231,20 @@ export class WebTools extends plugin {
         }
       ]
     })
+  }
+
+  async removeSpaces (e) {
+    const { removeSpacesAll } = Config.getConfig('memz')
+
+    if (!removeSpacesAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] 去空格功能当前为仅主人可用')
+    }
+    const msg = e.msg.replace(/^#去空格\s*/, '')
+    if (!msg) {
+      return e.reply('请提供需要去空格的文本。', true)
+    }
+    const noSpacesText = msg.replace(/\s+/g, '')
+    return e.reply(noSpacesText, true)
   }
 
   async SslInfo (e) {

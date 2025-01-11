@@ -1,11 +1,9 @@
 import _ from 'lodash'
 import path from 'path'
-import { Render, Config, PluginPath } from '#components'
+import { Render, PluginPath } from '#components'
 import { getMarkdownToImage } from '#model'
-import { helpCfg, helpList, ApihelpList } from '../config/help.js'
+import { helpCfg, helpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
-
-const { enabled } = Config.getConfig('api')
 
 function boom () {
   let leakArray = []
@@ -26,10 +24,6 @@ export class setting extends plugin {
         {
           reg: /^#?(memz)?(api|接口)(帮助|help|菜单|幫助|菜單)$/i,
           fnc: 'apihelp'
-        },
-        {
-          reg: /^#?memz(帮助|help|菜单|幫助|菜單)$/i,
-          fnc: 'help'
         },
         {
           reg: /^#?memz(版本|version)$/i,
@@ -64,14 +58,6 @@ export class setting extends plugin {
 
   async help (e) {
     await getHelp(e, helpList)
-  }
-
-  async apihelp (e) {
-    if (!enabled) {
-      e.reply('未启用API服务，无法使用api相关功能', true)
-      return logger.warn('[memz-plugin] [MEMZ-API] API服务未启用，无法使用api相关功能')
-    }
-    await getHelp(e, ApihelpList)
   }
 }
 async function getHelp (e, helpList) {

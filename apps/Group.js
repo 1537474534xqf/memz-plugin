@@ -172,7 +172,7 @@ export class GroupPlugin extends plugin {
     }
   }
 }
-export class helpMaster extends plugin {
+export class 主人解禁 extends plugin {
   constructor () {
     super({
       name: '主人解禁',

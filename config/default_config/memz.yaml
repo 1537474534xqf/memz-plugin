@@ -55,6 +55,8 @@ UnicodeAll: true
 UrlAll: true
 # 是否所有人可用进制转换
 BaseConversionAll: true
+# 是否所有人可用文本去空格
+removeSpacesAll: false
 # 是否所有人可用获取网站图标
 getFaviconAll: true
 
