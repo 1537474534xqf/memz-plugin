@@ -126,7 +126,7 @@ export class GroupPlugin extends plugin {
 
       const memberMap = await group.getMemberMap()
       const memberList = Array.from(memberMap.values()).map(
-        (item) => ({ QQ号: item.user_id, UID: item.uid, 昵称: item.nickname, 性别: item.sex, 年龄: item.age, 等级: item.level })
+        (item) => ({ QQ号: item.user_id, UID: item.uid, 昵称: item.nickname, 性别: item.sex, 年龄: item.age })
       )
 
       await fs.mkdir(MemberListPath, { recursive: true })
@@ -137,7 +137,7 @@ export class GroupPlugin extends plugin {
       await fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
 
       await e.reply(fileExists
-        ? `${groupId}的群员名单已更新并覆盖`
+        ? `${groupId}的群员名单已更新`
         : `${groupId}的群员名单保存成功`,
       true)
       return true
