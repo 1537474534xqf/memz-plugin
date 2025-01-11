@@ -89,6 +89,11 @@ export const helpList = [
         desc: 'unicode(解|编)码'
       },
       {
+        icon: 49,
+        title: '#hex(编码|解码)+内容',
+        desc: 'hex(解|编)码'
+      },
+      {
         icon: 70,
         title: '#去空格+内容',
         desc: '去除空格'

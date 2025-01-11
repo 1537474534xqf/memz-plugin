@@ -5,14 +5,6 @@ import { getMarkdownToImage } from '#model'
 import { helpCfg, helpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 
-function boom () {
-  let leakArray = []
-  for (let i = 0; i < Infinity; i++) {
-    leakArray.push(new Array(1000).fill('leak'))
-    logger.warn(`[内存泄露]当前泄漏的数组数量: ${leakArray.length}`)
-  }
-}
-
 export class setting extends plugin {
   constructor () {
     super({
@@ -29,20 +21,8 @@ export class setting extends plugin {
           reg: /^#?memz(版本|version)$/i,
           fnc: 'version'
         }
-        // {
-        //   reg: /^[#/](memz|枫叶|ml|MapleLeaf)(爆炸|自爆|💥|boom)[!！]$/i,
-        //   fnc: 'boom'
-        // }
       ]
     })
-  }
-
-  async boom (e) {
-    if (!e.isMaster || e.user_id != 1011303349) {
-      return e.reply('把你爆了!', true)
-    }
-    e.reply('玛德跟你爆了!', true)
-    boom()
   }
 
   async version (e) {

@@ -57,6 +57,8 @@ UrlAll: true
 BaseConversionAll: true
 # 是否所有人可用文本去空格
 removeSpacesAll: false
+# 是否所有人可用Hex编码解码
+HexOperationAll: false
 # 是否所有人可用获取网站图标
 getFaviconAll: true
 

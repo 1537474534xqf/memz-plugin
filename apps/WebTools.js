@@ -52,25 +52,6 @@ async function convertBase (number, fromBase, toBase) {
   await new Promise((resolve) => setTimeout(resolve, 100))
   return base10Number.toString(toBase).toUpperCase()
 }
-async function decodeHexToReadableText (hex) {
-  const buffer = Buffer.from(hex, 'hex')
-
-  try {
-    const utf8Decoded = buffer.toString('utf-8')
-    const readableText = filterReadableText(utf8Decoded)
-    if (readableText) {
-      return readableText
-    }
-  } catch (error) {
-    console.error('UTF-8 解码失败:', error)
-  }
-
-  return '没有可读的文本内容'
-}
-
-function filterReadableText (str) {
-  return str.replace(/[^\s\p{L}\p{N}\p{P}\p{S}]/gu, '')
-}
 /**
  * 获取域名是否注册
  * @param {string} domain - 域名
@@ -202,8 +183,8 @@ export class WebTools extends plugin {
           fnc: 'BaseConversion'
         },
         {
-          reg: /^#?hex解码\s*(\S+)$/i,
-          fnc: 'HexToUtf'
+          reg: '^#hex(编码|解码)\\s*(.*)$',
+          fnc: 'handleHexOperation'
         },
         {
           reg: '^#去空格\\s*(.*)$',
@@ -573,13 +554,31 @@ export class WebTools extends plugin {
     }
   }
 
-  async HexToUtf (e) {
-    const msg = e.msg.match(/^#?hex解码\s*(\S+)$/i)
-    if (msg && msg[1]) {
-      const decodedString = decodeHexToReadableText(msg[1])
-      e.reply(decodedString, true)
-    } else {
-      e.reply('请提供有效的 HEX 字符串。', true)
+  async handleHexOperation (e) {
+    const { HexOperationAll } = Config.getConfig('memz')
+
+    if (!HexOperationAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] 进制转换状态当前为仅主人可用')
+    }
+    const match = this.e.msg.match(/^#hex(编码|解码)\s*(.*)$/i)
+    if (!match) {
+      return e.reply('请输入正确的命令，例如：#hex编码 文本 或 #hex解码 HEX 字符串', true)
+    }
+    const [, operation, content] = match
+    if (!content) {
+      return e.reply(`请提供需要${operation}的文本。`, true)
+    }
+    try {
+      let result
+      if (operation === '编码') {
+        result = Buffer.from(content, 'utf-8').toString('hex')
+        return e.reply(result, true)
+      } else if (operation === '解码') {
+        result = Buffer.from(content, 'hex').toString('utf-8')
+        return e.reply(result, true)
+      }
+    } catch (error) {
+      return e.reply('无效的 HEX 字符串或编码操作出错。请确保输入的是有效的内容。', error, true)
     }
   }
 
