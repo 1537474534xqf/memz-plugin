@@ -126,7 +126,7 @@ export class GroupPlugin extends plugin {
 
       const memberMap = await group.getMemberMap()
       const memberList = Array.from(memberMap.values()).map(
-        (item) => ({ QQ号: item.user_id, 昵称: item.nickname })
+        (item) => ({ QQ号: item.user_id, UID: item.uid, 昵称: item.nickname, 性别: item.sex, 年龄: item.age, 等级: item.level })
       )
 
       await fs.mkdir(MemberListPath, { recursive: true })
