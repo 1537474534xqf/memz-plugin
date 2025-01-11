@@ -1,7 +1,5 @@
 import _ from 'lodash'
-import path from 'path'
-import { Render, PluginPath } from '#components'
-import { getMarkdownToImage } from '#model'
+import { Render } from '#components'
 import { helpCfg, helpList } from '../config/help.js'
 import { style } from '../resources/help/imgs/config.js'
 
@@ -16,24 +14,9 @@ export class setting extends plugin {
         {
           reg: /^#?(memz)(帮助|help|菜单|幫助|菜單)$/i,
           fnc: 'help'
-        },
-        {
-          reg: /^#?memz(版本|version)$/i,
-          fnc: 'version'
         }
       ]
     })
-  }
-
-  async version (e) {
-    try {
-      let changelogPath = path.join(PluginPath, 'CHANGELOG.md')
-      let img = await getMarkdownToImage(changelogPath)
-      await e.reply(img, true)
-    } catch (error) {
-      logger.error(`[memz-plugin]获取版本信息时发生错误: ${error.message}`)
-      await e.reply('获取版本信息时发生错误，请稍后再试。', true)
-    }
   }
 
   async help (e) {

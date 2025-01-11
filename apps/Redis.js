@@ -41,17 +41,18 @@ export class RedisStatus extends plugin {
 
     try {
       if (dbNumber === null) {
+        // 清空所有数据库
         await redisClient.flushall()
-        await e.reply('Redis 清理成功！所有数据已被清空。')
+        await e.reply('Redis 清理成功！所有数据已被清空', true)
       } else {
         // 清空指定的数据库
         await redisClient.select(dbNumber)
         await redisClient.flushdb()
-        await e.reply(`Redis 清理成功！数据库 db${dbNumber} 的数据已被清空。`)
+        await e.reply(`Redis 清理成功！数据库 db${dbNumber} 的数据已被清空`, true)
       }
     } catch (err) {
       logger.error('[memz-plugin] 清理 Redis 内存失败:', err)
-      await e.reply(`Redis 清理失败：${err.message}`)
+      await e.reply(`Redis 清理失败：${err.message}`, true)
     } finally {
       redisClient.disconnect()
     }

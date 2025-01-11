@@ -30,10 +30,7 @@ import {
   // 随机一言
   getRandomYiyan
 } from './one.js'
-import {
-  // 将Markdown文件转换图片
-  getMarkdownToImage
-} from './markdown.js'
+
 export {
   // 截图
   generateScreenshot,
@@ -50,7 +47,5 @@ export {
   // cron
   normalizeCronExpression,
   // 随机一?函数
-  getRandomYiyan,
-  // Markdown
-  getMarkdownToImage
+  getRandomYiyan
 }

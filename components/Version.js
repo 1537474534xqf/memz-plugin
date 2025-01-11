@@ -1,40 +1,25 @@
 import fs from 'fs'
 import { PluginPath } from './Path.js'
-
+import path from 'path'
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
-const REGEXPS = {
-  // eslint-disable-next-line no-useless-escape
-  version: /^###\s*🌟?\s*([\d\.~\w-]+)\s*$/
-}
-
-const getLatestVersion = (root) => {
-  const logPath = `${root}/CHANGELOG.md`
-  let currentVersion = null
-
+const getPackageJsonVersion = (root) => {
   try {
-    if (fs.existsSync(logPath)) {
-      const logs = fs.readFileSync(logPath, 'utf8').split('\n')
-
-      for (let line of logs) {
-        const versionMatch = REGEXPS.version.exec(line)
-        if (versionMatch) {
-          currentVersion = versionMatch[1].trim()
-          break
-        }
-      }
+    const packageJsonPath = path.join(root, 'package.json')
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+      return packageJson.version || null
     }
   } catch (error) {
-    logger.error('Error reading log file:', error)
+    logger.error('Error reading package.json:', error)
   }
-
-  return currentVersion
+  return null
 }
 
-const latestVersion = getLatestVersion(PluginPath)
-
+const latestVersion = getPackageJsonVersion(PluginPath)
 const yunzaiVersion = packageJson.version
-const isMiao = Boolean(packageJson.dependencies.sequelize)
+
+const isMiao = Boolean(packageJson.dependencies?.sequelize)
 const isTrss = Array.isArray(Bot.uin)
 
 const Version = {
