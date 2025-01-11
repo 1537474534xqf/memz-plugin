@@ -100,7 +100,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
-          reg: '[#/]保存群员名单\\s*(\\d+)?$',
+          reg: '[#/]保存(全部)?群员名单\\s*(\\d+)?$',
           fnc: 'getMemberList',
           permission: 'master'
         },
@@ -154,36 +154,52 @@ export class GroupPlugin extends plugin {
 
   async getMemberList (e) {
     try {
-      const match = e.msg.match(/^[#/]保存群员名单\s*(\d*)$/i)
-      const groupId = match?.[1] || e.group_id
+      const match = e.msg.match(/^[#/]保存(全部)?群员名单\s*(\d*)$/i)
+      let groupIds = []
+      let responseMessages = []
 
-      if (!groupId) {
-        await e.reply('未找到有效的群号，请检查命令格式或是否在群聊中执行。', true)
-        return false
+      if (match && match[2]) {
+        groupIds = [match[2]] || [e.group_id]
+      } else if (e.msg.trim() === '#保存全部群员名单') {
+        groupIds = Array.from(Bot[e.self_id].gl.keys())
+      } else {
+        return e.reply('未识别的命令格式。请检查并重新发送。', true)
       }
 
-      const group = Bot.pickGroup(groupId)
-      if (!group) {
-        await e.reply(`未找到群组 ${groupId}，请确认群号是否正确。`, true)
-        return false
+      for (let groupId of groupIds) {
+        try {
+          const group = Bot.pickGroup(groupId)
+          if (!group) {
+            responseMessages.push(`未找到群组 ${groupId}，请确认群号是否正确。`)
+            continue
+          }
+
+          const memberMap = await group.getMemberMap()
+          const memberList = Array.from(memberMap.values()).map(item => ({
+            QQ号: item.user_id,
+            UID: item.uid,
+            昵称: item.nickname,
+            性别: item.sex,
+            年龄: item.age
+          }))
+
+          await fs.mkdir(MemberListPath, { recursive: true })
+
+          const filePath = path.join(MemberListPath, `${groupId}.json`)
+          const fileExists = await fs.access(filePath).then(() => true).catch(() => false)
+
+          await fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
+
+          responseMessages.push(fileExists
+            ? `群号${groupId}的群员名单已更新`
+            : `群号${groupId}的群员名单保存成功`)
+          Bot.sleep(500)
+        } catch (error) {
+          responseMessages.push(`保存群号${groupId}的群员名单时发生错误：${error.message}`)
+        }
       }
 
-      const memberMap = await group.getMemberMap()
-      const memberList = Array.from(memberMap.values()).map(
-        (item) => ({ QQ号: item.user_id, UID: item.uid, 昵称: item.nickname, 性别: item.sex, 年龄: item.age })
-      )
-
-      await fs.mkdir(MemberListPath, { recursive: true })
-
-      const filePath = path.join(MemberListPath, `${groupId}.json`)
-      const fileExists = await fs.access(filePath).then(() => true).catch(() => false)
-
-      await fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
-
-      await e.reply(fileExists
-        ? `群号${groupId}的群员名单已更新`
-        : `群号${groupId}的群员名单保存成功`,
-      true)
+      await e.reply(responseMessages.join('\n'), true)
       return true
     } catch (error) {
       logger.error('保存群员名单时发生错误：', error)
