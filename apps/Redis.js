@@ -16,7 +16,7 @@ export class RedisStatus extends plugin {
           fnc: 'getRedisInfo'
         },
         {
-          reg: /^#*redis(一键)?(清理|释放|归零|清空)$/i,
+          reg: /^#*redis(一键)?(清理|释放|归零|清空)(db(\d+))?$/i,
           fnc: 'clearMemory'
         }
       ]
@@ -36,9 +36,19 @@ export class RedisStatus extends plugin {
       password: RedisConfig.password || null
     })
 
+    const match = e.msg.match(/^#*redis(一键)?(清理|释放|归零|清空)(db(\d+))?$/i)
+    const dbNumber = match && match[4] ? parseInt(match[4], 10) : null
+
     try {
-      await redisClient.flushall()
-      await e.reply('Redis 清理成功！所有数据已被清空。')
+      if (dbNumber === null) {
+        await redisClient.flushall()
+        await e.reply('Redis 清理成功！所有数据已被清空。')
+      } else {
+        // 清空指定的数据库
+        await redisClient.select(dbNumber)
+        await redisClient.flushdb()
+        await e.reply(`Redis 清理成功！数据库 db${dbNumber} 的数据已被清空。`)
+      }
     } catch (err) {
       logger.error('[memz-plugin] 清理 Redis 内存失败:', err)
       await e.reply(`Redis 清理失败：${err.message}`)
