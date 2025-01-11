@@ -1,6 +1,6 @@
 import moment from 'moment'
 import path from 'path'
-import fs from 'fs'
+import fs from 'fs/promises'
 import { Config, PluginData } from '#components'
 const { whoAtmeTime } = Config.getConfig('memz')
 const MemberListPath = path.join(PluginData, 'MemberList')
@@ -129,12 +129,12 @@ export class GroupPlugin extends plugin {
         (item) => ({ QQ号: item.user_id, 昵称: item.nickname })
       )
 
-      fs.mkdir(MemberListPath, { recursive: true })
+      await fs.mkdir(MemberListPath, { recursive: true })
 
       const filePath = path.join(MemberListPath, `${groupId}.json`)
       const fileExists = await fs.access(filePath).then(() => true).catch(() => false)
 
-      fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
+      await fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
 
       await e.reply(fileExists
         ? `${groupId}的群员名单已更新并覆盖`
