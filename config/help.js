@@ -122,6 +122,11 @@ export const helpList = [
         icon: 70,
         title: '#一键群发+内容',
         desc: '一键群发消息'
+      },
+      {
+        icon: 71,
+        title: '#一键私发+内容',
+        desc: '一键私发消息'
       }
     ]
   },

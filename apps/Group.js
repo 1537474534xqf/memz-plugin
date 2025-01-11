@@ -90,9 +90,46 @@ export class GroupPlugin extends plugin {
           reg: '^[#/]一键群发\\s*(.*)$',
           fnc: 'groupForward',
           permission: 'master'
+        },
+        {
+          reg: '^[#/]一键私发\\s*(.*)$',
+          fnc: 'privateForward',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async privateForward (e) {
+    const msg = e.msg.match(/^[#/]一键私发\\s*(.*)$/i)
+    const startTime = Date.now()
+    let successCount = 0
+    let failCount = 0
+    const failedUsers = []
+    for (let user of Bot[e.self_id].fl.keys()) {
+      try {
+        await Bot[e.self_id].pickUser(user).sendMsg(msg)
+        successCount++
+      } catch (error) {
+        failCount++
+        failedUsers.push(user)
+      } finally {
+        // 避免频繁发送导致风控
+        await e.runtime.common.sleep(2500)
+      }
+    }
+
+    const endTime = Date.now() // 结束时间
+    const totalUsers = successCount + failCount // 总用户数
+    const totalTime = endTime - startTime // 总耗时
+    const failedUsersStr = failedUsers.join(', ')
+
+    let msgText = `总用户数: ${totalUsers}\n`
+    if (successCount !== totalUsers) {
+      msgText += `成功用户数: ${successCount}\n失败用户数: ${failCount}\n失败用户: ${failedUsersStr}\n`
+    }
+    msgText += `耗时: ${totalTime} ms`
+    e.reply(msgText, true)
   }
 
   async groupForward (e) {
