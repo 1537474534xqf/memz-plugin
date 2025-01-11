@@ -105,7 +105,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#一键(封杀|禁言)(\\d+)?( )?(\\d+)?$',
+          reg: '^#一键(加害|封杀|禁言)(\\d+)?( )?(\\d+)?$',
           fnc: 'MassMuteAll',
           permission: 'master'
         }
@@ -114,7 +114,7 @@ export class GroupPlugin extends plugin {
   }
 
   async MassMuteAll (e) {
-    const match = e.msg.match(/^#一键(封杀|禁言)(\d+)?( )?(\d+)?$/)
+    const match = e.msg.match(/^#一键(加害|封杀|禁言)(\d+)?( )?(\d+)?$/)
     if (!match) {
       return e.reply('命令格式不正确，请检查并重新发送')
     }
