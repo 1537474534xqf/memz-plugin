@@ -1,6 +1,6 @@
 export default [
   {
-    label: 'WebTool',
+    label: '工具设置',
     component: 'SOFT_GROUP_BEGIN'
   },
   {
@@ -21,25 +21,25 @@ export default [
   },
   {
     field: 'memz.httpStatusAll',
-    label: 'http状态查询',
+    label: 'http状态',
     bottomHelpMessage: '关闭时仅主人可用',
     component: 'Switch'
   },
   {
     field: 'memz.SslInfoAll',
-    label: 'SSL证书信息查询',
+    label: 'SSL证书信息',
     bottomHelpMessage: '关闭时仅主人可用',
     component: 'Switch'
   },
   {
     field: 'memz.icpBeianAll',
-    label: '域名备案查询',
+    label: '域名备案',
     bottomHelpMessage: '关闭时仅主人可用',
     component: 'Switch'
   },
   {
     field: 'memz.DomainMinPricingAll',
-    label: '域名价格查询',
+    label: '域名价格',
     bottomHelpMessage: '域名常规最低价格查询(常规),关闭时仅主人可用',
     component: 'Switch'
   },
@@ -57,7 +57,7 @@ export default [
   },
   {
     field: 'memz.PingApi',
-    label: 'Ping类型',
+    label: 'Ping接口',
     bottomHelpMessage: 'itdog暂时不可用http测速',
     component: 'Select',
     componentProps: {
