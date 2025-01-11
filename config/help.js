@@ -191,6 +191,11 @@ export const helpList = [
       },
       {
         icon: 48,
+        title: '#Redis一键清空',
+        desc: '一键清空Redis'
+      },
+      {
+        icon: 48,
         title: '#系统状态(pro)',
         desc: '查看系统状态'
       }

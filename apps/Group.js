@@ -137,8 +137,8 @@ export class GroupPlugin extends plugin {
       await fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
 
       await e.reply(fileExists
-        ? `${groupId}的群员名单已更新`
-        : `${groupId}的群员名单保存成功`,
+        ? `群号${groupId}的群员名单已更新`
+        : `群号${groupId}的群员名单保存成功`,
       true)
       return true
     } catch (error) {

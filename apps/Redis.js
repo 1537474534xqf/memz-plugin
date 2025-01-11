@@ -14,31 +14,34 @@ export class RedisStatus extends plugin {
         {
           reg: /^#?redis(状态|统计|狀態|統計)(\s*pro)?/i,
           fnc: 'getRedisInfo'
+        },
+        {
+          reg: /^#*redis(一键)?(清理|释放|归零|清空)$/i,
+          fnc: 'clearMemory'
         }
-        // {
-        //   reg: /^#*redis(一键)?(清理|释放|归零|清空)$/i,
-        //   fnc: 'clearMemory'
-        // }
       ]
     })
   }
 
   async clearMemory (e) {
-    if (!e.isMaster) return logger.warn('[memz-plugin] 清理内存仅限主人使用')
+    if (!e.isMaster) {
+      logger.warn('[memz-plugin] 清理内存仅限主人使用')
+      return e.reply('您无权限执行此操作。')
+    }
 
     const redisClient = new Redis({
       host: RedisConfig.host,
       port: RedisConfig.port,
-      username: RedisConfig.username,
-      password: RedisConfig.password
+      username: RedisConfig.username || null,
+      password: RedisConfig.password || null
     })
 
     try {
-      await redisClient.flushdb()
-      e.reply('Redis清理成功！恭喜你,你存在Redis的数据全没了~')
+      await redisClient.flushall()
+      await e.reply('Redis 清理成功！所有数据已被清空。')
     } catch (err) {
-      logger.error('[memz-plugin] 清理Redis内存失败:', err)
-      e.reply('Redis清理失败', err)
+      logger.error('[memz-plugin] 清理 Redis 内存失败:', err)
+      await e.reply(`Redis 清理失败：${err.message}`)
     } finally {
       redisClient.disconnect()
     }
