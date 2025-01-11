@@ -132,23 +132,23 @@ export class GroupPlugin extends plugin {
     for (const group of groupList) {
       try {
         const isAdmin = group.admin_flag
-        const memberMap = await Bot[e.self_id].pickGroup(group.group_id).getMemberMap()
+        const memberMap = await Bot[e.self_id].pickGroup(group).getMemberMap()
 
         const targetUser = memberMap.find(member => member[1].user_id == targetId)
 
         if (targetUser) {
           if (isAdmin) {
-            await Bot[e.self_id].pickGroup(group.group_id).muteMember(targetId, muteTime)
+            await Bot[e.self_id].pickGroup(group).muteMember(targetId, muteTime)
             successCount++
-            messages.push(`在群 ${group.group_id} 成功禁言 ${targetId} ${muteTime}秒`)
+            messages.push(`在群 ${group} 成功禁言 ${targetId} ${muteTime}秒`)
           } else {
             failedCount++
-            messages.push(`在群 ${group.group_id} ${targetId} 不是管理员，禁言失败`)
+            messages.push(`在群 ${group} ${targetId} 不是管理员，禁言失败`)
           }
         }
       } catch (error) {
         failedCount++
-        messages.push(`在群 ${group.group_id} 执行禁言操作时发生错误: ${error.message}`)
+        messages.push(`在群 ${group} 执行禁言操作时发生错误: ${error.message}`)
       }
     }
 
