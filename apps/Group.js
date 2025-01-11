@@ -85,9 +85,48 @@ export class GroupPlugin extends plugin {
           reg: '^[#/](群聊?)?一键(群聊?)?打卡$',
           fnc: 'groupSign',
           permission: 'master'
+        },
+        {
+          reg: '^[#/]一键群发\\s*(.*)$',
+          fnc: 'groupForward',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async groupForward (e) {
+    const msg = e.msg.match(/^[#/]一键群发\\s*(.*)$/i)
+
+    const startTime = Date.now()
+    let successCount = 0
+    let failCount = 0
+    const failedGroups = []
+
+    for (let group of Bot[e.self_id].gl.keys()) {
+      try {
+        await Bot[e.self_id].pickGroup(group).sendMsg(msg)
+        successCount++
+      } catch (error) {
+        failCount++
+        failedGroups.push(group)
+      } finally {
+        // 避免频繁发送导致风控
+        await e.runtime.common.sleep(2500)
+      }
+    }
+
+    const endTime = Date.now() // 结束时间
+    const totalGroups = successCount + failCount // 总群数
+    const totalTime = endTime - startTime // 总耗时
+    const failedGroupsStr = failedGroups.join(', ')
+
+    let msgText = `总群组数: ${totalGroups}\n`
+    if (successCount !== totalGroups) {
+      msgText += `成功群组数: ${successCount}\n失败群组数: ${failCount}\n失败群组: ${failedGroupsStr}\n`
+    }
+    msgText += `耗时: ${totalTime} ms`
+    e.reply(msgText, true)
   }
 
   async groupSign (e) {

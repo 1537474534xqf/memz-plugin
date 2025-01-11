@@ -560,7 +560,7 @@ export class WebTools extends plugin {
     if (!HexOperationAll && !e.isMaster) {
       return logger.warn('[memz-plugin] 进制转换状态当前为仅主人可用')
     }
-    const match = this.e.msg.match(/^#hex(编码|解码)\s*(.*)$/i)
+    const match = e.msg.match(/^#hex(编码|解码)\s*(.*)$/i)
     if (!match) {
       return e.reply('请输入正确的命令，例如：#hex编码 文本 或 #hex解码 HEX 字符串', true)
     }
