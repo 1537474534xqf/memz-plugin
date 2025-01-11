@@ -1,6 +1,9 @@
 import moment from 'moment'
-import { Config } from '#components'
+import path from 'path'
+import fs from 'fs'
+import { Config, PluginData } from '#components'
 const { whoAtmeTime } = Config.getConfig('memz')
+const MemberListPath = path.join(PluginData, 'MemberList')
 
 Bot.on('message.group', async (e) => {
   const imgUrls = []
@@ -95,9 +98,53 @@ export class GroupPlugin extends plugin {
           reg: '^[#/]一键私发\\s*(.*)$',
           fnc: 'privateForward',
           permission: 'master'
+        },
+        {
+          reg: '[#/]保存群员名单\\s*(\\d+)?$',
+          fnc: 'getMemberList',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async getMemberList (e) {
+    try {
+      const match = e.msg.match(/^[#/]保存群员名单\s*(\d*)$/i)
+      const groupId = match?.[1] || e.group_id
+
+      if (!groupId) {
+        await e.reply('未找到有效的群号，请检查命令格式或是否在群聊中执行。', true)
+        return false
+      }
+
+      const group = Bot.pickGroup(groupId)
+      if (!group) {
+        await e.reply(`未找到群组 ${groupId}，请确认群号是否正确。`, true)
+        return false
+      }
+
+      const memberMap = await group.getMemberMap()
+      const memberList = Array.from(memberMap.values()).map(
+        (item) => ({ QQ号: item.user_id, 昵称: item.nickname })
+      )
+
+      fs.mkdir(MemberListPath, { recursive: true })
+
+      const filePath = path.join(MemberListPath, `${groupId}.json`)
+      const fileExists = await fs.access(filePath).then(() => true).catch(() => false)
+
+      fs.writeFile(filePath, JSON.stringify(memberList, null, 2))
+
+      await e.reply(fileExists
+        ? `${groupId}的群员名单已更新并覆盖`
+        : `${groupId}的群员名单保存成功`,
+      true)
+      return true
+    } catch (error) {
+      logger.error('保存群员名单时发生错误：', error)
+      return e.reply(`保存群员名单失败：${error.message}`, true)
+    }
   }
 
   async privateForward (e) {
