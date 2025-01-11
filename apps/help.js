@@ -14,8 +14,8 @@ export class setting extends plugin {
       priority: 1,
       rule: [
         {
-          reg: /^#?(memz)?(api|接口)(帮助|help|菜单|幫助|菜單)$/i,
-          fnc: 'apihelp'
+          reg: /^#?(memz)(帮助|help|菜单|幫助|菜單)$/i,
+          fnc: 'help'
         },
         {
           reg: /^#?memz(版本|version)$/i,
