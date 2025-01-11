@@ -130,19 +130,20 @@ export class GroupPlugin extends plugin {
     const messages = []
 
     for (const group of groupList) {
+      const groupId = group.group_id
       try {
         const isAdmin = group.admin_flag
 
         if (isAdmin) {
-          await Bot[e.self_id].pickGroup(group).muteMember(targetId, muteTime)
+          await Bot[e.self_id].pickGroup(groupId).muteMember(targetId, muteTime)
           successCount++
-          messages.push(`在群 ${group} 成功禁言 ${targetId} ${muteTime}秒`)
+          messages.push(`在群 ${groupId} 成功禁言 ${targetId} ${muteTime}秒`)
         } else {
           failedCount++
         }
       } catch (error) {
         failedCount++
-        messages.push(`在群 ${group} 执行禁言操作时发生错误: ${error.message}`)
+        messages.push(`在群 ${groupId} 执行禁言操作时发生错误: ${error.message}`)
       }
     }
 
