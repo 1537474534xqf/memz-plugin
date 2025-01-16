@@ -142,6 +142,11 @@ export const helpList = [
         icon: 74,
         title: '#召唤@某人(x次)?',
         desc: '艾特艾特艾特'
+      },
+      {
+        icon: 75,
+        title: '#查找@某人',
+        desc: '查找某人所在群'
       }
     ]
   },

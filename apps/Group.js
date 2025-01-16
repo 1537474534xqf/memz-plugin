@@ -162,7 +162,7 @@ export class GroupPlugin extends plugin {
 
     for (const userId of qqNumbers) {
       if (memberIndex.has(userId)) {
-        msg.push({ user_id: e.user_id, nickname, message: `--用户${userId}--` });
+        msg.push({ user_id: e.user_id, nickname, message: `用户${userId}` });
 
         const groups = memberIndex.get(userId);
         groups.forEach(group => {
@@ -186,7 +186,7 @@ export class GroupPlugin extends plugin {
         message: `在${groupPromises.length}个群中没有找到这些人`
       });
     }
-  
+
     await e.reply(Bot.makeForwardMsg(msg));
   }
 
