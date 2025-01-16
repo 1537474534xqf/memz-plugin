@@ -110,7 +110,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#召唤(\\d+)?次?',
+          reg: '^#召唤(\\d+)?次?(撤回)?',
           fnc: 'atatat',
           permission: 'master'
         }
@@ -127,17 +127,12 @@ export class GroupPlugin extends plugin {
     const recallMsg = e.msg.includes('撤回')
     let { atChunkSize } = Config.getConfig('memz')
 
-    const atSegments = []
-    qqNumbers.forEach(qq => {
-      if (segment.ICQQ) {
-        atSegments.push(segment.ICQQ(), segment.at(qq))
-      } else {
-        atSegments.push(segment.at(qq))
-      }
-    })
+    const atSegments = qqNumbers.map(qq => {
+      return segment.ICQQ ? [segment.ICQQ(), segment.at(qq)] : [segment.at(qq)]
+    }).flat()
 
-    const match = e.msg.match(/^(#召唤(\d+)次?)$/)
-    let summonCount = match ? parseInt(match[2], 10) : 20
+    const match = e.msg.match(/^#召唤(\d+)?次?(撤回)?$/)
+    let summonCount = match ? parseInt(match[1], 10) || 20 : 20
 
     const messageChunks = []
     for (let i = 0; i < atSegments.length && summonCount > 0; i += atChunkSize * 2) {
