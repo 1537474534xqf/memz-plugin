@@ -30,13 +30,13 @@ Yunzai系列Bot插件,本插件基于TRSS-Yunzai作为开发环境,其他框架�
 最后点击 **Generate token** 进行生成令牌
 
 ```bash
-git clone --depth=1 https://令牌@github.com/MEMZ-MapleLeaf/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://令牌@github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 如果无法访问GitHub,可以使用**Ghproxy**进行安装
 
 ```bash
-git clone --depth=1 https://令牌@ghp.ci/https://github.com/MEMZ-MapleLeaf/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://令牌@ghp.ci/https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 #### 使用Gitee安装
