@@ -124,8 +124,8 @@ export class GroupPlugin extends plugin {
   }
 
   async search(e) {
-    const match = e.msg.match(/^[#/]查找\s*(\d*)$/i)[1]
-    const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq) || match
+    const match = e.msg.match(/^[#/]查找\s*(\d*)$/i);
+    const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq) || (match ? [match[1]] : []);
 
     const memberIndex = new Map();
     const groupPromises = [];
@@ -158,19 +158,21 @@ export class GroupPlugin extends plugin {
     await Promise.all(groupPromises);
 
     const msg = [];
-    let glFiltered = false;
+    const nickname = e.sender.nickname || '为什么不玩原神';
 
     for (const userId of qqNumbers) {
       if (memberIndex.has(userId)) {
-        msg.push(`--用户${userId}--`);
+        msg.push({ user_id: e.user_id, nickname, message: `--用户${userId}--` });
+
         const groups = memberIndex.get(userId);
         groups.forEach(group => {
           msg.push({
             user_id: e.user_id,
-            nickname: e.sender.nickname || '为什么不玩原神',
-            message: `群${group.gid}(${group.group_name})找到用户${userId}\n身份: ${group.role === "admin" ? "群管理" :
+            nickname,
+            message: `群${group.gid}(${group.group_name})找到用户${userId}\n身份: ${
+              group.role === "admin" ? "群管理" :
               group.role === "owner" ? "群主" :
-                "群员"
+              "群员"
             }${group.title ? `\n头衔: ${group.title}` : ""}`
           });
         });
@@ -178,14 +180,15 @@ export class GroupPlugin extends plugin {
     }
 
     if (msg.length === 0) {
-      msg.push(`在${groupPromises.length}个群中没有找到这些人`);
+      msg.push({
+        user_id: e.user_id,
+        nickname,
+        message: `在${groupPromises.length}个群中没有找到这些人`
+      });
     }
-
-    if (glFiltered) msg.push(`已经过滤了触发的群`);
-
-    await e.reply(Bot.makeForwardMsg(msg))
+  
+    await e.reply(Bot.makeForwardMsg(msg));
   }
-
 
   async atatat(e) {
     if (!e.isGroup) return e.reply('召唤只支持群聊使用', true)
