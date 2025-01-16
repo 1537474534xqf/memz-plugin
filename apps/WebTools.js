@@ -623,7 +623,7 @@ export class WebTools extends plugin {
         return e.reply('图标地址无效', true)
       }
 
-      e.reply(['获取到的网站图标:', segment.image(iconUrl)], true)
+      e.reply(['获取到的网站图标', segment.image(iconUrl)], true)
     } catch (error) {
       logger.error('获取网站图标失败:', error)
       e.reply('[ERROR]获取网站图标失败，请检查网址是否正确', true)
@@ -637,14 +637,14 @@ export class WebTools extends plugin {
       return logger.warn('[memz-plugin] IPInfo 功能当前为仅主人可用')
     }
     if (IpinfoApi === 1) {
-      logger.debug('使用Ipinfo.io接口查询ip信息')
+      logger.info('使用Ipinfo.io接口查询ip信息')
       await this.ipinfoIo(e)
     } else if (IpinfoApi === 2) {
-      logger.debug('使用bilibili接口查询ip信息')
+      logger.info('使用bilibili接口查询ip信息')
       await this.bilibiliIpinfo(e)
     } else {
       logger.warn('IPInfo 配置错误, 默认使用bilibili接口查询ip信息')
-      await this.Zhalema(e)
+      await this.bilibiliIpinfo(e)
     }
   }
 
