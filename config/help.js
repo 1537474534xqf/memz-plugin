@@ -137,6 +137,11 @@ export const helpList = [
         icon: 73,
         title: '#一键禁言+QQ',
         desc: '所有群一键禁言'
+      },
+      {
+        icon: 74,
+        title: '#召唤@某人(x次)?',
+        desc: '艾特艾特艾特'
       }
     ]
   },

@@ -97,6 +97,7 @@ pnpm install --filter=memz-plugin
 | 保存群员名单     | #保存(全部)?群员名单(+群号) | 保存群员名单到本地Json文件              | memz-plugin/data/MemberList | Master |
 | 一键禁言         | #一键加害QQ 秒              | 在Bot有管理的所有群禁言Ta               | 还没写好                    | Master |
 | 私发             | #一键私发+内容              | 私聊发送                                | 不知道为什么在这个分类      | Master |
+| 召唤!            | #召唤@某人(x次)?(撤回)      | 不断的AT某人                            | 诶嘿                        | Master |
 
 ### 搜索功能
 
