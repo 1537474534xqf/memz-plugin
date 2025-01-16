@@ -108,9 +108,46 @@ export class GroupPlugin extends plugin {
           reg: '^#一键(加害|封杀|禁言)(\\d+)?( )?(\\d+)?$',
           fnc: 'MassMuteAll',
           permission: 'master'
+        },
+        {
+          reg: '^[#/]召唤(.*)$',
+          fnc: 'atatat',
+          permission: 'master'
         }
       ]
     })
+  }
+
+  async atatat (e) {
+    if (!e.isGroup) return e.reply('召唤只支持群聊使用', true)
+    const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq)
+    if (qqNumbers.length === 0) return e.reply('请艾特你要召唤的人', true)
+    const recallMsg = e.msg.includes('撤回')
+    let { atChunkSize } = Config.getConfig('memz')
+    const atSegments = []
+
+    qqNumbers.forEach(qq => {
+      if (segment.ICQQ) {
+        atSegments.push(segment.ICQQ(), segment.at(qq))
+      } else {
+        atSegments.push(segment.at(qq))
+      }
+    })
+
+    const messageChunks = []
+    for (let i = 0; i < atSegments.length; i += atChunkSize * 2) {
+      const chunk = atSegments.slice(i, i + atChunkSize * 2)
+      messageChunks.push(chunk)
+    }
+
+    for (const chunk of messageChunks) {
+      const res = await e.reply(chunk)
+      const msgId = res.message_id
+      if (recallMsg) {
+        await e.group.recallMsg(msgId)
+      }
+      Bot.sleep(500)
+    }
   }
 
   async MassMuteAll (e) {
