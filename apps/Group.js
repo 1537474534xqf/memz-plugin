@@ -81,7 +81,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
-          reg: /^[#/](一键)?(召唤|艾特|@|at)(全体|所有|全部|all)(成员)?$/i,
+          reg: /^[#/](一键)?(召唤|艾特|@|at)(全体|所有|全部|all)(成员)?(.*)/i,
           fnc: 'atAll'
         },
         {
@@ -330,7 +330,7 @@ export class GroupPlugin extends plugin {
   async atAll (e) {
     if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
     if (!e.isGroup) return e.reply('艾特全体只支持群聊使用', true)
-
+    const recallMsg = e.msg.includes('撤回')
     let { atalltext, atChunkSize } = Config.getConfig('memz')
     const members = await this.e.group.getMemberMap()
     const qqNumbers = [...members.keys()]
@@ -350,6 +350,7 @@ export class GroupPlugin extends plugin {
 
     for (let i = 0; i < atSegments.length; i += atChunkSize * 2) {
       const chunk = atSegments.slice(i, i + atChunkSize * 2)
+      if (recallMsg) { chunk.push({ recallMsg: 1 }) }
       await e.reply(chunk)
       await Bot.sleep(500)
     }
