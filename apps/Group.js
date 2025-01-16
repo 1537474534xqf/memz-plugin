@@ -110,7 +110,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
-          reg: '^[#/]召唤(.*)$',
+          reg: '^#召唤(\\d+)?次?',
           fnc: 'atatat',
           permission: 'master'
         }
@@ -120,12 +120,14 @@ export class GroupPlugin extends plugin {
 
   async atatat (e) {
     if (!e.isGroup) return e.reply('召唤只支持群聊使用', true)
+
     const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq)
     if (qqNumbers.length === 0) return e.reply('请艾特你要召唤的人', true)
+
     const recallMsg = e.msg.includes('撤回')
     let { atChunkSize } = Config.getConfig('memz')
-    const atSegments = []
 
+    const atSegments = []
     qqNumbers.forEach(qq => {
       if (segment.ICQQ) {
         atSegments.push(segment.ICQQ(), segment.at(qq))
@@ -134,10 +136,14 @@ export class GroupPlugin extends plugin {
       }
     })
 
+    const match = e.msg.match(/^(#召唤(\d+)次?)$/)
+    let summonCount = match ? parseInt(match[2], 10) : 20
+
     const messageChunks = []
-    for (let i = 0; i < atSegments.length; i += atChunkSize * 2) {
+    for (let i = 0; i < atSegments.length && summonCount > 0; i += atChunkSize * 2) {
       const chunk = atSegments.slice(i, i + atChunkSize * 2)
       messageChunks.push(chunk)
+      summonCount--
     }
 
     for (const chunk of messageChunks) {
