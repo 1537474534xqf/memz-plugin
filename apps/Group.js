@@ -125,7 +125,6 @@ export class GroupPlugin extends plugin {
     if (qqNumbers.length === 0) return e.reply('请艾特你要召唤的人', true)
 
     const recallMsg = e.msg.includes('撤回')
-    let { atChunkSize } = Config.getConfig('memz')
 
     const atSegments = qqNumbers.map(qq => {
       return segment.ICQQ ? [segment.ICQQ(), segment.at(qq)] : [segment.at(qq)]
@@ -134,20 +133,13 @@ export class GroupPlugin extends plugin {
     const match = e.msg.match(/^#召唤(\d+)?次?(撤回)?$/)
     let summonCount = match ? parseInt(match[1], 10) || 20 : 20
 
-    const messageChunks = []
-    for (let i = 0; i < atSegments.length && summonCount > 0; i += atChunkSize * 2) {
-      const chunk = atSegments.slice(i, i + atChunkSize * 2)
-      messageChunks.push(chunk)
-      summonCount--
-    }
-
-    for (const chunk of messageChunks) {
-      const res = await e.reply(chunk)
+    for (let i = 0; i < summonCount; i++) {
+      const res = await e.reply(atSegments)
       const msgId = res.message_id
       if (recallMsg) {
         await e.group.recallMsg(msgId)
       }
-      Bot.sleep(500)
+      Bot.sleep(2000)
     }
   }
 
