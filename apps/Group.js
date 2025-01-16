@@ -332,6 +332,7 @@ export class GroupPlugin extends plugin {
     if (!e.isGroup) return e.reply('艾特全体只支持群聊使用', true)
 
     const recallMsg = e.msg.includes('撤回')
+    e.recall()
     let { atalltext, atChunkSize } = Config.getConfig('memz')
     const members = await this.e.group.getMemberMap()
     const qqNumbers = [...members.keys()]
@@ -356,12 +357,12 @@ export class GroupPlugin extends plugin {
     }
 
     for (const chunk of messageChunks) {
+      const res = await e.reply(chunk)
+      const msgId = res.message_id
       if (recallMsg) {
-        await e.recall(chunk)
-      } else {
-        await e.reply(chunk)
+        await e.group.recallMsg(msgId)
       }
-      await Bot.sleep(500)
+      Bot.sleep(500)
     }
   }
 }
