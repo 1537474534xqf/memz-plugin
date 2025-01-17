@@ -50,6 +50,7 @@ IpinfoAll: true
 #* 2为`bilibili`接口
 #* 3为`ip.sb`接口
 #* 4为`ip-api`接口
+#* 5为`Ip2locationIo`接口
 IpinfoApi: 2
 # Ping功能Ipinfo.io的token
 IpinfoToken: ""

@@ -633,11 +633,13 @@ export class WebTools extends plugin {
   // IP 信息
   async ipinfo (e) {
     const { IpinfoApi } = Config.getConfig('memz')
+
     const apiMapping = {
       1: 'ipinfoIo',
       2: 'bilibiliIpinfo',
       3: 'ipSb',
-      4: 'ipApi'
+      4: 'ipApi',
+      5: 'ip2locationIo'
     }
 
     const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
@@ -684,6 +686,9 @@ export class WebTools extends plugin {
       case 'ipSb':
         url = `https://api.ip.sb/geoip/${ipAddress}`
         break
+      case 'ip2locationIo':
+        url = `https://api.ip2location.io/?ip=${ipAddress}`
+        break
       default:
         return null
     }
@@ -709,9 +714,30 @@ export class WebTools extends plugin {
       return this.formatIpApi(ipInfo, ipAddress)
     } else if (api === 'ipSb') {
       return this.formatIpSb(ipInfo, ipAddress)
+    } else if (api === 'ip2locationIo') {
+      return this.formatIp2locationIo(ipInfo, ipAddress)
     } else {
       return '无法识别的 API 格式'
     }
+  }
+
+  // Ip2locationIo 数据格式化
+  formatIp2locationIo (ipInfo, ipAddress) {
+    const info = [
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.country_code ? `国家代码：${ipInfo.country_code}` : null,
+      ipInfo.country_name ? `国家名称：${ipInfo.country_name}` : null,
+      ipInfo.region_name ? `地区名称：${ipInfo.region_name}` : null,
+      ipInfo.city_name ? `城市名称：${ipInfo.city_name}` : null,
+      ipInfo.zip_code ? `邮政编码：${ipInfo.zip_code}` : null,
+      ipInfo.time_zone ? `时区：${ipInfo.time_zone}` : null,
+      ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
+      ipInfo.is_proxy ? `代理：${ipInfo.is_proxy ? '是' : '否'}` : null,
+      (ipInfo.latitude || ipInfo.longitude)
+        ? `经纬度：${ipInfo.latitude}, ${ipInfo.longitude}`
+        : null
+    ]
+    return info.filter(Boolean).join('\n')
   }
 
   // ipinfo.io 数据格式化

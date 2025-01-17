@@ -99,7 +99,8 @@ export default [
         { label: 'IpInfo.io', value: 1 },
         { label: 'BiliBili接口', value: 2 },
         { label: 'IP.SB接口', value: 3 },
-        { label: 'IP.API接口', value: 4 }
+        { label: 'IP-API接口', value: 4 },
+        { label: 'Ip2locationIo接口', value: 5 }
       ],
       placeholder: '请选择使用的IpInfo接口'
     }
