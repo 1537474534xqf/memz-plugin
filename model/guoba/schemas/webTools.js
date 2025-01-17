@@ -97,7 +97,8 @@ export default [
     componentProps: {
       options: [
         { label: 'IpInfo.io', value: 1 },
-        { label: 'BiliBili接口', value: 2 }
+        { label: 'BiliBili接口', value: 2 },
+        { label: 'IP.sb接口', value: 3 }
       ],
       placeholder: '请选择使用的IpInfo接口'
     }

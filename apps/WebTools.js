@@ -642,9 +642,65 @@ export class WebTools extends plugin {
     } else if (IpinfoApi === 2) {
       logger.info('使用bilibili接口查询ip信息')
       await this.bilibiliIpinfo(e)
+    } else if (IpinfoApi === 3) {
+      logger.info('使用ip.sb接口查询ip信息')
+      await this.ipsb(e)
     } else {
       logger.warn('IPInfo 配置错误, 默认使用bilibili接口查询ip信息')
       await this.bilibiliIpinfo(e)
+    }
+  }
+
+  async ipsb (e) {
+    const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
+    if (!match) {
+      logger.warn('未匹配到正确的 IP 信息命令')
+      return await e.reply('请输入正确的 IP 信息命令，例如：#ipinfo IP/域名', true)
+    }
+
+    const [, , siteName] = match
+
+    logger.debug(`解析的目标: ${siteName}`)
+
+    let ipAddress = siteName
+    if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
+      ipAddress = await this.resolveDomainToIp(siteName)
+      if (!ipAddress) {
+        await e.reply('无法解析域名的 IP 地址！', e.isGroup)
+        return false
+      }
+    }
+    logger.info(`目标 IP 地址: ${ipAddress}`)
+    const url = `https://api.ip.sb/geoip/${ipAddress}`
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const ipInfo = await response.json()
+      if (ipInfo.error) {
+        throw new Error(ipInfo.error)
+      }
+
+      const res = [
+          `IP 信息 - ${ipAddress}`,
+          `IP 地址：${ipInfo.ip || 'N/A'}`,
+          `城市：${ipInfo.city || 'N/A'}`,
+          `地区：${ipInfo.region || 'N/A'}`,
+          `国家：${ipInfo.country || 'N/A'}`,
+          `运营商：${ipInfo.isp || 'N/A'}`,
+          `组织：${ipInfo.organization || 'N/A'}`,
+          `经纬度：${ipInfo.latitude || 'N/A'}, ${ipInfo.longitude || 'N/A'}`,
+          `时区：${ipInfo.timezone || 'N/A'}`,
+          `ASN：${ipInfo.asn || 'N/A'}`,
+          `ASN 组织：${ipInfo.asn_organization || 'N/A'}`,
+          `IP 所在大洲：${ipInfo.continent_code || 'N/A'}`
+      ].join('\n')
+      e.reply(res, true)
+    } catch (error) {
+      logger.error(`获取 IP 信息出错: ${error.message}`)
+      await e.reply(`获取 IP 信息出错：${error.message}`, true)
+      return false
     }
   }
 
