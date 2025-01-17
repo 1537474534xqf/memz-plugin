@@ -71,7 +71,7 @@ export class 浏览器消失术 extends plugin {
       this.task = [{
         cron: normalizeCronExpression(kallChromeCron),
         name: '定时杀死chrome进程',
-        fnc: () => killChromeProcesses(MusicSignGroupId)
+        fnc: () => killChromeProcesses(Number(MusicSignGroupId))
       }]
     }
   }
