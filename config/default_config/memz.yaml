@@ -48,6 +48,8 @@ PingProxyAddress: ""
 #*3为`Blogs.ink`接口
 #*4为`UAPIs.cn`接口
 #*5为`远梦API`接口
+#*6为`远昔API`接口
+#*7为`倾梦API`接口
 PingApi: 2
 # Ipinfo是否所有人可用
 IpinfoAll: true

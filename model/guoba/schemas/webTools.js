@@ -67,7 +67,9 @@ export default [
         { label: 'ITDOG截图', value: 2 },
         { label: 'Blogs.ink接口', value: 3 },
         { label: 'UAPIs.cn接口', value: 4 },
-        { label: '远梦API', value: 5 }
+        { label: '远梦API', value: 5 },
+        { label: '远昔API', value: 6 },
+        { label: '倾梦API', value: 7 }
       ],
       placeholder: '请选择Ping类型'
     }

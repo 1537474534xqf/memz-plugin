@@ -42,7 +42,9 @@ export class PingScreenshot extends plugin {
       3: this.blogsInk.bind(this),
       4: this.uapisCn.bind(this),
       5: this.mmpCc.bind(this),
-    };
+      6: this.yuanXi.bind(this),
+      7: this.qingMeng.bind(this)
+    }
 
     const action = pingActions[PingApi];
 
@@ -158,7 +160,35 @@ export class PingScreenshot extends plugin {
       .filter(Boolean)
       .join('\n');
   }
-
+  yuanXiDataHandler(data) {
+    return [
+      `host: ${data.host || '未知'}`,
+      `IP: ${data.ip || '未知'}`,
+      data.location && `位置：${data.location}`,
+      data.ping_time_min && `最小Ping时间: ${data.ping_time_min} ms`,
+      data.ping_time_avg && `平均Ping时间: ${data.ping_time_avg} ms`,
+      data.ping_time_max && `最大Ping时间: ${data.ping_time_max} ms`,
+      data.node && `节点: ${data.node}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+  qingMengDataHandler(data) {
+    return [
+      `网址: ${data.网址 || '未知'}`,
+      `IP地址: ${data.IP地址 || '未知'}`,
+      data.节点 && `位置：${data.节点}`,
+      data.最小延迟 && `最小延迟: ${data.最小延迟} ms`,
+      data.最大延迟 && `最大延迟: ${data.最大延迟} ms`,
+      data.平均延迟 && `平均延迟: ${data.平均延迟} ms`,
+      data.数据包数 && `数据包数: ${data.数据包数}`,
+      data.接受数据包 && `接受数据包: ${data.接受数据包}`,
+      data.丢包率 && `丢包率: ${data.丢包率}`,
+      data.总耗时 && `总耗时: ${data.总耗时}`
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
   // 请求
   async mmpCc(e) {
     await this.handlePingCommand(e, 'https://api.mmp.cc/api/ping', 'text', this.mmpCcDataHandler);
@@ -171,7 +201,12 @@ export class PingScreenshot extends plugin {
   async blogsInk(e) {
     await this.handlePingCommand(e, 'https://api.blogs.ink/api/SuperPingOne', 'url', this.blogsInkDataHandler);
   }
-
+  async yuanXi(e) {
+    await this.handlePingCommand(e, 'https://www.yuanxiapi.cn/api/pingspeed', 'host', this.yuanXiDataHandler);
+  }
+  async qingMeng(e) {
+    await this.handlePingCommand(e, 'https://api.317ak.com/API/zzgj/ping/ping.php', 'url', this.qingMengDataHandler);
+  }
   async Zhalema(e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
 
