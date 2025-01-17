@@ -630,28 +630,28 @@ export class WebTools extends plugin {
     }
   }
 
-  // IP信息
+  // IP 信息
   async ipinfo (e) {
-    const { IpinfoAll, IpinfoApi } = Config.getConfig('memz')
-    if (!IpinfoAll && !e.isMaster) {
-      return logger.warn('[memz-plugin] IPInfo 功能当前为仅主人可用')
+    const { IpinfoApi } = Config.getConfig('memz')
+    const apiMapping = {
+      1: 'ipinfoIo',
+      2: 'bilibiliIpinfo',
+      3: 'ipSb',
+      4: 'ipApi'
     }
-    if (IpinfoApi === 1) {
-      logger.info('使用Ipinfo.io接口查询ip信息')
-      await this.ipinfoIo(e)
-    } else if (IpinfoApi === 2) {
-      logger.info('使用bilibili接口查询ip信息')
-      await this.bilibiliIpinfo(e)
-    } else if (IpinfoApi === 3) {
-      logger.info('使用ip.sb接口查询ip信息')
-      await this.ipsb(e)
-    } else {
-      logger.warn('IPInfo 配置错误, 默认使用bilibili接口查询ip信息')
-      await this.bilibiliIpinfo(e)
+
+    const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
+    logger.info(`使用${selectedApi}接口查询ip信息`)
+
+    const ipInfo = await this.fetchIpInfo(e, selectedApi)
+    if (ipInfo) {
+      const formattedInfo = this.formatIpInfo(ipInfo, e.msg, selectedApi)
+      await e.reply(formattedInfo, true)
     }
   }
 
-  async ipsb (e) {
+  // 发送请求
+  async fetchIpInfo (e, api) {
     const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
     if (!match) {
       logger.warn('未匹配到正确的 IP 信息命令')
@@ -659,9 +659,6 @@ export class WebTools extends plugin {
     }
 
     const [, , siteName] = match
-
-    logger.debug(`解析的目标: ${siteName}`)
-
     let ipAddress = siteName
     if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
       ipAddress = await this.resolveDomainToIp(siteName)
@@ -670,33 +667,31 @@ export class WebTools extends plugin {
         return false
       }
     }
+
     logger.info(`目标 IP 地址: ${ipAddress}`)
-    const url = `https://api.ip.sb/geoip/${ipAddress}`
+
+    let url
+    switch (api) {
+      case 'ipinfoIo':
+        url = `https://ipinfo.io/${ipAddress}?token=${Config.getConfig('memz').IpinfoToken}`
+        break
+      case 'bilibiliIpinfo':
+        url = `https://api.live.bilibili.com/ip_service/v1/ip_service/get_ip_addr?ip=${ipAddress}`
+        break
+      case 'ipApi':
+        url = `http://ip-api.com/json/${ipAddress}?lang=zh-CN`
+        break
+      case 'ipSb':
+        url = `https://api.ip.sb/geoip/${ipAddress}`
+        break
+      default:
+        return null
+    }
+
     try {
       const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const ipInfo = await response.json()
-      if (ipInfo.error) {
-        throw new Error(ipInfo.error)
-      }
-
-      const res = [
-          `IP 信息 - ${ipAddress}`,
-          `IP 地址：${ipInfo.ip || 'N/A'}`,
-          `城市：${ipInfo.city || 'N/A'}`,
-          `地区：${ipInfo.region || 'N/A'}`,
-          `国家：${ipInfo.country || 'N/A'}`,
-          `运营商：${ipInfo.isp || 'N/A'}`,
-          `组织：${ipInfo.organization || 'N/A'}`,
-          `经纬度：${ipInfo.latitude || 'N/A'}, ${ipInfo.longitude || 'N/A'}`,
-          `时区：${ipInfo.timezone || 'N/A'}`,
-          `ASN：${ipInfo.asn || 'N/A'}`,
-          `ASN 组织：${ipInfo.asn_organization || 'N/A'}`,
-          `IP 所在大洲：${ipInfo.continent_code || 'N/A'}`
-      ].join('\n')
-      e.reply(res, true)
+      if (!response.ok) throw new Error('API请求失败')
+      return await response.json()
     } catch (error) {
       logger.error(`获取 IP 信息出错: ${error.message}`)
       await e.reply(`获取 IP 信息出错：${error.message}`, true)
@@ -704,123 +699,98 @@ export class WebTools extends plugin {
     }
   }
 
-  async bilibiliIpinfo (e) {
-    const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
-    if (!match) {
-      logger.warn('未匹配到正确的 IP 信息命令')
-      return await e.reply('请输入正确的 IP 信息命令，例如：#ipinfo IP/域名', true)
-    }
-
-    const [, , siteName] = match
-
-    logger.debug(`解析的目标: ${siteName}`)
-
-    let ipAddress = siteName
-    try {
-      if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
-        ipAddress = await this.resolveDomainToIp(siteName)
-        if (!ipAddress) {
-          await e.reply('无法解析域名的 IP 地址！', e.isGroup)
-          return false
-        }
-      }
-
-      logger.info(`目标 IP 地址: ${ipAddress}`)
-
-      const response = await fetch(`https://api.live.bilibili.com/ip_service/v1/ip_service/get_ip_addr?ip=${ipAddress}`)
-      const ipInfo = await response.json()
-
-      if (ipInfo.code !== 0) {
-        await e.reply('获取 IP 信息出错：' + (ipInfo.message || ipInfo.msg), true)
-        return false
-      }
-
-      const res = [
-        `IP 信息 - ${siteName}`,
-        `IP 地址：${ipInfo.data.addr || 'N/A'}`,
-        `国家/地区：${ipInfo.data.country || 'N/A'}`,
-        `省/州：${ipInfo.data.province || 'N/A'}`,
-        `运营商：${ipInfo.data.isp || 'N/A'}`,
-        `经纬度：${ipInfo.data.latitude || 'N/A'}, ${ipInfo.data.longitude || 'N/A'}`
-      ].join('\n')
-
-      await e.reply(res)
-      return true
-    } catch (error) {
-      logger.error(`获取 IP 信息出错: ${error.message}`)
-      await e.reply(`获取 IP 信息出错：${error.message}`, true)
-      return false
+  // 通用的格式化 IP 信息
+  formatIpInfo (ipInfo, ipAddress, api) {
+    if (api === 'ipinfoIo') {
+      return this.formatIpinfoIo(ipInfo, ipAddress)
+    } else if (api === 'bilibiliIpinfo') {
+      return this.formatBilibiliIpinfo(ipInfo, ipAddress)
+    } else if (api === 'ipApi') {
+      return this.formatIpApi(ipInfo, ipAddress)
+    } else if (api === 'ipSb') {
+      return this.formatIpSb(ipInfo, ipAddress)
+    } else {
+      return '无法识别的 API 格式'
     }
   }
 
-  async ipinfoIo (e) {
-    const { IpinfoToken } = Config.getConfig('memz')
+  // ipinfo.io 数据格式化
+  formatIpinfoIo (ipInfo, ipAddress) {
+    const info = [
+    `IP 信息 - ${ipAddress}`,
+    ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
+    ipInfo.country ? `国家/地区：${ipInfo.country}` : null,
+    ipInfo.region ? `区域：${ipInfo.region}` : null,
+    ipInfo.city ? `城市：${ipInfo.city}` : null,
+    ipInfo.postal ? `邮政编码：${ipInfo.postal}` : null,
+    ipInfo.loc ? `经纬度：${ipInfo.loc}` : null,
+    ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+    ipInfo.org ? `运营商：${ipInfo.org}` : null,
+    ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
+    ipInfo.asn_organization ? `ASN 组织：${ipInfo.asn_organization}` : null,
+    ipInfo.continent_code ? `IP 所在大洲：${ipInfo.continent_code}` : null
+    ]
+    return info.filter(Boolean).join('\n')
+  }
 
-    const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
-    if (!match) {
-      logger.warn('未匹配到正确的 IP 信息命令')
-      return await e.reply('请输入正确的 IP 信息命令，例如：#ipinfo IP/域名', true)
-    }
+  // bilibili接口 信息格式化
+  formatBilibiliIpinfo (ipInfo, ipAddress) {
+    const info = [
+    `IP 信息 - ${ipAddress}`,
+    ipInfo.data?.addr ? `IP 地址：${ipInfo.data.addr}` : null,
+    ipInfo.data?.country ? `国家/地区：${ipInfo.data.country}` : null,
+    ipInfo.data?.province ? `省/州：${ipInfo.data.province}` : null,
+    ipInfo.data?.isp ? `运营商：${ipInfo.data.isp}` : null,
+    (ipInfo.data?.latitude || ipInfo.data?.longitude)
+      ? `经纬度：${ipInfo.data.latitude}, ${ipInfo.data.longitude}`
+      : null
+    ]
+    return info.filter(Boolean).join('\n')
+  }
 
-    const [, , siteName] = match
+  // ip-api 数据格式化
+  formatIpApi (ipInfo, ipAddress) {
+    const info = [
+    `IP 信息 - ${ipAddress}`,
+    ipInfo.country ? `国家：${ipInfo.country}` : null,
+    ipInfo.regionName ? `地区：${ipInfo.regionName}` : null,
+    ipInfo.city ? `城市：${ipInfo.city}` : null,
+    ipInfo.zip ? `邮政编码：${ipInfo.zip}` : null,
+    (ipInfo.lat || ipInfo.lon) ? `经纬度：${ipInfo.lat}, ${ipInfo.lon}` : null,
+    ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+    ipInfo.isp ? `运营商：${ipInfo.isp}` : null,
+    ipInfo.org ? `组织：${ipInfo.org}` : null,
+    ipInfo.as ? `ASN：${ipInfo.as}` : null
+    ]
+    return info.filter(Boolean).join('\n')
+  }
 
-    logger.debug(`解析的目标: ${siteName}`)
-
-    if (!IpinfoToken) {
-      await e.reply('请前往 https://ipinfo.io 注册账号并获取 Token 后在配置文件中配置', true)
-      return false
-    }
-
-    let ipAddress = siteName
-    try {
-      if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
-        ipAddress = await this.resolveDomainToIp(siteName)
-        if (!ipAddress) {
-          await e.reply('无法解析域名的 IP 地址！', e.isGroup)
-          return false
-        }
-      }
-
-      logger.info(`目标 IP 地址: ${ipAddress}`)
-
-      const response = await fetch(`https://ipinfo.io/${ipAddress}?token=${IpinfoToken}`)
-      const ipInfo = await response.json()
-
-      if (ipInfo.bogon) {
-        await e.reply('目标地址为 Bogon IP（私有 IP，不可路由）。')
-        return false
-      }
-
-      const res = [
-        `IP 信息 - ${siteName}`,
-            `IP 地址：${ipInfo.ip || 'N/A'}`,
-            `国家/地区：${ipInfo.country || 'N/A'}`,
-            `区域：${ipInfo.region || 'N/A'}`,
-            `城市：${ipInfo.city || 'N/A'}`,
-            `邮政编码：${ipInfo.postal || 'N/A'}`,
-            `时区：${ipInfo.timezone || 'N/A'}`,
-            `经纬度：${ipInfo.loc || 'N/A'}`,
-            `运营商：${ipInfo.org || 'N/A'}`
-      ].join('\n')
-
-      await e.reply(res)
-      return true
-    } catch (error) {
-      logger.error(`获取 IP 信息出错: ${error.message}`)
-      await e.reply(`获取 IP 信息出错：${error.message}`)
-      return false
-    }
+  // ip.sb 数据格式化
+  formatIpSb (ipInfo, ipAddress) {
+    const info = [
+    `IP 信息 - ${ipAddress}`,
+    ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
+    ipInfo.country ? `国家：${ipInfo.country}` : null,
+    ipInfo.region ? `地区：${ipInfo.region}` : null,
+    ipInfo.city ? `城市：${ipInfo.city}` : null,
+    ipInfo.isp ? `运营商：${ipInfo.isp}` : null,
+    (ipInfo.latitude || ipInfo.longitude)
+      ? `经纬度：${ipInfo.latitude}, ${ipInfo.longitude}`
+      : null,
+    ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+    ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
+    ipInfo.asn_organization ? `ASN 组织：${ipInfo.asn_organization}` : null,
+    ipInfo.continent_code ? `IP 所在大洲：${ipInfo.continent_code}` : null
+    ]
+    return info.filter(Boolean).join('\n')
   }
 
   // 解析域名IP
   async resolveDomainToIp (domain) {
     return new Promise((resolve, reject) => {
       dns.lookup(domain, (err, address) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(address)
-        }
+        if (err) reject(err)
+        else resolve(address)
       })
     }).catch((err) => {
       logger.error(`域名解析出错: ${err.message}`)
