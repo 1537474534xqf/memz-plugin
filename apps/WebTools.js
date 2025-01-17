@@ -639,21 +639,13 @@ export class WebTools extends plugin {
       2: 'bilibiliIpinfo',
       3: 'ipSb',
       4: 'ipApi',
-      5: 'ip2locationIo'
+      5: 'ip2locationIo',
+      6: 'ipApiIs'
     }
 
     const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
     logger.info(`使用${selectedApi}接口查询ip信息`)
 
-    const ipInfo = await this.fetchIpInfo(e, selectedApi)
-    if (ipInfo) {
-      const formattedInfo = this.formatIpInfo(ipInfo, e.msg, selectedApi)
-      await e.reply(formattedInfo, true)
-    }
-  }
-
-  // 发送请求
-  async fetchIpInfo (e, api) {
     const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
     if (!match) {
       logger.warn('未匹配到正确的 IP 信息命令')
@@ -672,6 +664,15 @@ export class WebTools extends plugin {
 
     logger.info(`目标 IP 地址: ${ipAddress}`)
 
+    const ipInfo = await this.fetchIpInfo(e, ipAddress, selectedApi)
+    if (ipInfo) {
+      const formattedInfo = this.formatIpInfo(ipInfo, ipAddress, selectedApi)
+      await e.reply(formattedInfo, true)
+    }
+  }
+
+  // 发送请求
+  async fetchIpInfo (e, ipAddress, api) {
     let url
     switch (api) {
       case 'ipinfoIo':
@@ -688,6 +689,9 @@ export class WebTools extends plugin {
         break
       case 'ip2locationIo':
         url = `https://api.ip2location.io/?ip=${ipAddress}`
+        break
+      case 'ipApiIs':
+        url = `https://api.ipapi.is/?ip=${ipAddress}`
         break
       default:
         return null
@@ -716,9 +720,71 @@ export class WebTools extends plugin {
       return this.formatIpSb(ipInfo, ipAddress)
     } else if (api === 'ip2locationIo') {
       return this.formatIp2locationIo(ipInfo, ipAddress)
+    } else if (api === 'ipApiIs') {
+      return this.formatipApiIs(ipInfo, ipAddress)
     } else {
       return '无法识别的 API 格式'
     }
+  }
+
+  // ipApiIs 数据格式化
+  formatipApiIs (ipInfo, ipAddress) {
+    const info = [
+      `IP 信息 - ${ipAddress}`,
+      `RIR：${ipInfo.rir}`,
+      `Bogon IP：${ipInfo.is_bogon ? '是' : '否'}`,
+      `移动设备：${ipInfo.is_mobile ? '是' : '否'}`,
+      `爬虫：${ipInfo.is_crawler ? '是' : '否'}`,
+      `数据中心：${ipInfo.is_datacenter ? '是' : '否'}`,
+      `Tor节点：${ipInfo.is_tor ? '是' : '否'}`,
+      `代理：${ipInfo.is_proxy ? '是' : '否'}`,
+      `VPN：${ipInfo.is_vpn ? '是' : '否'}`,
+      `滥用者：${ipInfo.is_abuser ? '是' : '否'}`,
+      ipInfo.company ? '---公司信息---' : null,
+      ipInfo.company && ipInfo.company.name ? `公司名称：${ipInfo.company.name}` : null,
+      ipInfo.company && ipInfo.company.abuser_score ? `滥用者分数：${ipInfo.company.abuser_score}` : null,
+      ipInfo.company && ipInfo.company.domain ? `公司域名：${ipInfo.company.domain}` : null,
+      ipInfo.company && ipInfo.company.type ? `公司类型：${ipInfo.company.type}` : null,
+      ipInfo.company && ipInfo.company.network ? `公司网络：${ipInfo.company.network}` : null,
+      // ipInfo.company && ipInfo.company.whois ? `WHOIS查询链接：${ipInfo.company.whois}` : null,
+      ipInfo.abuse ? '---滥用信息---' : null,
+      ipInfo.abuse && ipInfo.abuse.name ? `联系人：${ipInfo.abuse.name}` : null,
+      ipInfo.abuse && ipInfo.abuse.address ? `联系地址：${ipInfo.abuse.address}` : null,
+      ipInfo.abuse && ipInfo.abuse.email ? `联系邮箱：${ipInfo.abuse.email}` : null,
+      ipInfo.abuse && ipInfo.abuse.phone ? `联系电话：${ipInfo.abuse.phone}` : null,
+      ipInfo.asn ? '---ASN信息---' : null,
+      ipInfo.asn && ipInfo.asn.asn ? `ASN：${ipInfo.asn.asn}` : null,
+      ipInfo.asn && ipInfo.asn.abuser_score ? `滥用者分数：${ipInfo.asn.abuser_score}` : null,
+      ipInfo.asn && ipInfo.asn.route ? `路由：${ipInfo.asn.route}` : null,
+      ipInfo.asn && ipInfo.asn.descr ? `描述：${ipInfo.asn.descr}` : null,
+      ipInfo.asn && ipInfo.asn.country ? `国家：${ipInfo.asn.country}` : null,
+      ipInfo.asn && ipInfo.asn.active ? `是否活跃：${ipInfo.asn.active ? '是' : '否'}` : null,
+      ipInfo.asn && ipInfo.asn.org ? `组织：${ipInfo.asn.org}` : null,
+      ipInfo.asn && ipInfo.asn.domain ? `域名：${ipInfo.asn.domain}` : null,
+      ipInfo.asn && ipInfo.asn.abuse ? `滥用邮箱：${ipInfo.asn.abuse}` : null,
+      ipInfo.asn && ipInfo.asn.type ? `类型：${ipInfo.asn.type}` : null,
+      ipInfo.asn && ipInfo.asn.updated ? `更新时间：${ipInfo.asn.updated}` : null,
+      ipInfo.asn && ipInfo.asn.rir ? `RIR：${ipInfo.asn.rir}` : null,
+      // ipInfo.asn && ipInfo.asn.whois ? `WHOIS查询链接：${ipInfo.asn.whois}` : null,
+      ipInfo.location ? '---地理位置信息---' : null,
+      ipInfo.location && ipInfo.location.is_eu_member ? `是否为欧盟成员国：${ipInfo.location.is_eu_member ? '是' : '否'}` : null,
+      ipInfo.location && ipInfo.location.calling_code ? `国际电话区号：${ipInfo.location.calling_code}` : null,
+      ipInfo.location && ipInfo.location.currency_code ? `货币代码：${ipInfo.location.currency_code}` : null,
+      ipInfo.location && ipInfo.location.continent ? `所属大洲：${ipInfo.location.continent}` : null,
+      ipInfo.location && ipInfo.location.country ? `国家：${ipInfo.location.country}` : null,
+      ipInfo.location && ipInfo.location.country_code ? `国家代码：${ipInfo.location.country_code}` : null,
+      ipInfo.location && ipInfo.location.state ? `地区：${ipInfo.location.state}` : null,
+      ipInfo.location && ipInfo.location.city ? `城市：${ipInfo.location.city}` : null,
+      ipInfo.location && ipInfo.location.latitude ? `纬度：${ipInfo.location.latitude}` : null,
+      ipInfo.location && ipInfo.location.longitude ? `经度：${ipInfo.location.longitude}` : null,
+      ipInfo.location && ipInfo.location.zip ? `邮政编码：${ipInfo.location.zip}` : null,
+      ipInfo.location && ipInfo.location.timezone ? `时区：${ipInfo.location.timezone}` : null,
+      ipInfo.location && ipInfo.location.local_time ? `本地时间：${ipInfo.location.local_time}` : null,
+      ipInfo.location && ipInfo.location.local_time_unix ? `本地时间（Unix时间戳）：${ipInfo.location.local_time_unix}` : null,
+      ipInfo.location && ipInfo.location.is_dst ? `夏令时：${ipInfo.location.is_dst ? '是' : '否'}` : null,
+      `查询耗时：${ipInfo.elapsed_ms}毫秒`
+    ]
+    return info.filter(Boolean).join('\n')
   }
 
   // Ip2locationIo 数据格式化
