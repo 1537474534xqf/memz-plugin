@@ -52,6 +52,7 @@ IpinfoAll: true
 #* 4为`ip-api.com`接口
 #* 5为`Ip2locationIo`接口
 #* 6为`ipApiIs`接口
+#* 7为`InIp.In`接口
 IpinfoApi: 2
 # Ping功能Ipinfo.io的token
 IpinfoToken: ""

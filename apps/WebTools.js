@@ -640,7 +640,8 @@ export class WebTools extends plugin {
       3: 'ipSb',
       4: 'ipApi',
       5: 'ip2locationIo',
-      6: 'ipApiIs'
+      6: 'ipApiIs',
+      7: 'inipIn'
     }
 
     const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
@@ -693,6 +694,9 @@ export class WebTools extends plugin {
       case 'ipApiIs':
         url = `https://api.ipapi.is/?ip=${ipAddress}`
         break
+      case 'inipIn':
+        url = `http://inip.in/search_ip?ip=${ipAddress}`
+        break
       default:
         return null
     }
@@ -722,9 +726,33 @@ export class WebTools extends plugin {
       return this.formatIp2locationIo(ipInfo, ipAddress)
     } else if (api === 'ipApiIs') {
       return this.formatipApiIs(ipInfo, ipAddress)
+    } else if (api === 'inipIn') {
+      return this.formatInipIn(ipInfo, ipAddress)
     } else {
       return '无法识别的 API 格式'
     }
+  }
+
+  // inipIn 数据格式化
+  formatInipIn (ipInfo, ipAddress) {
+    const info = [
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.data.ip_type ? `IP 类型：${ipInfo.data.ip_type}` : null,
+      ipInfo.data.asn ? `ASN：${ipInfo.data.asn}` : null,
+      ipInfo.data.network ? `网络：${ipInfo.data.network}` : null,
+      ipInfo.data.organization ? `组织：${ipInfo.data.organization}` : null,
+      ipInfo.data.continent ? `大洲：${ipInfo.data.continent}（${ipInfo.data.continent_cn}）` : null,
+      ipInfo.data.continent_code ? `大洲代码：${ipInfo.data.continent_code}` : null,
+      ipInfo.data.region ? `地区：${ipInfo.data.region}（${ipInfo.data.region_cn}）` : null,
+      ipInfo.data.region_code ? `地区代码：${ipInfo.data.region_code}` : null,
+      ipInfo.data.city ? `城市：${ipInfo.data.city}（${ipInfo.data.city_cn}）` : null,
+      ipInfo.data.postal ? `邮政编码：${ipInfo.data.postal}` : null,
+      ipInfo.data.latitude ? `纬度：${ipInfo.data.latitude}` : null,
+      ipInfo.data.longitude ? `经度：${ipInfo.data.longitude}` : null,
+      ipInfo.data.timezone ? `时区：${ipInfo.data.timezone}` : null,
+      ipInfo.data.metro_code !== null ? `地铁代码：${ipInfo.data.metro_code}` : null
+    ]
+    return info.filter(Boolean).join('\n')
   }
 
   // ipApiIs 数据格式化
