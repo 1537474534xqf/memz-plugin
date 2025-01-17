@@ -685,7 +685,8 @@ export class WebTools extends plugin {
       4: 'ipApi',
       5: 'ip2locationIo',
       6: 'ipApiIs',
-      7: 'inipIn'
+      7: 'inipIn',
+      8: 'mir6'
     }
 
     const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
@@ -741,6 +742,9 @@ export class WebTools extends plugin {
       case 'inipIn':
         url = `http://inip.in/search_ip?ip=${ipAddress}`
         break
+      case 'mir6':
+        url = `https://api.mir6.com/api/ip?ip=${ipAddress}&type=json`
+        break
       default:
         return null
     }
@@ -765,7 +769,8 @@ export class WebTools extends plugin {
       ipSb: this.formatIpSb,
       ip2locationIo: this.formatIp2locationIo,
       ipApiIs: this.formatipApiIs,
-      inipIn: this.formatInipIn
+      inipIn: this.formatInipIn,
+      mir6: this.formatMir6
     };
 
     const formatter = formatters[api];
@@ -779,24 +784,29 @@ export class WebTools extends plugin {
 
   // inipIn 数据格式化
   formatInipIn(ipInfo, ipAddress) {
+    ipInfo = ipInfo.data;
     const info = [
       `IP 信息 - ${ipAddress}`,
-      ipInfo.data.ip_type ? `IP 类型：${ipInfo.data.ip_type}` : null,
-      ipInfo.data.asn ? `ASN：${ipInfo.data.asn}` : null,
-      ipInfo.data.network ? `网络：${ipInfo.data.network}` : null,
-      ipInfo.data.organization ? `组织：${ipInfo.data.organization}` : null,
-      ipInfo.data.continent ? `大洲：${ipInfo.data.continent}（${ipInfo.data.continent_cn}）` : null,
-      ipInfo.data.continent_code ? `大洲代码：${ipInfo.data.continent_code}` : null,
-      ipInfo.data.region ? `地区：${ipInfo.data.region}（${ipInfo.data.region_cn}）` : null,
-      ipInfo.data.region_code ? `地区代码：${ipInfo.data.region_code}` : null,
-      ipInfo.data.city ? `城市：${ipInfo.data.city}（${ipInfo.data.city_cn}）` : null,
-      ipInfo.data.postal ? `邮政编码：${ipInfo.data.postal}` : null,
-      ipInfo.data.latitude ? `纬度：${ipInfo.data.latitude}` : null,
-      ipInfo.data.longitude ? `经度：${ipInfo.data.longitude}` : null,
-      ipInfo.data.timezone ? `时区：${ipInfo.data.timezone}` : null,
-      ipInfo.data.metro_code !== null ? `地铁代码：${ipInfo.data.metro_code}` : null
+      ipInfo.country_code ? `国家代码：${ipInfo.country_code}` : null,
+      ipInfo.country_cn ? `国家名称：${ipInfo.country_cn}` : null,
+      ipInfo.country ? `国家名称：${ipInfo.country}` : null,
+      ipInfo.region_code ? `地区代码：${ipInfo.region_code}` : null,
+      ipInfo.region_cn ? `地区名称：${ipInfo.region_cn}` : null,
+      ipInfo.region ? `地区名称：${ipInfo.region}` : null,
+      ipInfo.city ? `城市名称：${ipInfo.city}` : null,
+      ipInfo.city_cn ? `城市名称：${ipInfo.city_cn}` : null,
+      ipInfo.postal ? `邮政编码：${ipInfo.postal}` : null,
+      ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+      ipInfo.latitude || ipInfo.longitude
+        ? `经纬度：${ipInfo.latitude}, ${ipInfo.longitude}`
+        : null,
+      ipInfo.network ? `网络：${ipInfo.network}` : null,
+      ipInfo.organization ? `组织：${ipInfo.organization}` : null,
+      ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
+      ipInfo.ip_type ? `IP 类型：${ipInfo.ip_type}` : null,
+      ipInfo.metro_code ? `地铁代码：${ipInfo.metro_code}` : null
     ]
-    return info.filter(Boolean).join('\n')
+    return info.filter(Boolean).join('\n');
   }
 
   // ipApiIs 数据格式化
@@ -948,7 +958,28 @@ export class WebTools extends plugin {
     ]
     return info.filter(Boolean).join('\n')
   }
-
+  // Mir6 数据格式化
+  formatMir6(ipInfo, ipAddress) {
+    const data = ipInfo.data;
+    const info = [
+      `IP 信息 - ${ipAddress}`,
+      data.country ? `国家：${data.country}` : null,
+      data.countryCode ? `国家代码：${data.countryCode}` : null,
+      data.province ? `省份：${data.province}` : null,
+      data.city ? `城市：${data.city}` : null,
+      data.districts ? `区县：${data.districts}` : null,
+      data.idc ? `IDC：${data.idc}` : null,
+      data.isp ? `运营商：${data.isp}` : null,
+      data.net ? `网络类型：${data.net}` : null,
+      data.zipcode ? `邮政编码：${data.zipcode}` : null,
+      data.areacode ? `区号：${data.areacode}` : null,
+      data.protocol ? `协议：${data.protocol}` : null,
+      data.location ? `位置：${data.location}` : null,
+      // data.myip ? `我的IP：${data.myip}` : null,
+      data.time ? `时间：${data.time}` : null
+    ]
+    return info.filter(Boolean).join('\n');
+  }
   // 解析域名IP
   async resolveDomainToIp(domain) {
     return new Promise((resolve, reject) => {

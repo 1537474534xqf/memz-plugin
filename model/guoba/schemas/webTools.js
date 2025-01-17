@@ -108,7 +108,8 @@ export default [
         { label: 'Ip-api.com接口', value: 4 },
         { label: 'Ip2locationIo接口', value: 5 },
         { label: 'IpApiIs接口', value: 6 },
-        { label: 'InIp.In接口', value: 7 }
+        { label: 'InIp.In接口', value: 7 },
+        { label: 'Mir6接口', value: 8 }
       ],
       placeholder: '请选择使用的IpInfo接口'
     }

@@ -61,6 +61,7 @@ IpinfoAll: true
 #* 5为`Ip2locationIo`接口
 #* 6为`ipApiIs`接口
 #* 7为`InIp.In`接口
+#* 8为`Mir6`接口
 IpinfoApi: 2
 # Ping功能Ipinfo.io的token
 IpinfoToken: ""
