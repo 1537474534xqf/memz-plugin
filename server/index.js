@@ -486,17 +486,17 @@ const handleRequest = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`)
   const route = url.pathname
 
-// 记录请求日志
-const logRequest = async (route, ip) => {
-  let log = [`[MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`]
-  const queryParams = new URLSearchParams(url.search)
-  if ([...queryParams].length > 0) {
-    const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',')
-    log.push(`参数: ${paramString}`)
+  // 记录请求日志
+  const logRequest = async (route, ip) => {
+    let log = [`[MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`]
+    const queryParams = new URLSearchParams(url.search)
+    if ([...queryParams].length > 0) {
+      const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',')
+      log.push(`参数: ${paramString}`)
+    }
+    logger.info(log.join(' '))
+    await updateRequestStats(ip, route)
   }
-  logger.info(log.join(' '))
-  await updateRequestStats(ip, route)
-}
 
   // 特殊路由处理
   if (route === '/') {

@@ -60,7 +60,7 @@ Bot.on('message.group', async (e) => {
 })
 
 export class GroupPlugin extends plugin {
-  constructor() {
+  constructor () {
     super({
       name: '群聊功能',
       dsc: '群聊功能',
@@ -115,6 +115,7 @@ export class GroupPlugin extends plugin {
           permission: 'master'
         },
         {
+          // eslint-disable-next-line
           reg: '^[#/]查找\s*(\d*)$',
           fnc: 'search',
           permission: 'master'
@@ -123,59 +124,61 @@ export class GroupPlugin extends plugin {
     })
   }
 
-  async search(e) {
-    const match = e.msg.match(/^[#/]查找\s*(\d*)$/i);
-    const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq) || (match ? [match[1]] : []);
+  async search (e) {
+    const match = e.msg.match(/^[#/]查找\s*(\d*)$/i)
+    const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq) || (match ? [match[1]] : [])
 
-    const memberIndex = new Map();
-    const groupPromises = [];
+    const memberIndex = new Map()
+    const groupPromises = []
 
     for (const [gid, info] of Bot.gl) {
-      if (e.group_id === gid) continue;
+      if (e.group_id === gid) continue
 
       groupPromises.push(
         (async () => {
           try {
-            const memberMap = await Bot.pickGroup(gid).getMemberMap();
+            const memberMap = await Bot.pickGroup(gid).getMemberMap()
             memberMap.forEach(item => {
               if (!memberIndex.has(item.user_id)) {
-                memberIndex.set(item.user_id, []);
+                memberIndex.set(item.user_id, [])
               }
               memberIndex.get(item.user_id).push({
                 gid,
                 group_name: info.group_name,
                 role: item.role,
-                title: item.title,
-              });
-            });
+                title: item.title
+              })
+            })
           } catch (err) {
-            e.reply(`Error when searching in group ${gid}:`, err);
+            e.reply(`Error when searching in group ${gid}:`, err)
           }
         })()
-      );
+      )
     }
 
-    await Promise.all(groupPromises);
+    await Promise.all(groupPromises)
 
-    const msg = [];
-    const nickname = e.sender.nickname || '为什么不玩原神';
+    const msg = []
+    const nickname = e.sender.nickname || '为什么不玩原神'
 
     for (const userId of qqNumbers) {
       if (memberIndex.has(userId)) {
-        msg.push({ user_id: e.user_id, nickname, message: `用户${userId}` });
+        msg.push({ user_id: e.user_id, nickname, message: `用户${userId}` })
 
-        const groups = memberIndex.get(userId);
+        const groups = memberIndex.get(userId)
         groups.forEach(group => {
           msg.push({
             user_id: e.user_id,
             nickname,
             message: `群${group.gid}(${group.group_name})找到用户${userId}\n身份: ${
-              group.role === "admin" ? "群管理" :
-              group.role === "owner" ? "群主" :
-              "群员"
-            }${group.title ? `\n头衔: ${group.title}` : ""}`
-          });
-        });
+              group.role === 'admin'
+? '群管理'
+              : group.role === 'owner'
+? '群主'
+              : '群员'
+            }${group.title ? `\n头衔: ${group.title}` : ''}`
+          })
+        })
       }
     }
 
@@ -184,13 +187,13 @@ export class GroupPlugin extends plugin {
         user_id: e.user_id,
         nickname,
         message: `在${groupPromises.length}个群中没有找到这些人`
-      });
+      })
     }
 
-    await e.reply(Bot.makeForwardMsg(msg));
+    await e.reply(Bot.makeForwardMsg(msg))
   }
 
-  async atatat(e) {
+  async atatat (e) {
     if (!e.isGroup) return e.reply('召唤只支持群聊使用', true)
 
     const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq)
@@ -215,7 +218,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async MassMuteAll(e) {
+  async MassMuteAll (e) {
     const match = e.msg.match(/^#一键(加害|封杀|禁言)(\d+)?( )?(\d+)?$/)
     if (!match) {
       return e.reply('命令格式不正确，请检查并重新发送')
@@ -254,7 +257,7 @@ export class GroupPlugin extends plugin {
     await e.reply(forwardMessage)
   }
 
-  async getMemberList(e) {
+  async getMemberList (e) {
     try {
       const match = e.msg.match(/^[#/]保存(全部)?群员名单\s*(\d*)$/i)
       let groupIds = []
@@ -309,7 +312,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async privateForward(e) {
+  async privateForward (e) {
     const msg = e.msg.match(/^[#/]一键私发\\s*(.*)$/i)
     const startTime = Date.now()
     let successCount = 0
@@ -341,7 +344,7 @@ export class GroupPlugin extends plugin {
     e.reply(msgText, true)
   }
 
-  async groupForward(e) {
+  async groupForward (e) {
     const msg = e.msg.match(/^[#/]一键群发\\s*(.*)$/i)
 
     const startTime = Date.now()
@@ -375,7 +378,7 @@ export class GroupPlugin extends plugin {
     e.reply(msgText, true)
   }
 
-  async groupSign(e) {
+  async groupSign (e) {
     try {
       for (let group of Bot[e.self_id].gl.keys()) {
         Bot.pickGroup(group).sign()
@@ -388,7 +391,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async whoAtme(e) {
+  async whoAtme (e) {
     if (!e.isGroup) return e.reply('只支持群聊使用')
 
     const atTarget = e.atBot ? Bot.uin : (e.msg.includes('我') ? e.user_id : e.at)
@@ -411,7 +414,7 @@ export class GroupPlugin extends plugin {
     e.reply(forwardMsg)
   }
 
-  async clearAt(e) {
+  async clearAt (e) {
     if (!e.isGroup) return e.reply('只支持群聊使用')
 
     const key = `Yz:whoAtme:${e.group_id}_${e.user_id}`
@@ -422,14 +425,14 @@ export class GroupPlugin extends plugin {
     e.reply('已成功清除', true)
   }
 
-  async clearAll(e) {
+  async clearAll (e) {
     const keys = await redis.keys(`Yz:whoAtme:${e.group_id}_*`)
     for (const key of keys) await redis.del(key)
 
     e.reply('已成功清除本群的全部艾特数据')
   }
 
-  async atAll(e) {
+  async atAll (e) {
     if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
     if (!e.isGroup) return e.reply('艾特全体只支持群聊使用', true)
 
@@ -469,7 +472,7 @@ export class GroupPlugin extends plugin {
   }
 }
 export class 主人解禁 extends plugin {
-  constructor() {
+  constructor () {
     super({
       name: '主人解禁',
       dsc: '主人解禁',
@@ -484,7 +487,7 @@ export class 主人解禁 extends plugin {
     )
   }
 
-  async 主人被禁言解禁(e) {
+  async 主人被禁言解禁 (e) {
     if (!e.isMaster) return false
 
     const { helpMaster, helpMasterText, nohelpMasterText } = Config.getConfig('memz')
