@@ -3,25 +3,26 @@ import { Config } from '#components'
 // 默认点赞名单
 let Users = [2173302144, 1011303349, 197728340, 3610159055]
 
-export class DZ extends plugin {
+export class 自动点赞 extends plugin {
   constructor () {
     super({
       name: '自动点赞',
       dsc: '自动点赞',
       priority: -100000,
-      event: 'message'
-      // rule: [
-      //   {
-      //     reg: '^#?(memz)?一键点赞',
-      //     fnc: 'DZ'
-      //   }
-      // ]
+      event: 'message',
+      rule: [
+        {
+          reg: '^#?(memz)?一键点赞',
+          fnc: 'DZ',
+          permission: 'master'
+        }
+      ]
     })
     this.task = [
       {
         cron: '0 0 0 * * ?',
         name: '赞',
-        fnc: () => this.DZ()
+        fnc: () => this.ThumbUp()
       }
     ]
   }
@@ -38,7 +39,7 @@ export class DZ extends plugin {
     return filteredList
   }
 
-  async DZ () {
+  async ThumbUp () {
     const { AutoLike, AutoLikeList } = Config.getConfig('memz')
 
     if (!AutoLike) {
