@@ -4,12 +4,12 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import dns from 'dns'
 import net from 'net'
-
+import punycode from 'punycode/punycode.js';
 import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
-async function encodeToUnicode (msg) {
+async function encodeToUnicode(msg) {
   return msg
     .split('')
     .map((char) => {
@@ -19,13 +19,13 @@ async function encodeToUnicode (msg) {
     .join('')
 }
 
-async function decodeFromUnicode (unicodeStr) {
+async function decodeFromUnicode(unicodeStr) {
   return unicodeStr.replace(/\\u[\dA-Fa-f]{4}/g, (match) =>
     String.fromCharCode(parseInt(match.replace('\\u', ''), 16))
   )
 }
 
-async function encodeToAscii (msg) {
+async function encodeToAscii(msg) {
   return msg
     .split('')
     .map((char) => {
@@ -35,13 +35,13 @@ async function encodeToAscii (msg) {
     .join('')
 }
 
-async function decodeFromAscii (asciiStr) {
+async function decodeFromAscii(asciiStr) {
   return asciiStr.replace(/\\x[\dA-Fa-f]{2}/g, (match) =>
     String.fromCharCode(parseInt(match.replace('\\x', ''), 16))
   )
 }
 
-async function convertBase (number, fromBase, toBase) {
+async function convertBase(number, fromBase, toBase) {
   if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
     throw new Error('Base must be in the range 2-36')
   }
@@ -57,7 +57,7 @@ async function convertBase (number, fromBase, toBase) {
  * @param {string} domain - 域名
  * @returns {Promise<boolean>} 返回布尔值,true表示未注册，false表示已注册
  */
-export async function isDomainAvailable (domain) {
+export async function isDomainAvailable(domain) {
   const url = `https://checkapi.aliyun.com/check/v2/domaincheck?domainName=${encodeURIComponent(domain)}&productID=16093&checkRegistry=true`
 
   try {
@@ -92,7 +92,7 @@ export async function isDomainAvailable (domain) {
  * @param {number} count - 返回的结果数量，最大为 5
  * @returns {Promise<string>} 返回文本格式
  */
-export async function fetchDomainPricing (domain, order = 'new', count = 5) {
+export async function fetchDomainPricing(domain, order = 'new', count = 5) {
   const apiUrl = 'https://www.nazhumi.com/api/v1'
 
   try {
@@ -147,7 +147,7 @@ export async function fetchDomainPricing (domain, order = 'new', count = 5) {
   }
 }
 export class WebTools extends plugin {
-  constructor () {
+  constructor() {
     super({
       name: 'WebTools',
       dsc: 'WebTools',
@@ -187,6 +187,10 @@ export class WebTools extends plugin {
           fnc: 'handleHexOperation'
         },
         {
+          reg: '^#punycode(编码|解码)\\s*(.*)$',
+          fnc: 'handlePunycodeOperation'
+        },
+        {
           reg: '^#去空格\\s*(.*)$',
           fnc: 'removeSpaces'
         },
@@ -213,8 +217,48 @@ export class WebTools extends plugin {
       ]
     })
   }
+  async handlePunycodeOperation(e) {
+    const { PunycodeOperationAll } = Config.getConfig('memz');
+    if (!PunycodeOperationAll && !e.isMaster) {
+      return logger.warn('[memz-plugin] Punycode操作当前为仅主人可用');
+    }
 
-  async removeSpaces (e) {
+    const match = e.msg.match(/^#punycode(编码|解码)\s*(.*)$/i);
+    if (!match) {
+      return e.reply('请输入正确的命令，例如：#punycode编码 文本 或 #punycode解码 Punycode 字符串', true);
+    }
+
+    const [, operation, content] = match;
+    if (!content) {
+      return e.reply(`请提供需要${operation}的文本。`, true);
+    }
+
+    try {
+      let result
+
+      if (operation === '编码') {
+        // 中文域名的处理
+        if (/[^\x00-\x7F]+/.test(content) && !/xn--/i.test(content)) {
+          result = punycode.toASCII(content);
+        } else {
+          result = punycode.toASCII(content);
+        }
+        return e.reply(`编码结果：${result}`, true);
+
+      } else if (operation === '解码') {
+        if (/^xn--[a-z0-9-]+$/i.test(content)) {
+          result = punycode.toUnicode(content);
+          return e.reply(`解码结果：${result}`, true);
+        } else {
+          return e.reply('提供的字符串不是有效的 Punycode 字符串。', true);
+        }
+      }
+
+    } catch (error) {
+      return e.reply('无效的 Punycode 字符串或编码操作出错。请确保输入的是有效的内容。', error.message, true);
+    }
+  }
+  async removeSpaces(e) {
     const { removeSpacesAll } = Config.getConfig('memz')
 
     if (!removeSpacesAll && !e.isMaster) {
@@ -228,7 +272,7 @@ export class WebTools extends plugin {
     return e.reply(noSpacesText, true)
   }
 
-  async SslInfo (e) {
+  async SslInfo(e) {
     const { SslInfoAll } = Config.getConfig('memz')
 
     if (!SslInfoAll && !e.isMaster) {
@@ -264,7 +308,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async DomainMinPricing (e) {
+  async DomainMinPricing(e) {
     const { DomainMinPricingAll } = Config.getConfig('memz')
     if (!DomainMinPricingAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
@@ -301,7 +345,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async httpStatusCheck (e) {
+  async httpStatusCheck(e) {
     const { httpStatusAll } = Config.getConfig('memz')
 
     if (!httpStatusAll && !e.isMaster) {
@@ -318,7 +362,7 @@ export class WebTools extends plugin {
     e.reply(status, true)
   }
 
-  async fetchSeoInfoHandler (e) {
+  async fetchSeoInfoHandler(e) {
     const { SeoAll } = Config.getConfig('memz')
     if (!SeoAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
@@ -345,7 +389,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleReply (e, handler) {
+  async handleReply(e, handler) {
     const msg = e.msg.match(handler.reg)
     const operation = msg[2]
     const action = msg[3]
@@ -363,7 +407,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleUrlEncodingDecoding (e) {
+  async handleUrlEncodingDecoding(e) {
     const { UrlAll } = Config.getConfig('memz')
     if (!UrlAll && !e.isMaster) { return logger.warn('[memz-plugin]URL状态当前为仅主人可用') }
     await this.handleReply(e, {
@@ -372,7 +416,7 @@ export class WebTools extends plugin {
     })
   }
 
-  async unicodehandleReply (e, handler) {
+  async unicodehandleReply(e, handler) {
     const msg = e.msg.match(handler.reg)
     const operation = msg[2]
     const action = msg[3]
@@ -394,7 +438,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleEncodingDecoding (e) {
+  async handleEncodingDecoding(e) {
     const { UnicodeAll } = Config.getConfig('memz')
     if (!UnicodeAll && !e.isMaster) { return logger.warn('[memz-plugin]Unicode功能当前为仅主人可用') }
     await this.unicodehandleReply(e, {
@@ -403,7 +447,7 @@ export class WebTools extends plugin {
     })
   }
 
-  async Whois (e) {
+  async Whois(e) {
     const { WhoisAll } = Config.getConfig('memz')
     if (!WhoisAll && !e.isMaster) {
       return logger.warn('[memz-plugin] Whois状态当前为仅主人可用')
@@ -448,7 +492,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async domainIcp (e) {
+  async domainIcp(e) {
     const { icpBeianAll } = Config.getConfig('memz')
 
     if (!icpBeianAll && !e.isMaster) {
@@ -485,7 +529,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async webpage (e) {
+  async webpage(e) {
     const { webpage } = Config.getConfig('memz')
     if (!webpage && !e.isMaster) {
       return logger.warn('[memz-plugin] 网页截图状态当前为仅主人可用')
@@ -525,7 +569,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async BaseConversion (e) {
+  async BaseConversion(e) {
     const { BaseConversionAll } = Config.getConfig('memz')
     if (!BaseConversionAll && !e.isMaster) { return logger.warn('[memz-plugin]进制转换状态当前为仅主人可用') }
     let args = e.msg
@@ -554,7 +598,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleHexOperation (e) {
+  async handleHexOperation(e) {
     const { HexOperationAll } = Config.getConfig('memz')
 
     if (!HexOperationAll && !e.isMaster) {
@@ -583,7 +627,7 @@ export class WebTools extends plugin {
   }
 
   // 获取网站图标
-  async getFavicon (e) {
+  async getFavicon(e) {
     const { getFaviconAll } = Config.getConfig('memz')
 
     if (!getFaviconAll && !e.isMaster) {
@@ -631,7 +675,7 @@ export class WebTools extends plugin {
   }
 
   // IP 信息
-  async ipinfo (e) {
+  async ipinfo(e) {
     const { IpinfoApi } = Config.getConfig('memz')
 
     const apiMapping = {
@@ -673,7 +717,7 @@ export class WebTools extends plugin {
   }
 
   // 发送请求
-  async fetchIpInfo (e, ipAddress, api) {
+  async fetchIpInfo(e, ipAddress, api) {
     let url
     switch (api) {
       case 'ipinfoIo':
@@ -712,29 +756,29 @@ export class WebTools extends plugin {
     }
   }
 
-// 格式化 IP API 返回信息
-formatIpInfo(ipInfo, ipAddress, api) {
-  const formatters = {
-    ipinfoIo: this.formatIpinfoIo,
-    bilibiliIpinfo: this.formatBilibiliIpinfo,
-    ipApi: this.formatIpApi,
-    ipSb: this.formatIpSb,
-    ip2locationIo: this.formatIp2locationIo,
-    ipApiIs: this.formatipApiIs,
-    inipIn: this.formatInipIn
-  };
+  // 格式化 IP API 返回信息
+  formatIpInfo(ipInfo, ipAddress, api) {
+    const formatters = {
+      ipinfoIo: this.formatIpinfoIo,
+      bilibiliIpinfo: this.formatBilibiliIpinfo,
+      ipApi: this.formatIpApi,
+      ipSb: this.formatIpSb,
+      ip2locationIo: this.formatIp2locationIo,
+      ipApiIs: this.formatipApiIs,
+      inipIn: this.formatInipIn
+    };
 
-  const formatter = formatters[api];
+    const formatter = formatters[api];
 
-  if (formatter) {
-    return formatter.call(this, ipInfo, ipAddress);
-  } else {
-    return '无法识别的 API 格式';
+    if (formatter) {
+      return formatter.call(this, ipInfo, ipAddress);
+    } else {
+      return '无法识别的 API 格式';
+    }
   }
-}
 
   // inipIn 数据格式化
-  formatInipIn (ipInfo, ipAddress) {
+  formatInipIn(ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.data.ip_type ? `IP 类型：${ipInfo.data.ip_type}` : null,
@@ -756,7 +800,7 @@ formatIpInfo(ipInfo, ipAddress, api) {
   }
 
   // ipApiIs 数据格式化
-  formatipApiIs (ipInfo, ipAddress) {
+  formatipApiIs(ipInfo, ipAddress) {
     const info = [
       `---IP ${ipAddress} 信息---`,
       `RIR：${ipInfo.rir}`,
@@ -816,7 +860,7 @@ formatIpInfo(ipInfo, ipAddress, api) {
   }
 
   // Ip2locationIo 数据格式化
-  formatIp2locationIo (ipInfo, ipAddress) {
+  formatIp2locationIo(ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.country_code ? `国家代码：${ipInfo.country_code}` : null,
@@ -835,78 +879,78 @@ formatIpInfo(ipInfo, ipAddress, api) {
   }
 
   // ipinfo.io 数据格式化
-  formatIpinfoIo (ipInfo, ipAddress) {
+  formatIpinfoIo(ipInfo, ipAddress) {
     const info = [
-    `IP 信息 - ${ipAddress}`,
-    ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
-    ipInfo.country ? `国家/地区：${ipInfo.country}` : null,
-    ipInfo.region ? `区域：${ipInfo.region}` : null,
-    ipInfo.city ? `城市：${ipInfo.city}` : null,
-    ipInfo.postal ? `邮政编码：${ipInfo.postal}` : null,
-    ipInfo.loc ? `经纬度：${ipInfo.loc}` : null,
-    ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
-    ipInfo.org ? `运营商：${ipInfo.org}` : null,
-    ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
-    ipInfo.asn_organization ? `ASN 组织：${ipInfo.asn_organization}` : null,
-    ipInfo.continent_code ? `IP 所在大洲：${ipInfo.continent_code}` : null
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
+      ipInfo.country ? `国家/地区：${ipInfo.country}` : null,
+      ipInfo.region ? `区域：${ipInfo.region}` : null,
+      ipInfo.city ? `城市：${ipInfo.city}` : null,
+      ipInfo.postal ? `邮政编码：${ipInfo.postal}` : null,
+      ipInfo.loc ? `经纬度：${ipInfo.loc}` : null,
+      ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+      ipInfo.org ? `运营商：${ipInfo.org}` : null,
+      ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
+      ipInfo.asn_organization ? `ASN 组织：${ipInfo.asn_organization}` : null,
+      ipInfo.continent_code ? `IP 所在大洲：${ipInfo.continent_code}` : null
     ]
     return info.filter(Boolean).join('\n')
   }
 
   // bilibili接口 信息格式化
-  formatBilibiliIpinfo (ipInfo, ipAddress) {
+  formatBilibiliIpinfo(ipInfo, ipAddress) {
     const info = [
-    `IP 信息 - ${ipAddress}`,
-    ipInfo.data?.addr ? `IP 地址：${ipInfo.data.addr}` : null,
-    ipInfo.data?.country ? `国家/地区：${ipInfo.data.country}` : null,
-    ipInfo.data?.province ? `省/州：${ipInfo.data.province}` : null,
-    ipInfo.data?.isp ? `运营商：${ipInfo.data.isp}` : null,
-    (ipInfo.data?.latitude || ipInfo.data?.longitude)
-      ? `经纬度：${ipInfo.data.latitude}, ${ipInfo.data.longitude}`
-      : null
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.data?.addr ? `IP 地址：${ipInfo.data.addr}` : null,
+      ipInfo.data?.country ? `国家/地区：${ipInfo.data.country}` : null,
+      ipInfo.data?.province ? `省/州：${ipInfo.data.province}` : null,
+      ipInfo.data?.isp ? `运营商：${ipInfo.data.isp}` : null,
+      (ipInfo.data?.latitude || ipInfo.data?.longitude)
+        ? `经纬度：${ipInfo.data.latitude}, ${ipInfo.data.longitude}`
+        : null
     ]
     return info.filter(Boolean).join('\n')
   }
 
   // ip-api 数据格式化
-  formatIpApi (ipInfo, ipAddress) {
+  formatIpApi(ipInfo, ipAddress) {
     const info = [
-    `IP 信息 - ${ipAddress}`,
-    ipInfo.country ? `国家：${ipInfo.country}` : null,
-    ipInfo.regionName ? `地区：${ipInfo.regionName}` : null,
-    ipInfo.city ? `城市：${ipInfo.city}` : null,
-    ipInfo.zip ? `邮政编码：${ipInfo.zip}` : null,
-    (ipInfo.lat || ipInfo.lon) ? `经纬度：${ipInfo.lat}, ${ipInfo.lon}` : null,
-    ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
-    ipInfo.isp ? `运营商：${ipInfo.isp}` : null,
-    ipInfo.org ? `组织：${ipInfo.org}` : null,
-    ipInfo.as ? `ASN：${ipInfo.as}` : null
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.country ? `国家：${ipInfo.country}` : null,
+      ipInfo.regionName ? `地区：${ipInfo.regionName}` : null,
+      ipInfo.city ? `城市：${ipInfo.city}` : null,
+      ipInfo.zip ? `邮政编码：${ipInfo.zip}` : null,
+      (ipInfo.lat || ipInfo.lon) ? `经纬度：${ipInfo.lat}, ${ipInfo.lon}` : null,
+      ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+      ipInfo.isp ? `运营商：${ipInfo.isp}` : null,
+      ipInfo.org ? `组织：${ipInfo.org}` : null,
+      ipInfo.as ? `ASN：${ipInfo.as}` : null
     ]
     return info.filter(Boolean).join('\n')
   }
 
   // ip.sb 数据格式化
-  formatIpSb (ipInfo, ipAddress) {
+  formatIpSb(ipInfo, ipAddress) {
     const info = [
-    `IP 信息 - ${ipAddress}`,
-    ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
-    ipInfo.country ? `国家：${ipInfo.country}` : null,
-    ipInfo.region ? `地区：${ipInfo.region}` : null,
-    ipInfo.city ? `城市：${ipInfo.city}` : null,
-    ipInfo.isp ? `运营商：${ipInfo.isp}` : null,
-    (ipInfo.latitude || ipInfo.longitude)
-      ? `经纬度：${ipInfo.latitude}, ${ipInfo.longitude}`
-      : null,
-    ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
-    ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
-    ipInfo.asn_organization ? `ASN 组织：${ipInfo.asn_organization}` : null,
-    ipInfo.continent_code ? `IP 所在大洲：${ipInfo.continent_code}` : null
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
+      ipInfo.country ? `国家：${ipInfo.country}` : null,
+      ipInfo.region ? `地区：${ipInfo.region}` : null,
+      ipInfo.city ? `城市：${ipInfo.city}` : null,
+      ipInfo.isp ? `运营商：${ipInfo.isp}` : null,
+      (ipInfo.latitude || ipInfo.longitude)
+        ? `经纬度：${ipInfo.latitude}, ${ipInfo.longitude}`
+        : null,
+      ipInfo.timezone ? `时区：${ipInfo.timezone}` : null,
+      ipInfo.asn ? `ASN：${ipInfo.asn}` : null,
+      ipInfo.asn_organization ? `ASN 组织：${ipInfo.asn_organization}` : null,
+      ipInfo.continent_code ? `IP 所在大洲：${ipInfo.continent_code}` : null
     ]
     return info.filter(Boolean).join('\n')
   }
 
   // 解析域名IP
-  async resolveDomainToIp (domain) {
+  async resolveDomainToIp(domain) {
     return new Promise((resolve, reject) => {
       dns.lookup(domain, (err, address) => {
         if (err) reject(err)

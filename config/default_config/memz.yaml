@@ -74,6 +74,8 @@ BaseConversionAll: true
 removeSpacesAll: false
 # 是否所有人可用Hex编码解码
 HexOperationAll: false
+# 是否所有人可用Punycode编码解码
+PunycodeOperationAll: false
 # 是否所有人可用获取网站图标
 getFaviconAll: true
 

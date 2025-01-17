@@ -94,6 +94,11 @@ export const helpList = [
         desc: 'hex(解|编)码'
       },
       {
+        icon: 53,
+        title: '#punycode(编码|解码)+内容',
+        desc: 'punycode(解|编)码'
+      },
+      {
         icon: 70,
         title: '#去空格+内容',
         desc: '去除空格'

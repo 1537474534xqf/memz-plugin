@@ -141,6 +141,12 @@ export default [
     component: 'Switch'
   },
   {
+    field: 'memz.PunycodeOperationAll',
+    label: 'Punycode编码解码',
+    bottomHelpMessage: '关闭时仅主人可用',
+    component: 'Switch'
+  },
+  {
     field: 'memz.BaseConversionAll',
     label: '进制转换',
     bottomHelpMessage: '关闭时仅主人可用',

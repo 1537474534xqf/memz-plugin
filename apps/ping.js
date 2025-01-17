@@ -88,9 +88,9 @@ export class PingScreenshot extends plugin {
       const avgPingTime = validPingTimes.reduce((a, b) => a + b, 0) / validPingTimes.length;
 
       const msg = `URL: ${url}
-最小 Ping 时间：${minPingTime}ms
-最大 Ping 时间：${maxPingTime}ms
-平均 Ping 时间：${avgPingTime.toFixed(2)}ms`;
+最小Ping耗时：${minPingTime}ms
+最大Ping耗时：${maxPingTime}ms
+平均Ping耗时：${avgPingTime.toFixed(2)}ms`;
 
       await e.reply(msg, true);
     } catch (err) {
@@ -139,9 +139,9 @@ export class PingScreenshot extends plugin {
       `host: ${data.host || '未知'}`,
       `IP: ${data.ip || '未知'}`,
       data.location && `位置：${data.location}`,
-      data.min && `最小Ping时间: ${data.min} ms`,
-      data.avg && `平均Ping时间: ${data.avg} ms`,
-      data.max && `最大Ping时间: ${data.max} ms`,
+      data.min && `最小Ping耗时: ${data.min} ms`,
+      data.avg && `平均Ping耗时: ${data.avg} ms`,
+      data.max && `最大Ping耗时: ${data.max} ms`,
     ]
       .filter(Boolean)
       .join('\n');
@@ -152,9 +152,9 @@ export class PingScreenshot extends plugin {
       `host: ${data.data.host || '未知'}`,
       `IP: ${data.data.ip || '未知'}`,
       data.data.location && `位置：${data.data.location}`,
-      data.data.ping_time_min && `最小Ping时间: ${data.data.ping_time_min} ms`,
-      data.data.ping_time_avg && `平均Ping时间: ${data.data.ping_time_avg} ms`,
-      data.data.ping_time_max && `最大Ping时间: ${data.data.ping_time_max} ms`,
+      data.data.ping_time_min && `最小Ping耗时: ${data.data.ping_time_min} ms`,
+      data.data.ping_time_avg && `平均Ping耗时: ${data.data.ping_time_avg} ms`,
+      data.data.ping_time_max && `最大Ping耗时: ${data.data.ping_time_max} ms`,
       data.data.node && `节点: ${data.data.node}`,
     ]
       .filter(Boolean)
@@ -165,9 +165,9 @@ export class PingScreenshot extends plugin {
       `host: ${data.host || '未知'}`,
       `IP: ${data.ip || '未知'}`,
       data.location && `位置：${data.location}`,
-      data.ping_time_min && `最小Ping时间: ${data.ping_time_min} ms`,
-      data.ping_time_avg && `平均Ping时间: ${data.ping_time_avg} ms`,
-      data.ping_time_max && `最大Ping时间: ${data.ping_time_max} ms`,
+      data.ping_time_min && `最小Ping耗时: ${data.ping_time_min} ms`,
+      data.ping_time_avg && `平均Ping耗时: ${data.ping_time_avg} ms`,
+      data.ping_time_max && `最大Ping耗时: ${data.ping_time_max} ms`,
       data.node && `节点: ${data.node}`,
     ]
       .filter(Boolean)
