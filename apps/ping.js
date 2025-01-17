@@ -1,9 +1,10 @@
 import puppeteer from 'puppeteer'
+import ping from 'ping'
 import { Config } from '#components'
 // 避免每次都重新启动puppeteer
 let globalBrowserInstance
 // 浏览器实例
-async function getBrowserInstance (launchOptions) {
+async function getBrowserInstance(launchOptions) {
   if (globalBrowserInstance && globalBrowserInstance.isConnected()) {
     return globalBrowserInstance
   } else {
@@ -13,7 +14,7 @@ async function getBrowserInstance (launchOptions) {
 }
 
 export class PingScreenshot extends plugin {
-  constructor () {
+  constructor() {
     super({
       name: '[memz-plugin]Ping',
       dsc: 'MEMZ-Plugin-Ping',
@@ -28,24 +29,97 @@ export class PingScreenshot extends plugin {
     })
   }
 
-  async ping (e) {
+  async ping(e) {
     const { PingAll, PingApi } = Config.getConfig('memz')
     if (!PingAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
     }
-    if (PingApi === 1) {
-      logger.debug('使用Zhalema进行Ping')
+    if (PingApi === 0) {
+      logger.info('PingApi配置为0, 默认使用本地Ping')
+      await this.Local(e)
+    } else if (PingApi === 1) {
+      logger.info('PingApi配置为1, 使用ZHALEMA截图')
       await this.Zhalema(e)
     } else if (PingApi === 2) {
-      logger.debug('使用itdog进行Ping')
+      logger.info('PingApi配置为2, 使用ITDOG截图')
       await this.itdog(e)
+    } else if (PingApi === 3) {
+      logger.info('PingApi配置为3, 使用Blogs.ink接口')
+      await this.blogsInk(e)
     } else {
-      logger.warn('PingApi配置错误, 默认使用Zhalema进行Ping')
-      await this.Zhalema(e)
+      logger.error('PingApi配置错误, 默认使用本地Ping')
+      await this.Local(e)
     }
   }
 
-  async Zhalema (e) {
+  async Local(e) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i);
+    if (!match) {
+      logger.warn('未匹配到正确的Ping命令');
+      return await e.reply('请输入正确的Ping命令', true);
+    }
+    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 })
+    const url = match[2]
+    const pingTimes = []
+    for (let i = 0; i < 10; i++) {
+      try {
+        const res = await ping.promise.probe(url)
+        if (res.alive) {
+          pingTimes.push(res.time)
+        } else {
+          const msg = 'Ping 失败，主机不可达'
+          logger.error(msg)
+          await e.reply(msg, true)
+          return
+        }
+      } catch (err) {
+        logger.error(`Ping 出错：${err.message}`)
+        await e.reply(`无法执行Ping命令: ${err.message}`, true)
+        return
+      }
+    }
+
+    const minPingTime = Math.min(...pingTimes)
+    const maxPingTime = Math.max(...pingTimes)
+    const avgPingTime = pingTimes.reduce((a, b) => a + b, 0) / pingTimes.length
+
+    const msg = `URL: ${url}
+最小 Ping 时间：${minPingTime}ms
+最大 Ping 时间：${maxPingTime}ms
+平均 Ping 时间：${avgPingTime.toFixed(2)}ms`
+
+    await e.reply(msg, true)
+  }
+
+  async blogsInk(e) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
+    if (!match) {
+      logger.warn('未匹配到正确的Ping命令')
+      return await e.reply('请输入正确的Ping命令', true)
+    }
+    try {
+      const response = await fetch(`https://api.blogs.ink/api/SuperPingOne/?url=${encodeURIComponent(match[2])}`)
+      if (!response.ok) {
+        throw new Error(`API请求失败，状态码：${response.status}`)
+      }
+      const data = await response.json()
+      const info = [
+        data.data.host && `host: ${data.data.host}`,
+        data.data.ip && `IP: ${data.data.ip}`,
+        data.data.location && `位置：${data.data.location}`,
+        data.data.ping_time_min && `最小Ping时间: ${data.data.ping_time_min} ms`,
+        data.data.ping_time_avg && `平均Ping时间: ${data.data.ping_time_avg} ms`,
+        data.data.ping_time_max && `最大Ping时间: ${data.data.ping_time_max} ms`,
+        data.data.node && `节点: ${data.data.node}`
+      ].filter(Boolean)
+      const msg = info.join('\n')
+      await e.reply(msg, true)
+    } catch (error) {
+      await e.reply(`错误: ${error.message}`, true)
+    }
+  }
+
+  async Zhalema(e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
 
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
@@ -145,7 +219,7 @@ export class PingScreenshot extends plugin {
     }
   }
 
-  async itdog (e) {
+  async itdog(e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
 
     logger.debug('开始处理 Itdog 命令')

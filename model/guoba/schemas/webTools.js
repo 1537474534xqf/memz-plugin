@@ -62,21 +62,23 @@ export default [
     component: 'Select',
     componentProps: {
       options: [
-        { label: 'ZHALEMA', value: 1 },
-        { label: 'ITDOG', value: 2 }
+        { label: '本地Ping', value: 0 },
+        { label: 'ZHALEMA截图', value: 1 },
+        { label: 'ITDOG截图', value: 2 },
+        { label: 'Blogs.ink接口', value: 3 }
       ],
       placeholder: '请选择Ping类型'
     }
   },
   {
     field: 'memz.PingProxy',
-    label: 'Ping代理',
+    label: 'Ping截图代理',
     bottomHelpMessage: '用于一些服务器无法访问ZHALE.MA/ITDOG.CN的情况',
     component: 'Switch'
   },
   {
     field: 'memz.PingProxyAddress',
-    label: 'Ping代理地址',
+    label: 'Ping截图代理',
     bottomHelpMessage: '支持HTTP/SOCKS5协议,SOCKS5不可用带有用户身份验证的',
     component: 'Input',
     componentProps: {

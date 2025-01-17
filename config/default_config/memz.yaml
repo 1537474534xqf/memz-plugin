@@ -41,8 +41,12 @@ PingAll: true
 PingProxy: false
 # Ping代理设置
 PingProxyAddress: ""
-# Ping接口1为`炸了吗`网站截图测速,2为`ITdog`测速
-PingApi: 2
+# Ping接口
+#*0为`本地`Ping测速
+#*1为`炸了吗`测速截图
+#*2为`ITdog`测速截图
+#*3为`Blogs.ink`接口
+PingApi: 0
 # Ipinfo是否所有人可用
 IpinfoAll: true
 # Ipinfo使用的接口
