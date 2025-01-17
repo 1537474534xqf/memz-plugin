@@ -1,8 +1,13 @@
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { Config } from '#components'
+import { normalizeCronExpression } from '#model'
 const execPromise = promisify(exec)
 
-async function getChromeProcessesInfo () {
+const { kallChromeEnabled, kallChromeCron } = Config.getConfig('memz')
+const { MusicSignGroupId } = Config.getConfig('icqq')
+
+async function getChromeProcessesInfo() {
   try {
     const { stdout: chromeProcessesInfo } = await execPromise('ps -eo pid,comm,rss | grep chrome | grep -v grep')
     return chromeProcessesInfo
@@ -12,7 +17,7 @@ async function getChromeProcessesInfo () {
   }
 }
 
-async function killChromeProcesses (groupId) {
+async function killChromeProcesses(groupId) {
   try {
     const chromeProcessesInfo = await getChromeProcessesInfo()
 
@@ -48,7 +53,7 @@ async function killChromeProcesses (groupId) {
 }
 
 export class 浏览器消失术 extends plugin {
-  constructor (e) {
+  constructor(e) {
     super({
       name: '浏览器消失术',
       priority: -1,
@@ -61,9 +66,17 @@ export class 浏览器消失术 extends plugin {
         }
       ]
     })
+
+    if (kallChromeEnabled) {
+      this.task = [{
+        cron: normalizeCronExpression(kallChromeCron),
+        name: '定时杀死chrome进程',
+        fnc: () => killChromeProcesses(MusicSignGroupId)
+      }]
+    }
   }
 
-  async kallChrome (e) {
+  async kallChrome(e) {
     await killChromeProcesses(e.group_id)
     return false
   }

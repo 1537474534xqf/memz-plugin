@@ -5,6 +5,10 @@ SystemStatusAll: false
 RedisStatusAll: false
 # 是否启用前台重启劫持(仅测试Miao-Yunzai),只支持Windows系统
 MEMZRestart: false
+# 是否自动杀死chrome进程
+kallChromeEnabled: false
+# 杀死chrome进程cron
+kallChromeCron: "0 0/12 * * * ?"
 # 自动点赞 主人默认在点赞名单
 AutoLike: true
 # 自动点赞列表

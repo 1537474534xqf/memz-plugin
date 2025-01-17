@@ -20,6 +20,21 @@ export default [
     component: 'Switch'
   },
   {
+    field: 'memz.kallChromeEnabled',
+    label: '定时结束chrome',
+    bottomHelpMessage: '按照Cron定时自动杀死chrome进程',
+    component: 'Switch'
+  },
+  {
+    field: 'memz.kallChromeCron',
+    label: '杀死chrome进程Cron',
+    bottomHelpMessage: '定时杀死chrome进程Cron表达式',
+    component: 'EasyCron',
+    componentProps: {
+      placeholder: '请输入Cron表达式'
+    }
+  },
+  {
     field: 'memz.MEMZRestart',
     label: '劫持重启',
     bottomHelpMessage: '劫持Miao-Yunzai的重启,变成前台重启,只支持Windows系统',
