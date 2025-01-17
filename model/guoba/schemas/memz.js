@@ -22,13 +22,13 @@ export default [
   {
     field: 'memz.kallChromeEnabled',
     label: '定时结束chrome',
-    bottomHelpMessage: '按照Cron定时自动杀死chrome进程',
+    bottomHelpMessage: '按照Cron定时自动杀死chrome进程,重启生效',
     component: 'Switch'
   },
   {
     field: 'memz.kallChromeCron',
     label: '杀死chrome进程Cron',
-    bottomHelpMessage: '定时杀死chrome进程Cron表达式',
+    bottomHelpMessage: '定时杀死chrome进程Cron表达式,重启生效',
     component: 'EasyCron',
     componentProps: {
       placeholder: '请输入Cron表达式'
