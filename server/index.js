@@ -457,7 +457,7 @@ const getLocalIPs = async () => {
     public: publicIP
   }
 }
-// 处理请求
+// 请求
 const handleRequest = async (req, res) => {
   const startTime = Date.now()
   let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
@@ -485,6 +485,13 @@ const handleRequest = async (req, res) => {
 
   const url = new URL(req.url, `http://${req.headers.host}`)
   const route = url.pathname
+
+  // 如果有参数打印一下
+  const queryParams = new URLSearchParams(url.search)
+  if ([...queryParams].length > 0) {
+    const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',')
+    logger.info(`[MEMZ-API] [请求参数] IP: ${ip} 路由: ${route} 参数: ${paramString}`)
+  }
 
   // 记录请求日志
   const logRequest = async (route, ip) => {
