@@ -92,7 +92,7 @@ export default [
   {
     field: 'memz.IpinfoApi',
     label: 'IpInfo接口',
-    bottomHelpMessage: 'Ipinfo.io需要先配置token',
+    bottomHelpMessage: 'Ipinfo.io需要先配置token, Ip2locationIo接口每天限额500次',
     component: 'Select',
     componentProps: {
       options: [

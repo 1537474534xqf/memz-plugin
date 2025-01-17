@@ -712,7 +712,7 @@ export class WebTools extends plugin {
     }
   }
 
-  // 通用的格式化 IP 信息
+  // 格式化 IP API 返回信息
   formatIpInfo (ipInfo, ipAddress, api) {
     if (api === 'ipinfoIo') {
       return this.formatIpinfoIo(ipInfo, ipAddress)
