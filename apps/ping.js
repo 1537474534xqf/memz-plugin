@@ -46,6 +46,9 @@ export class PingScreenshot extends plugin {
     } else if (PingApi === 3) {
       logger.info('PingApi配置为3, 使用Blogs.ink接口')
       await this.blogsInk(e)
+    } else if (PingApi === 4) {
+      logger.info('PingApi配置为4, 使用UAPIs.cn接口')
+      await this.uapisCn(e)
     } else {
       logger.error('PingApi配置错误, 默认使用本地Ping')
       await this.Local(e)
@@ -90,7 +93,32 @@ export class PingScreenshot extends plugin {
 
     await e.reply(msg, true)
   }
-
+  async uapisCn(e) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
+    if (!match) {
+      logger.warn('未匹配到正确的Ping命令')
+      return await e.reply('请输入正确的Ping命令', true)
+    }
+    try {
+      const response = await fetch(`https://uapis.cn/api/ping?host=${encodeURIComponent(match[2])}`)
+      if (!response.ok) {
+        throw new Error(`API请求失败，状态码：${response.status}`)
+      }
+      const data = await response.json()
+      const info = [
+        data.host && `host: ${data.host}`,
+        data.ip && `IP: ${data.ip}`,
+        data.location && `位置：${data.location}`,
+        data.min && `最小Ping时间: ${data.min} ms`,
+        data.avg && `平均Ping时间: ${data.avg} ms`,
+        data.min && `最大Ping时间: ${data.min} ms`
+      ].filter(Boolean)
+      const msg = info.join('\n')
+      await e.reply(msg, true)
+    } catch (error) {
+      await e.reply(`错误: ${error.message}`, true)
+    }
+  }
   async blogsInk(e) {
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
