@@ -30,28 +30,28 @@ export class PingScreenshot extends plugin {
   }
 
   async ping(e) {
-    const { PingAll, PingApi } = Config.getConfig('memz')
+    const { PingAll, PingApi } = Config.getConfig('memz');
     if (!PingAll && !e.isMaster) {
-      return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
+      return logger.warn('[memz-plugin]Ping功能当前为仅主人可用');
     }
-    if (PingApi === 0) {
-      logger.info('PingApi配置为0, 默认使用本地Ping')
-      await this.Local(e)
-    } else if (PingApi === 1) {
-      logger.info('PingApi配置为1, 使用ZHALEMA截图')
-      await this.Zhalema(e)
-    } else if (PingApi === 2) {
-      logger.info('PingApi配置为2, 使用ITDOG截图')
-      await this.itdog(e)
-    } else if (PingApi === 3) {
-      logger.info('PingApi配置为3, 使用Blogs.ink接口')
-      await this.blogsInk(e)
-    } else if (PingApi === 4) {
-      logger.info('PingApi配置为4, 使用UAPIs.cn接口')
-      await this.uapisCn(e)
+
+    const pingActions = {
+      0: this.Local.bind(this),
+      1: this.Zhalema.bind(this),
+      2: this.itdog.bind(this),
+      3: this.blogsInk.bind(this),
+      4: this.uapisCn.bind(this),
+      5: this.mmpCc.bind(this),
+    };
+
+    const action = pingActions[PingApi];
+
+    if (action) {
+      logger.info(`PingApi配置为${PingApi}, 执行相应操作`);
+      await action(e);
     } else {
-      logger.error('PingApi配置错误, 默认使用本地Ping')
-      await this.Local(e)
+      logger.error('PingApi配置错误, 默认使用本地Ping');
+      await this.Local(e);
     }
   }
 
@@ -61,90 +61,115 @@ export class PingScreenshot extends plugin {
       logger.warn('未匹配到正确的Ping命令');
       return await e.reply('请输入正确的Ping命令', true);
     }
-    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 })
-    const url = match[2]
-    const pingTimes = []
-    for (let i = 0; i < 10; i++) {
-      try {
-        const res = await ping.promise.probe(url)
-        if (res.alive) {
-          pingTimes.push(res.time)
-        } else {
-          const msg = 'Ping 失败，主机不可达'
-          logger.error(msg)
-          await e.reply(msg, true)
-          return
-        }
-      } catch (err) {
-        logger.error(`Ping 出错：${err.message}`)
-        await e.reply(`无法执行Ping命令: ${err.message}`, true)
-        return
+
+    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 });
+
+    const url = match[2];
+
+    try {
+      const results = await Promise.all(
+        Array.from({ length: 10 }).map(() =>
+          ping.promise.probe(url).then((res) => (res.alive ? res.time : null))
+        )
+      );
+
+      const validPingTimes = results.filter((time) => time !== null);
+
+      if (validPingTimes.length === 0) {
+        const msg = 'Ping 失败，主机不可达';
+        logger.error(msg);
+        return await e.reply(msg, true);
       }
-    }
 
-    const minPingTime = Math.min(...pingTimes)
-    const maxPingTime = Math.max(...pingTimes)
-    const avgPingTime = pingTimes.reduce((a, b) => a + b, 0) / pingTimes.length
+      const minPingTime = Math.min(...validPingTimes);
+      const maxPingTime = Math.max(...validPingTimes);
+      const avgPingTime = validPingTimes.reduce((a, b) => a + b, 0) / validPingTimes.length;
 
-    const msg = `URL: ${url}
+      const msg = `URL: ${url}
 最小 Ping 时间：${minPingTime}ms
 最大 Ping 时间：${maxPingTime}ms
-平均 Ping 时间：${avgPingTime.toFixed(2)}ms`
+平均 Ping 时间：${avgPingTime.toFixed(2)}ms`;
 
-    await e.reply(msg, true)
+      await e.reply(msg, true);
+    } catch (err) {
+      logger.error(`Ping 出错：${err.message}`);
+      await e.reply(`无法执行Ping命令: ${err.message}`, true);
+    }
   }
+
+  // 通用请求
+  async handlePingCommand(e, apiUrl, params, dataHandler) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i);
+    if (!match) {
+      logger.warn('未匹配到正确的Ping命令');
+      return await e.reply('请输入正确的Ping命令', true);
+    }
+
+    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 });
+
+    try {
+      const response = await fetch(`${apiUrl}?${params}=${encodeURIComponent(match[2])}`);
+      if (!response.ok) {
+        throw new Error(`API请求失败，状态码：${response.status}`);
+      }
+      const data = await response.json();
+      const msg = dataHandler(data);
+      await e.reply(msg, true);
+    } catch (error) {
+      await e.reply(`错误: ${error.message}`, true);
+    }
+  }
+
+  // 格式化数据
+  mmpCcDataHandler(data) {
+    return [
+      `IP: ${data.IP || '未知'}`,
+      data.延迟 && `延迟: ${data.延迟}`,
+      data.IP地址 && `IP地址: ${data.IP地址}`,
+      data.本机地址 && `本机地址: ${data.本机地址}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  uapisCnDataHandler(data) {
+    return [
+      `host: ${data.host || '未知'}`,
+      `IP: ${data.ip || '未知'}`,
+      data.location && `位置：${data.location}`,
+      data.min && `最小Ping时间: ${data.min} ms`,
+      data.avg && `平均Ping时间: ${data.avg} ms`,
+      data.max && `最大Ping时间: ${data.max} ms`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  blogsInkDataHandler(data) {
+    return [
+      `host: ${data.data.host || '未知'}`,
+      `IP: ${data.data.ip || '未知'}`,
+      data.data.location && `位置：${data.data.location}`,
+      data.data.ping_time_min && `最小Ping时间: ${data.data.ping_time_min} ms`,
+      data.data.ping_time_avg && `平均Ping时间: ${data.data.ping_time_avg} ms`,
+      data.data.ping_time_max && `最大Ping时间: ${data.data.ping_time_max} ms`,
+      data.data.node && `节点: ${data.data.node}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  // 请求
+  async mmpCc(e) {
+    await this.handlePingCommand(e, 'https://api.mmp.cc/api/ping', 'text', this.mmpCcDataHandler);
+  }
+
   async uapisCn(e) {
-    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
-    if (!match) {
-      logger.warn('未匹配到正确的Ping命令')
-      return await e.reply('请输入正确的Ping命令', true)
-    }
-    try {
-      const response = await fetch(`https://uapis.cn/api/ping?host=${encodeURIComponent(match[2])}`)
-      if (!response.ok) {
-        throw new Error(`API请求失败，状态码：${response.status}`)
-      }
-      const data = await response.json()
-      const info = [
-        data.host && `host: ${data.host}`,
-        data.ip && `IP: ${data.ip}`,
-        data.location && `位置：${data.location}`,
-        data.min && `最小Ping时间: ${data.min} ms`,
-        data.avg && `平均Ping时间: ${data.avg} ms`,
-        data.min && `最大Ping时间: ${data.min} ms`
-      ].filter(Boolean)
-      const msg = info.join('\n')
-      await e.reply(msg, true)
-    } catch (error) {
-      await e.reply(`错误: ${error.message}`, true)
-    }
+    await this.handlePingCommand(e, 'https://uapis.cn/api/ping', 'host', this.uapisCnDataHandler);
   }
+
   async blogsInk(e) {
-    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
-    if (!match) {
-      logger.warn('未匹配到正确的Ping命令')
-      return await e.reply('请输入正确的Ping命令', true)
-    }
-    try {
-      const response = await fetch(`https://api.blogs.ink/api/SuperPingOne/?url=${encodeURIComponent(match[2])}`)
-      if (!response.ok) {
-        throw new Error(`API请求失败，状态码：${response.status}`)
-      }
-      const data = await response.json()
-      const info = [
-        data.data.host && `host: ${data.data.host}`,
-        data.data.ip && `IP: ${data.data.ip}`,
-        data.data.location && `位置：${data.data.location}`,
-        data.data.ping_time_min && `最小Ping时间: ${data.data.ping_time_min} ms`,
-        data.data.ping_time_avg && `平均Ping时间: ${data.data.ping_time_avg} ms`,
-        data.data.ping_time_max && `最大Ping时间: ${data.data.ping_time_max} ms`,
-        data.data.node && `节点: ${data.data.node}`
-      ].filter(Boolean)
-      const msg = info.join('\n')
-      await e.reply(msg, true)
-    } catch (error) {
-      await e.reply(`错误: ${error.message}`, true)
-    }
+    await this.handlePingCommand(e, 'https://api.blogs.ink/api/SuperPingOne', 'url', this.blogsInkDataHandler);
   }
 
   async Zhalema(e) {

@@ -712,26 +712,26 @@ export class WebTools extends plugin {
     }
   }
 
-  // 格式化 IP API 返回信息
-  formatIpInfo (ipInfo, ipAddress, api) {
-    if (api === 'ipinfoIo') {
-      return this.formatIpinfoIo(ipInfo, ipAddress)
-    } else if (api === 'bilibiliIpinfo') {
-      return this.formatBilibiliIpinfo(ipInfo, ipAddress)
-    } else if (api === 'ipApi') {
-      return this.formatIpApi(ipInfo, ipAddress)
-    } else if (api === 'ipSb') {
-      return this.formatIpSb(ipInfo, ipAddress)
-    } else if (api === 'ip2locationIo') {
-      return this.formatIp2locationIo(ipInfo, ipAddress)
-    } else if (api === 'ipApiIs') {
-      return this.formatipApiIs(ipInfo, ipAddress)
-    } else if (api === 'inipIn') {
-      return this.formatInipIn(ipInfo, ipAddress)
-    } else {
-      return '无法识别的 API 格式'
-    }
+// 格式化 IP API 返回信息
+formatIpInfo(ipInfo, ipAddress, api) {
+  const formatters = {
+    ipinfoIo: this.formatIpinfoIo,
+    bilibiliIpinfo: this.formatBilibiliIpinfo,
+    ipApi: this.formatIpApi,
+    ipSb: this.formatIpSb,
+    ip2locationIo: this.formatIp2locationIo,
+    ipApiIs: this.formatipApiIs,
+    inipIn: this.formatInipIn
+  };
+
+  const formatter = formatters[api];
+
+  if (formatter) {
+    return formatter.call(this, ipInfo, ipAddress);
+  } else {
+    return '无法识别的 API 格式';
   }
+}
 
   // inipIn 数据格式化
   formatInipIn (ipInfo, ipAddress) {
@@ -758,7 +758,7 @@ export class WebTools extends plugin {
   // ipApiIs 数据格式化
   formatipApiIs (ipInfo, ipAddress) {
     const info = [
-      `IP 信息 - ${ipAddress}`,
+      `---IP ${ipAddress} 信息---`,
       `RIR：${ipInfo.rir}`,
       `Bogon IP：${ipInfo.is_bogon ? '是' : '否'}`,
       `移动设备：${ipInfo.is_mobile ? '是' : '否'}`,
@@ -810,7 +810,7 @@ export class WebTools extends plugin {
       ipInfo.location && ipInfo.location.local_time ? `本地时间：${ipInfo.location.local_time}` : null,
       ipInfo.location && ipInfo.location.local_time_unix ? `本地时间（Unix时间戳）：${ipInfo.location.local_time_unix}` : null,
       ipInfo.location && ipInfo.location.is_dst ? `夏令时：${ipInfo.location.is_dst ? '是' : '否'}` : null,
-      `查询耗时：${ipInfo.elapsed_ms}毫秒`
+      // 查询耗时：${ipInfo.elapsed_ms}毫秒`
     ]
     return info.filter(Boolean).join('\n')
   }

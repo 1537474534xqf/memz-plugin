@@ -66,7 +66,8 @@ export default [
         { label: 'ZHALEMA截图', value: 1 },
         { label: 'ITDOG截图', value: 2 },
         { label: 'Blogs.ink接口', value: 3 },
-        { label: 'UAPIs.cn接口', value: 4 }
+        { label: 'UAPIs.cn接口', value: 4 },
+        { label: '远梦API', value: 5 }
       ],
       placeholder: '请选择Ping类型'
     }
