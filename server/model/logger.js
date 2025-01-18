@@ -9,7 +9,7 @@ const logsDir = path.join(PluginTemp, 'logs');
  */
 
 // 确保logs目录存在
-if (!fs.existsSync(logsDir)) { fs.mkdirSync(logsDir) }
+if (!fs.existsSync(logsDir)) { fs.mkdirSync(logsDir, { recursive: true }) }
 // 自定义日志级别
 log4js.levels.addLevels({
     fatal: { value: 500, colour: "red" },  // fatal级别
