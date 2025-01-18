@@ -5,7 +5,7 @@ import YamlReader from './YamlReader.js'
 import _ from 'lodash'
 import { PluginPath } from './Path.js'
 class Config {
-  constructor () {
+  constructor() {
     this.config = {}
     this.oldConfig = {}
     /** 监听文件 */
@@ -14,7 +14,7 @@ class Config {
     this.initCfg()
   }
 
-  initCfg () {
+  initCfg() {
     let path = `${PluginPath}/config/config/`
     if (!fs.existsSync(path)) fs.mkdirSync(path)
     let pathDef = `${PluginPath}/config/default_config/`
@@ -48,7 +48,7 @@ class Config {
    * @param type 默认跑配置-defSet，用户配置-config
    * @param name 名称
    */
-  getYaml (type, name) {
+  getYaml(type, name) {
     let file = `${PluginPath}/config/${type}/${name}.yaml`
     let key = `${type}.${name}`
 
@@ -66,7 +66,7 @@ class Config {
    * @param {string} name - 配置名称
    * @returns {object} - 合并后的配置对象
    */
-  getDefOrConfig (name) {
+  getDefOrConfig(name) {
     let def = this.getdefSet(name)
     let config = this.getConfig(name)
     return { ...def, ...config }
@@ -77,7 +77,7 @@ class Config {
    * @param {string} name - 配置名称
    * @returns {object} - 默认配置对象
    */
-  getdefSet (name) {
+  getdefSet(name) {
     return this.getYaml('default_config', name)
   }
 
@@ -86,12 +86,12 @@ class Config {
    * @param {string} name - 配置名称
    * @returns {object} - 用户配置对象
    */
-  getConfig (name) {
+  getConfig(name) {
     return this.getYaml('config', name)
   }
 
   /** 监听配置文件 */
-  watch (file, name, type = 'default_config') {
+  watch(file, name, type = 'default_config') {
     let key = `${type}.${name}`
     if (!this.oldConfig[key]) { this.oldConfig[key] = _.cloneDeep(this.config[key]) }
     if (this.watcher[key]) return
@@ -149,7 +149,7 @@ class Config {
     this.watcher[key] = watcher
   }
 
-  getCfg () {
+  getCfg() {
     let memzconfig = this.getDefOrConfig('memz')
     let updateconfig = this.getDefOrConfig('update')
     let apiconfig = this.getDefOrConfig('api')
@@ -173,7 +173,7 @@ class Config {
    * @param {String|Number} value 修改的value值
    * @param {'config'|'default_config'} type 配置文件或默认
    */
-  modify (name, key, value, type = 'config') {
+  modify(name, key, value, type = 'config') {
     let path = `${PluginPath}/config/${type}/${name}.yaml`
     new YamlReader(path).set(key, value)
     this.oldConfig[key] = _.cloneDeep(this.config[key])
@@ -188,7 +188,7 @@ class Config {
    * @param {'add'|'del'} category 类别 add or del
    * @param {'config'|'default_config'} type 配置文件或默认
    */
-  modifyarr (name, key, value, category = 'add', type = 'config') {
+  modifyarr(name, key, value, category = 'add', type = 'config') {
     let path = `${PluginPath}/config/${type}/${name}.yaml`
     let yaml = new YamlReader(path)
     if (category == 'add') {
@@ -199,7 +199,7 @@ class Config {
     }
   }
 
-  setArr (name, key, item, value, type = 'config') {
+  setArr(name, key, item, value, type = 'config') {
     let path = `${PluginPath}/config/${type}/${name}.yaml`
     let yaml = new YamlReader(path)
     let arr = yaml.get(key).slice()
@@ -214,7 +214,7 @@ class Config {
    * @param {*} parentKey
    * @returns
    */
-  findDifference (obj1, obj2, parentKey = '') {
+  findDifference(obj1, obj2, parentKey = '') {
     const result = {}
     for (const key in obj1) {
       const fullKey = parentKey ? `${parentKey}.${key}` : key
@@ -236,10 +236,10 @@ class Config {
     return result
   }
 
-  mergeObjectsWithPriority (objA, objB) {
+  mergeObjectsWithPriority(objA, objB) {
     let differences = false
 
-    function customizer (objValue, srcValue, key, object, source, stack) {
+    function customizer(objValue, srcValue, key, object, source, stack) {
       if (_.isArray(objValue) && _.isArray(srcValue)) {
         return objValue
       } else if (_.isPlainObject(objValue) && _.isPlainObject(srcValue)) {

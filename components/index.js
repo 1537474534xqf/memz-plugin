@@ -10,13 +10,6 @@ import {
   PluginName,
   isFramework // 是否是框架
 } from './Path.js'
-import {
-  RedisConfig,
-  RedisHost,
-  RedisPort,
-  RedisUsername,
-  RedisPassword
-} from './Redis.js'
 const MEMZ_NAME = 'MEMZ-Plugin'
 const { apiby } = Config.getConfig('api')
 const copyright = `Copyright © 2024-${new Date().getFullYear()} ${MEMZ_NAME} - ${apiby}`
@@ -38,10 +31,5 @@ export {
   PluginData,
   MEMZ_NAME,
   copyright,
-  BotName,
-  RedisConfig,
-  RedisHost,
-  RedisPort,
-  RedisUsername,
-  RedisPassword
+  BotName
 }
