@@ -487,7 +487,7 @@ const handleRequest = async (req, res) => {
     ip = ip.replace('::ffff:', '');
   }
 
-  logger.debug(`[MEMZ-API] [请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`);
+  logger.debug(`[${config.port}][MEMZ-API] [请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`);
 
   // 黑名单和白名单检查
   if (config.blacklistedIPs.includes(ip)) {
@@ -508,7 +508,7 @@ const handleRequest = async (req, res) => {
 
   // 记录请求日志
   const logRequest = async (route, ip) => {
-    let log = [`[MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`];
+    let log = [`[${config.port}][MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`];
     const queryParams = new URLSearchParams(url.search);
     if ([...queryParams].length > 0) {
       const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',');
@@ -553,16 +553,16 @@ const handleRequest = async (req, res) => {
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end(`500 服务器内部错误：${err.message}`);
-      logger.error(`[MEMZ-API] 路由: ${route} 错误: ${err.message}`);
+      logger.error(`[${config.port}][MEMZ-API] 路由: ${route} 错误: ${err.message}`);
     }
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('404 未找到：接口不存在');
-    logger.warn(`[MEMZ-API] [404] 路由不存在: ${route}`);
+    logger.warn(`[${config.port}][MEMZ-API] [404] 路由不存在: ${route}`);
   }
 
   const endTime = Date.now();
-  logger.info(`[MEMZ-API] [请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`);
+  logger.info(`[${config.port}][MEMZ-API] [请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`);
 };
 
 // 启动服务
