@@ -1,19 +1,10 @@
-let RedisConfig, RedisHost, RedisPort, RedisUsername, RedisPassword;
+import Cfg from '../../../lib/config/config.js'
+const RedisConfig = Cfg.redis
 
-let Cfg;
-try {
-  Cfg = await import('../../../lib/config/config.js');
-} catch (error) {
-  Cfg = null;
-}
-
-const config = Cfg ? (Cfg && Cfg.redis) : null
-
-RedisConfig = config;
-RedisHost = config.host;
-RedisPort = config.port;
-RedisUsername = config.username;
-RedisPassword = config.password;
+const RedisHost = RedisConfig.host
+const RedisPort = RedisConfig.port
+const RedisUsername = RedisConfig.username
+const RedisPassword = RedisConfig.password
 
 export {
   RedisConfig,
