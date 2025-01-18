@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 import moment from 'moment'
-import { Config,PluginData } from '#components'
+import { Config ,PluginData } from '#components'
 // 缓存用户信息
-const UserInfoPath = path.join(PluginData.dataPath, 'QQ', 'userInfo.json')
+const UserInfoPath = path.join(PluginData, 'QQ', 'userInfo.json')
 if (!Bot.UserInfo) {
   if (fs.existsSync(UserInfoPath)) {
     Bot.UserInfo = JSON.parse(fs.readFileSync(UserInfoPath, 'utf8'))
