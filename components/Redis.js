@@ -1,4 +1,4 @@
-let RedisConfig, RedisHost, RedisPort, RedisPassword;
+let RedisConfig, RedisHost, RedisPort, RedisUsername, RedisPassword;
 
 let Cfg;
 try {
