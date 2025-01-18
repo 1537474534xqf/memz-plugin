@@ -1,3 +1,4 @@
+import logger from './model/logger.js'
 import http from 'http'
 import https from 'https'
 import os from 'os'
@@ -6,18 +7,21 @@ import path from 'path'
 import chalk from 'chalk'
 import { pathToFileURL } from 'url'
 import Redis from 'ioredis'
-import { PluginPath } from '../components/Path.js'
+import { PluginPath, isFramework } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
-const redis = new Redis({
-  host: RedisConfig.host,
-  port: RedisConfig.port,
-  username: RedisConfig.username,
-  password: RedisConfig.password,
-  db: 2
-})
 
 let config = Config.getConfig('api')
+
+const redis = new Redis({
+  host: config.redisHost || RedisConfig.host,
+  port: config.redisPort || RedisConfig.port,
+  username: config.redisUsername || RedisConfig.username,
+  password: config.redisPassword || RedisConfig.password,
+  db: config.redisDB || 2
+})
+
+
 const apiHandlersCache = {}
 const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
 const REDIS_STATS_KEY = 'MEMZ/API'
@@ -309,14 +313,14 @@ const web = (req, res) => {
       keyHtml = `
         <div class="key"><strong>请求参数:</strong>
         ${api.key.map(param => {
-          const paramName = escapeHtml(param.name)
-          const paramDescription = escapeHtml(param.description)
-          const paramType = escapeHtml(param.type)
-          const paramRequired = param.required ? '是' : '否'
-          return `
+        const paramName = escapeHtml(param.name)
+        const paramDescription = escapeHtml(param.description)
+        const paramType = escapeHtml(param.type)
+        const paramRequired = param.required ? '是' : '否'
+        return `
             <p><strong>${paramName}:</strong> ${paramDescription} (类型: ${paramType}, 必填: ${paramRequired})</p>
           `
-        }).join('')}
+      }).join('')}
         </div>
       `
     }
@@ -376,28 +380,42 @@ const serveFavicon = async (req, res) => {
 
 // 加载 API 服务
 const loadApiHandler = async (filePath, routePrefix = '') => {
-  const route = `${routePrefix}/${path.basename(filePath, '.js')}`
-  const startTime = Date.now()
-  try {
-    const handlerModule = await import(pathToFileURL(filePath))
-    const handler = handlerModule.default
+  const route = `${routePrefix}/${path.basename(filePath, '.js')}`;
+  const startTime = Date.now();
 
+  try {
+    const handlerModule = await import(pathToFileURL(filePath));
+    const handler = handlerModule.default;
+
+    // 判断模块是否为有效的处理函数
     if (typeof handler === 'function') {
-      apiHandlersCache[route] = handler
-      const loadTime = Date.now() - startTime
-      loadStats.routeTimes.push({ route, time: loadTime })
-      logger.debug(chalk.blueBright(`[MEMZ-API] API加载完成 路由: ${route}, 耗时: ${loadTime}ms`))
-      loadStats.success++
+      apiHandlersCache[route] = handler;
+      const loadTime = Date.now() - startTime;
+      loadStats.routeTimes.push({ route, time: loadTime });
+
+      // 加载成功
+      logger.debug(chalk.blueBright(`[MEMZ-API] API加载完成 路由: ${route}, 耗时: ${loadTime}ms`));
+      loadStats.success++;
     } else {
-      logger.warn(chalk.yellow(`[MEMZ-API] API服务跳过无效文件: ${filePath}`))
-      loadStats.failure++
+      // 无效文件
+      logger.warn(chalk.yellow(`[MEMZ-API] API服务跳过无效文件: ${filePath}`));
+      loadStats.failure++;
     }
   } catch (err) {
-    logger.error(chalk.red(`[memz-plugin] API加载失败: ${filePath}`), err.message)
-    logger.debug(`[MEMZ-API] [加载调试] 错误详情: ${err.stack}`)
-    loadStats.failure++
+    // 捕获错误的堆栈信息
+    const stackTrace = err.stack ? err.stack.split('\n') : [];
+    stackTrace.forEach(line => {
+      if (line.includes('at ')) {
+        logger.error(chalk.red(`[MEMZ-API] 错误位置: ${line}`));
+      }
+    });
+
+    logger.error(`[MEMZ-API] [加载调试] 错误详情:\n${err.stack}`);
+    logger.error(chalk.red(`[MEMZ-API] 错误文件路径: ${filePath}`));
+
+    loadStats.failure++;
   }
-}
+};
 
 // 递归加载 API 服务
 const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
@@ -413,7 +431,7 @@ const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
   await Promise.all(loadPromises)
 }
 // 获取公网 IP
-async function getPublicIP () {
+async function getPublicIP() {
   const apiUrls = [
     'https://v4.ip.zxinc.org/info.php?type=json',
     'https://ipinfo.io/json'
@@ -549,7 +567,7 @@ const handleRequest = async (req, res) => {
 };
 
 // 启动服务
-export async function startServer () {
+export async function startServer() {
   try {
     const startTime = Date.now()
 
@@ -570,9 +588,9 @@ export async function startServer () {
 
     const serverOptions = config.httpsenabled
       ? {
-          key: await fs.readFile(config.httpskey),
-          cert: await fs.readFile(config.httpscert)
-        }
+        key: await fs.readFile(config.httpskey),
+        cert: await fs.readFile(config.httpscert)
+      }
       : {}
 
     const server = config.httpsenabled
@@ -647,4 +665,9 @@ const handleStartupError = (error) => {
   } else {
     logger.error(`[MEMZ-API] 启动服务器时发生错误: ${error.message}`)
   }
+}
+
+// 如果是单跑就直接启动服务器
+if (!isFramework) {
+  startServer()
 }

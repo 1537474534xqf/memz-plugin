@@ -15,13 +15,14 @@ const pluginPackageJson = readJsonFile(path.join(PluginPath, 'package.json'))
 
 const Version = {
   isMiao: Boolean(packageJson?.dependencies?.sequelize),
-  isTrss: Array.isArray(Bot.uin),
-  get latestVersion () {
-    return pluginPackageJson?.version || null
+  isTrss: typeof Bot !== 'undefined' && Array.isArray(Bot.uin),
+  get latestVersion() {
+    return pluginPackageJson?.version || null;
   },
-  get yunzai () {
-    return packageJson?.version || null
+  get yunzai() {
+    return packageJson?.version || null;
   }
 }
+
 
 export default Version

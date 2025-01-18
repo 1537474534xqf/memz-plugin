@@ -4,7 +4,8 @@
     "author": "@MEMZJS",
     "type": "module",
     "scripts": {
-        "fix": "npx prettier --write **/*.js && npx prettier --write *.js"
+        "fix": "npx prettier --write **/*.js && npx prettier --write *.js",
+        "web": "node server/index.js"
     },
     "dependencies": {
         "axios": "^1.7.9",
@@ -12,6 +13,7 @@
         "fuse.js": "^7.0.0",
         "iconv-lite": "^0.6.3",
         "ioredis": "*",
+        "log4js": "^6.9.1",
         "ping": "^0.4.4",
         "punycode": "^2.3.1",
         "systeminformation": "*",

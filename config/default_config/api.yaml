@@ -6,6 +6,19 @@ host: "0.0.0.0"
 apidomain: "localhost"
 #*啟動服務器的端口號
 port: 1129
+#*默认日志等级
+loglevel: "info"
+##*Redis配置*
+#*Redis地址
+redisHost: ""
+#*Redis端口
+redisPort:
+#*Redis用户名
+redisUsername: ""
+#*Redis密码
+redisPassword: ""
+#*Redis数据库
+redisDB: 0
 #*API署名
 apiby: 'MapleLeaf'
 #*是否啟用 HTTPS

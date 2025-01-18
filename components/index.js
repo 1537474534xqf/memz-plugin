@@ -7,7 +7,8 @@ import {
   PluginPath,
   PluginTemp,
   PluginData,
-  PluginName
+  PluginName,
+  isFramework // 是否是框架
 } from './Path.js'
 import {
   RedisConfig,
@@ -24,6 +25,7 @@ let BotName = Version.isTrss
     ? 'Miao-Yunzai'
     : 'Yunzai-Bot'
 export {
+  isFramework,
   Version,
   Path,
   YamlReader,

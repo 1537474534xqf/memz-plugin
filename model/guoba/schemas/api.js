@@ -20,6 +20,23 @@ export default [
     component: 'Input'
   },
   {
+    field: 'api.loglevel',
+    label: '日志等级',
+    bottomHelpMessage: '日志等级',
+    component: 'Select',
+    componentProps: {
+      options: [
+        { label: 'info', value: 'info' },
+        { label: 'debug', value: 'debug' },
+        { label: 'warn', value: 'warn' },
+        { label: 'error', value: 'error' },
+        { label: 'fatal', value: 'fatal' },
+        { label: 'off', value: 'off' }
+      ],
+      placeholder: '请选择Ping类型'
+    }
+  },
+  {
     field: 'api.apidomain',
     label: 'API自定义域名',
     bottomHelpMessage: '加载时显示,不填就不显示,目前无法自动绑定域名',
@@ -33,6 +50,39 @@ export default [
     componentProps: {
       placeholder: '请输入端口号'
     }
+  },
+  {
+    field: 'api.redisHost',
+    label: 'Redis地址',
+    bottomHelpMessage: 'API服务端缓存数据库地址',
+    component: 'Input'
+  },
+  {
+    field: 'api.redisPort',
+    label: 'Redis端口',
+    bottomHelpMessage: 'API服务端缓存数据库端口',
+    component: 'InputNumber',
+    componentProps: {
+      placeholder: '请输入端口号'
+    }
+  },
+  {
+    field: 'api.redisUsername',
+    label: 'Redis用户名',
+    bottomHelpMessage: 'API服务端缓存数据库用户名',
+    component: 'Input'
+  },
+  {
+    field: 'api.redisPassword',
+    label: 'Redis密码',
+    bottomHelpMessage: 'API服务端缓存数据库密码',
+    component: 'Input'
+  },
+  {
+    field: 'api.redisDB',
+    label: 'Redis数据库',
+    bottomHelpMessage: 'API服务端缓存数据库,默认db2',
+    component: 'InputNumber'
   },
   {
     field: 'api.apiby',
