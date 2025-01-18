@@ -1,4 +1,5 @@
 import { copyright } from '#components'
+import logger from '../../model/logger.js'
 import { fetchQQRegistrationDate } from '../../model/QQ/QQAge.js'
 export default async (req, res) => {
   try {

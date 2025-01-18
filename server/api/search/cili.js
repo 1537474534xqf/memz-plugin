@@ -1,4 +1,5 @@
 import { performCiliSearch } from '../../../model/Search.js'
+
 import { copyright } from '#components'
 export default async (req, res) => {
   const time = new Date().toISOString()
