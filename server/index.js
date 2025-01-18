@@ -411,7 +411,6 @@ const loadApiHandler = async (filePath, routePrefix = '') => {
     });
 
     logger.error(`[MEMZ-API] [加载调试] 错误详情:\n${err.stack}`);
-    logger.error(chalk.red(`[MEMZ-API] 错误文件路径: ${filePath}`));
 
     loadStats.failure++;
   }
