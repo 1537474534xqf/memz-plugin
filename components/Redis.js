@@ -7,16 +7,18 @@ try {
   Cfg = null;
 }
 
-const config = (Cfg && Cfg.redis) || { host: 'localhost', port: 6379, password: '' };
+const config = Cfg ? (Cfg && Cfg.redis) : null
 
 RedisConfig = config;
 RedisHost = config.host;
 RedisPort = config.port;
+RedisUsername = config.username;
 RedisPassword = config.password;
 
 export {
   RedisConfig,
   RedisHost,
+  RedisUsername,
   RedisPort,
   RedisPassword
 };

@@ -14,6 +14,7 @@ import {
   RedisConfig,
   RedisHost,
   RedisPort,
+  RedisUsername,
   RedisPassword
 } from './Redis.js'
 const MEMZ_NAME = 'MEMZ-Plugin'
@@ -41,5 +42,6 @@ export {
   RedisConfig,
   RedisHost,
   RedisPort,
+  RedisUsername,
   RedisPassword
 }
