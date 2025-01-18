@@ -1,6 +1,6 @@
 import whois from 'whois-json'
 import { URL } from 'url'
-import { translateWhoisData } from '#model'
+import { translateWhoisData } from '../../../model/webtool.js'
 import { copyright } from '#components'
 const time = new Date().toISOString()
 

@@ -1,5 +1,5 @@
 import { URL } from 'url'
-import { fetchIcpInfo } from '#model'
+import { fetchIcpInfo } from '../../../model/webtool.js'
 import { copyright } from '#components'
 
 const time = new Date().toISOString()

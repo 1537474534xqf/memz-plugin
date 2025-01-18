@@ -1,5 +1,5 @@
 import { PluginData, copyright } from '#components'
-import { getRandomYiyan } from '#model'
+import { getRandomYiyan } from '../../../model/one.js'
 import path from 'path'
 
 const yiyanFilePath = path.join(PluginData, 'one', 'yiyan.txt')

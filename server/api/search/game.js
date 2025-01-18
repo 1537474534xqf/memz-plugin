@@ -1,4 +1,4 @@
-import { searchResources, loadDataFromExcelFiles } from '#model'
+import { searchResources, loadDataFromExcelFiles } from '../../../model/Search.js'
 import { PluginData, copyright } from '#components'
 import path from 'path'
 

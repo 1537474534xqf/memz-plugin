@@ -1,5 +1,5 @@
 import { URL } from 'url'
-import { fetchSeoFromHtml } from '#model'
+import { fetchSeoFromHtml } from '../../../model/webtool.js'
 import { copyright } from '#components'
 
 const time = new Date().toISOString()
