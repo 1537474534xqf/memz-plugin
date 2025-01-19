@@ -147,7 +147,8 @@ watcher.on('change', async (filePath) => {
       // 更新缓存中的模块
       apps[moduleName] = defaultExport
 
-      logger.info(chalk.green(`[memz-plugin] 热更新模块：${moduleName}`))
+      // logger.info(chalk.green(`[memz-plugin] 热更新模块：${moduleName}`))
+      // 热更新个🥚,我不会
     } catch (error) {
       logger.error(chalk.red(`[memz-plugin] 热更新模块失败：${moduleName}`))
       logger.error(error)
