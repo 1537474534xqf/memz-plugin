@@ -1,7 +1,7 @@
 import moment from 'moment'
 import path from 'path'
 import fs from 'fs/promises'
-import { df, dir, download } from '../models/Gfs.js'
+import { df, dir, download } from '../model/Gfs.js'
 import { Config, PluginData } from '#components'
 const { whoAtmeTime } = Config.getConfig('memz')
 const MemberListPath = path.join(PluginData, 'MemberList')
@@ -259,10 +259,10 @@ export class GroupPlugin extends plugin {
             user_id: e.user_id,
             nickname,
             message: `群${group.gid}(${group.group_name})找到用户${userId}\n身份: ${group.role === 'admin'
-                ? '群管理'
-                : group.role === 'owner'
-                  ? '群主'
-                  : '群员'
+              ? '群管理'
+              : group.role === 'owner'
+                ? '群主'
+                : '群员'
               }${group.title ? `\n头衔: ${group.title}` : ''}`
           })
         })

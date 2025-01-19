@@ -9,7 +9,50 @@ export const helpCfg = {
   colCount: 3,
   bgBlur: true
 }
-export const helpList = [
+export const helpsList = [
+  {
+    group: '帮助列表',
+    list: [
+      {
+        icon: 40,
+        title: '#memz帮助',
+        desc: '查看MEMZ帮助'
+      },
+      {
+        icon: 51,
+        title: '#memz全部帮助',
+        desc: '查看所有帮助'
+      },
+      {
+        icon: 41,
+        title: '#memz工具帮助',
+        desc: '查看Web工具帮助'
+      },
+      {
+        icon: 42,
+        title: '#memz群聊帮助',
+        desc: '查看群聊帮助'
+      },
+      {
+        icon: 43,
+        title: '#memzQQ帮助',
+        desc: '查看QQ帮助'
+      },
+      {
+        icon: 44,
+        title: '#memz搜索帮助',
+        desc: '查看搜索帮助'
+      },
+      {
+        icon: 45,
+        title: '#memz管理帮助',
+        desc: '查看管理帮助'
+      }
+    ]
+  }
+]
+
+export const webToolHelpList = [
   {
     group: 'WebTools',
     list: [
@@ -104,7 +147,10 @@ export const helpList = [
         desc: '去除空格'
       }
     ]
-  },
+  }
+]
+
+export const groupHelpList = [
   {
     group: '群聊功能',
     list: [
@@ -154,7 +200,10 @@ export const helpList = [
         desc: '查找某人所在群'
       }
     ]
-  },
+  }
+]
+
+export const qqHelpList = [
   {
     group: 'QQ功能',
     list: [
@@ -169,7 +218,10 @@ export const helpList = [
         desc: '全体禁言,但是假的'
       }
     ]
-  },
+  }
+]
+
+export const searchHelpList = [
   {
     group: '搜索功能',
     list: [
@@ -189,7 +241,10 @@ export const helpList = [
         desc: '搜索磁力资源,违规'
       }
     ]
-  },
+  }
+]
+
+export const systemHelpList = [
   {
     group: 'MEMZ管理',
     auth: 'master',
