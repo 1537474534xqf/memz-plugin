@@ -6,7 +6,7 @@ import { normalizeCronExpression } from '#model'
 const execPromise = promisify(exec)
 const { kallChromeEnabled, kallChromeCron } = Config.getConfig('memz')
 const { MusicSignGroupId } = Config.getConfig('icqq')
-
+const groupId = Number(MusicSignGroupId)
 // 获取Chrome进程信息
 async function getChromeProcessesInfo() {
   try {
@@ -81,7 +81,7 @@ export class 浏览器消失术 extends plugin {
       this.task = [{
         cron: normalizeCronExpression(kallChromeCron),
         name: '定时杀死chrome进程',
-        fnc: () => this.kallChrome(e.group_id = Number(MusicSignGroupId))
+        fnc: () => this.killChromePro(groupId)
       }]
     }
   }
@@ -89,5 +89,8 @@ export class 浏览器消失术 extends plugin {
   async kallChrome(e) {
     await killChromeProcesses(e.group_id)
     return false
+  }
+  async killChromePro(groupId) {
+    await killChromeProcesses(groupId)
   }
 }

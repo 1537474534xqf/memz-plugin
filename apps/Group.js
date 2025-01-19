@@ -1,6 +1,7 @@
 import moment from 'moment'
 import path from 'path'
 import fs from 'fs/promises'
+import { df, dir, download } from '../models/Gfs.js'
 import { Config, PluginData } from '#components'
 const { whoAtmeTime } = Config.getConfig('memz')
 const MemberListPath = path.join(PluginData, 'MemberList')
@@ -60,7 +61,7 @@ Bot.on('message.group', async (e) => {
 })
 
 export class GroupPlugin extends plugin {
-  constructor () {
+  constructor() {
     super({
       name: '群聊功能',
       dsc: '群聊功能',
@@ -119,12 +120,99 @@ export class GroupPlugin extends plugin {
           reg: '^[#/]查找\s*(\d*)$',
           fnc: 'search',
           permission: 'master'
+        },
+        {
+          reg: '^#fileusage\\s*(.*)$',
+          fnc: 'getFileUsage',
+          permission: 'master'
+        },
+        {
+          reg: /^#(\d+)?filelist\s*/,
+          fnc: 'getFileList',
+          permission: 'master'
         }
       ]
     })
   }
+  /**
+   * 格式化字节数为可读的格式。
+   * @param {number} bytes - 字节数
+   * @returns {string} 格式化后的字符串
+   */
+  formatBytes(bytes) {
+    if (bytes === 0) return '0 B'
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(1024))
+    return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i]
+  }
 
-  async search (e) {
+  async getFileUsage(e) {
+    if (!e.isGroup) return e.reply('文件使用情况只支持群聊使用', true)
+    let groupId = e.msg.replace(/^#fileusage\s*/, '')
+    if (!groupId) { groupId = e.group_id }
+
+    try {
+      const usageInfo = await df(groupId)
+
+      const res = [
+        `群组 ${groupId} 文件使用情况`,
+        `剩余空间：${this.formatBytes(usageInfo.free)}`,
+        `总空间：${this.formatBytes(usageInfo.total)}`,
+        `已使用空间：${this.formatBytes(usageInfo.used)}`,
+        `当前文件数量：${usageInfo.file_count}`,
+        `最大文件数量：${usageInfo.max_file_count}`
+      ].join('\n')
+
+      return e.reply(res, true)
+    } catch (error) {
+      return e.reply('获取文件使用情况时出错：' + error.message, true)
+    }
+  }
+
+  async getFileList(e) {
+    if (!e.isGroup) return e.reply('文件列表只支持群聊使用', true)
+    let groupId = e.group_id
+    let pid = e.msg.replace(/^#(\d+)?filelist\s*/, (match, group) => {
+      if (group) {
+        groupId = group
+      }
+      return ''
+    })
+    if (!pid) { pid = '/' }
+
+    try {
+      const fileList = await dir(groupId, pid)
+
+      if (fileList.length > 0) {
+        const forward = await Promise.all(fileList.map(async (row) => {
+          let message = `# ${row.name}\nfid:\`\`\`\n${row.fid}\`\`\`\npid:\`\`\`\n${row.pid}\`\`\`\n创建时间: ${new Date(row.create_time * 1000).toLocaleString()}\n修改时间: ${new Date(row.modify_time * 1000).toLocaleString()}`
+
+          // 文件夹
+          if (row.is_dir) {
+            message += `\n文件夹，包含文件数: ${row.file_count}`
+          } else {
+            // 文件
+            message += `\n大小: ${this.formatBytes(row.size)}\n\`\`\`\nMD5: ${row.md5}\nSHA1: ${row.sha1}\`\`\`\nduration: ${row.duration}\n下载次数: ${row.download_times}`
+            // 下载链接
+            const downloadLink = await download(groupId, row.fid)
+            message += `\n## 下载链接\n\`\`\`\n${downloadLink.url}\`\`\``
+          }
+          return {
+            user_id: e.user_id,
+            nickname: e.sender.nickname || '为什么不玩原神',
+            message: segment.markdown(message)
+          }
+        }))
+
+        return e.reply(await Bot.makeForwardMsg(forward))
+      } else {
+        return e.reply('该群没有文件可以显示', true)
+      }
+    } catch (error) {
+      return e.reply('获取文件列表时出错：' + error.message, true)
+    }
+  }
+  async search(e) {
     const match = e.msg.match(/^[#/]查找\s*(\d*)$/i)
     const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq) || (match ? [match[1]] : [])
 
@@ -170,13 +258,12 @@ export class GroupPlugin extends plugin {
           msg.push({
             user_id: e.user_id,
             nickname,
-            message: `群${group.gid}(${group.group_name})找到用户${userId}\n身份: ${
-              group.role === 'admin'
-? '群管理'
-              : group.role === 'owner'
-? '群主'
-              : '群员'
-            }${group.title ? `\n头衔: ${group.title}` : ''}`
+            message: `群${group.gid}(${group.group_name})找到用户${userId}\n身份: ${group.role === 'admin'
+                ? '群管理'
+                : group.role === 'owner'
+                  ? '群主'
+                  : '群员'
+              }${group.title ? `\n头衔: ${group.title}` : ''}`
           })
         })
       }
@@ -193,7 +280,7 @@ export class GroupPlugin extends plugin {
     await e.reply(Bot.makeForwardMsg(msg))
   }
 
-  async atatat (e) {
+  async atatat(e) {
     if (!e.isGroup) return e.reply('召唤只支持群聊使用', true)
 
     const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq)
@@ -218,7 +305,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async MassMuteAll (e) {
+  async MassMuteAll(e) {
     const match = e.msg.match(/^#一键(加害|封杀|禁言)(\d+)?( )?(\d+)?$/)
     if (!match) {
       return e.reply('命令格式不正确，请检查并重新发送')
@@ -257,7 +344,7 @@ export class GroupPlugin extends plugin {
     await e.reply(forwardMessage)
   }
 
-  async getMemberList (e) {
+  async getMemberList(e) {
     try {
       const match = e.msg.match(/^[#/]保存(全部)?群员名单\s*(\d*)$/i)
       let groupIds = []
@@ -312,7 +399,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async privateForward (e) {
+  async privateForward(e) {
     const msg = e.msg.match(/^[#/]一键私发\\s*(.*)$/i)
     const startTime = Date.now()
     let successCount = 0
@@ -344,7 +431,7 @@ export class GroupPlugin extends plugin {
     e.reply(msgText, true)
   }
 
-  async groupForward (e) {
+  async groupForward(e) {
     const msg = e.msg.match(/^[#/]一键群发\\s*(.*)$/i)
 
     const startTime = Date.now()
@@ -378,7 +465,7 @@ export class GroupPlugin extends plugin {
     e.reply(msgText, true)
   }
 
-  async groupSign (e) {
+  async groupSign(e) {
     try {
       for (let group of Bot[e.self_id].gl.keys()) {
         Bot.pickGroup(group).sign()
@@ -391,7 +478,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async whoAtme (e) {
+  async whoAtme(e) {
     if (!e.isGroup) return e.reply('只支持群聊使用')
 
     const atTarget = e.atBot ? Bot.uin : (e.msg.includes('我') ? e.user_id : e.at)
@@ -414,7 +501,7 @@ export class GroupPlugin extends plugin {
     e.reply(forwardMsg)
   }
 
-  async clearAt (e) {
+  async clearAt(e) {
     if (!e.isGroup) return e.reply('只支持群聊使用')
 
     const key = `Yz:whoAtme:${e.group_id}_${e.user_id}`
@@ -425,14 +512,14 @@ export class GroupPlugin extends plugin {
     e.reply('已成功清除', true)
   }
 
-  async clearAll (e) {
+  async clearAll(e) {
     const keys = await redis.keys(`Yz:whoAtme:${e.group_id}_*`)
     for (const key of keys) await redis.del(key)
 
     e.reply('已成功清除本群的全部艾特数据')
   }
 
-  async atAll (e) {
+  async atAll(e) {
     if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
     if (!e.isGroup) return e.reply('艾特全体只支持群聊使用', true)
 
@@ -472,7 +559,7 @@ export class GroupPlugin extends plugin {
   }
 }
 export class 主人解禁 extends plugin {
-  constructor () {
+  constructor() {
     super({
       name: '主人解禁',
       dsc: '主人解禁',
@@ -487,7 +574,7 @@ export class 主人解禁 extends plugin {
     )
   }
 
-  async 主人被禁言解禁 (e) {
+  async 主人被禁言解禁(e) {
     if (!e.isMaster) return false
 
     const { helpMaster, helpMasterText, nohelpMasterText } = Config.getConfig('memz')
