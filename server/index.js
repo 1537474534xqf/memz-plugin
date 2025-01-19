@@ -1,4 +1,4 @@
-import logger from './model/logger.js'
+import logger from './lib/logger.js'
 import http from 'http'
 import https from 'https'
 import os from 'os'
@@ -14,13 +14,12 @@ import { RedisConfig } from '../components/Redis.js'
 let config = Config.getConfig('api')
 
 const redis = new Redis({
-  host: config.redisHost || RedisConfig.host || 'localhost',
-  port: config.redisPort || RedisConfig.port || 6379,
-  username: config.redisUsername || RedisConfig.username || '',
-  password: config.redisPassword || RedisConfig.password || '',
-  db: config.redisDB || RedisConfig.db || 2
+  host: config.redisHost || (RedisConfig?.host) || 'localhost',
+  port: config.redisPort || (RedisConfig?.port) || 6379,
+  username: config.redisUsername || (RedisConfig?.username) || '',
+  password: config.redisPassword || (RedisConfig?.password) || '',
+  db: config.redisDB || (RedisConfig?.db) || 2
 });
-
 
 const apiHandlersCache = {}
 const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }

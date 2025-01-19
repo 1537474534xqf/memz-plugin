@@ -2,7 +2,7 @@ import whois from 'whois-json'
 import { URL } from 'url'
 import { translateWhoisData } from '../../../model/webtool.js'
 import { copyright } from '#components'
-import logger from '../../model/logger.js'
+import logger from '../../lib/logger.js'
 const time = new Date().toISOString()
 
 export default async (req, res) => {

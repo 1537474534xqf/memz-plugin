@@ -1,5 +1,5 @@
 import { copyright } from '#components'
-import logger from '../../model/logger.js'
+import logger from '../../lib/logger.js'
 export default async (req, res) => {
   try {
     const title = 'QQ头像查询'
