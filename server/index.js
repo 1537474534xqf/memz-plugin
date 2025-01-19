@@ -487,24 +487,14 @@ const getLocalIPs = async () => {
 }
 const handleRequest = async (req, res) => {
   const startTime = Date.now();
-  const trustedProxies = ['127.0.0.1', '::1', '你的代理服务器 IP 地址'];
-  let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress;
+  let ip = req.socket.remoteAddress || req.headers['x-forwarded-for'] || req.headers['x-real-ip']
 
-  if (req.headers['x-forwarded-for']) {
-    const forwardedIps = req.headers['x-forwarded-for'].split(',').map(ip => ip.trim());
-
-    ip = forwardedIps[0];
-
-    if (!trustedProxies.includes(ip)) {
-      ip = req.socket.remoteAddress;
-    }
-  }
-
-  // 处理多个 X-Forwarded-For 头部中的多个IP地址，取最右边的IP
+  // 处理多个 X-Forwarded-For 头部中的多个 IP 地址，取最右边的 IP
   if (ip && ip.includes(',')) {
     ip = ip.split(',').pop().trim();
   }
 
+  // 如果 IP 是 IPv6 映射的 IPv4 地址，去掉 "::ffff:" 前缀
   if (ip && ip.startsWith('::ffff:')) {
     ip = ip.replace('::ffff:', '');
   }
