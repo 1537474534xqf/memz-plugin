@@ -8,7 +8,7 @@ const { kallChromeEnabled, kallChromeCron } = Config.getConfig('memz')
 const { MusicSignGroupId } = Config.getConfig('icqq')
 const groupId = Number(MusicSignGroupId)
 // 获取Chrome进程信息
-async function getChromeProcessesInfo() {
+async function getChromeProcessesInfo () {
   try {
     const { stdout: chromeProcessesInfo } = await execPromise('ps -eo pid,comm,rss | grep chrome | grep -v grep')
     return chromeProcessesInfo
@@ -19,7 +19,7 @@ async function getChromeProcessesInfo() {
 }
 
 // 计算Chrome进程内存和数量
-function calculateChromeProcessStats(chromeProcessesInfo) {
+function calculateChromeProcessStats (chromeProcessesInfo) {
   const processLines = chromeProcessesInfo.trim().split('\n')
   const chromeProcesses = processLines.length
   const totalMemory = processLines.reduce((acc, line) => {
@@ -30,7 +30,7 @@ function calculateChromeProcessStats(chromeProcessesInfo) {
 }
 
 // 杀死所有Chrome进程
-async function killChromeProcesses(groupId) {
+async function killChromeProcesses (groupId) {
   try {
     const chromeProcessesInfo = await getChromeProcessesInfo()
 
@@ -62,7 +62,7 @@ async function killChromeProcesses(groupId) {
 }
 
 export class 浏览器消失术 extends plugin {
-  constructor(e) {
+  constructor (e) {
     super({
       name: '浏览器消失术',
       priority: -1,
@@ -86,11 +86,12 @@ export class 浏览器消失术 extends plugin {
     }
   }
 
-  async kallChrome(e) {
+  async kallChrome (e) {
     await killChromeProcesses(e.group_id)
     return false
   }
-  async killChromePro(groupId) {
+
+  async killChromePro (groupId) {
     await killChromeProcesses(groupId)
   }
 }

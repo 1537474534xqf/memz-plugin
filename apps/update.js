@@ -65,7 +65,7 @@ export class Updates extends plugin {
   }
 
   async update_log () {
-    let UpdatePlugin = new Update()
+    const UpdatePlugin = new Update()
     UpdatePlugin.e = this.e
     UpdatePlugin.reply = this.reply
 

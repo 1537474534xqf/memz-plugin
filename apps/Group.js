@@ -61,7 +61,7 @@ Bot.on('message.group', async (e) => {
 })
 
 export class GroupPlugin extends plugin {
-  constructor() {
+  constructor () {
     super({
       name: '群聊功能',
       dsc: '群聊功能',
@@ -140,20 +140,20 @@ export class GroupPlugin extends plugin {
     })
   }
 
-  async clearFile(e) {
+  async clearFile (e) {
     try {
-      const files = await e.group.fs.ls();
-      const removePromises = files.map(file => e.group.fs.rm(file.fid));
-      const result = await Promise.allSettled(removePromises);
+      const files = await e.group.fs.ls()
+      const removePromises = files.map(file => e.group.fs.rm(file.fid))
+      const result = await Promise.allSettled(removePromises)
 
       // 统计数量
-      const successCount = result.filter(res => res.status === 'fulfilled').length;
-      const failureCount = result.filter(res => res.status === 'rejected').length;
+      const successCount = result.filter(res => res.status === 'fulfilled').length
+      const failureCount = result.filter(res => res.status === 'rejected').length
 
-      return e.reply(`清理完成：成功清理了 ${successCount} 个文件，失败 ${failureCount} 个文件。`);
+      return e.reply(`清理完成：成功清理了 ${successCount} 个文件，失败 ${failureCount} 个文件。`)
     } catch (error) {
-      logger.error("清理文件时出错:", error);
-      e.reply("清理文件时出错，详细信息已记录。", error);
+      logger.error('清理文件时出错:', error)
+      e.reply('清理文件时出错', error)
     }
   }
 
@@ -162,14 +162,14 @@ export class GroupPlugin extends plugin {
    * @param {number} bytes - 字节数
    * @returns {string} 格式化后的字符串
    */
-  formatBytes(bytes) {
+  formatBytes (bytes) {
     if (bytes === 0) return '0 B'
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(1024))
     return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i]
   }
 
-  async getFileUsage(e) {
+  async getFileUsage (e) {
     if (!e.isGroup) return e.reply('文件使用情况只支持群聊使用', true)
     let groupId = e.msg.replace(/^#fileusage\s*/, '')
     if (!groupId) { groupId = e.group_id }
@@ -192,7 +192,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async getFileList(e) {
+  async getFileList (e) {
     if (!e.isGroup) return e.reply('文件列表只支持群聊使用', true)
     let groupId = e.group_id
     let pid = e.msg.replace(/^#(\d+)?filelist\s*/, (match, group) => {
@@ -235,7 +235,8 @@ export class GroupPlugin extends plugin {
       return e.reply('获取文件列表时出错：' + error.message, true)
     }
   }
-  async search(e) {
+
+  async search (e) {
     const match = e.msg.match(/^[#/]查找\s*(\d*)$/i)
     const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq) || (match ? [match[1]] : [])
 
@@ -303,7 +304,7 @@ export class GroupPlugin extends plugin {
     await e.reply(Bot.makeForwardMsg(msg))
   }
 
-  async atatat(e) {
+  async atatat (e) {
     if (!e.isGroup) return e.reply('召唤只支持群聊使用', true)
 
     const qqNumbers = e.message.filter(msg => msg.type === 'at').map(msg => msg.qq)
@@ -316,7 +317,7 @@ export class GroupPlugin extends plugin {
     }).flat()
 
     const match = e.msg.match(/^#召唤(\d+)?次?(撤回)?$/)
-    let summonCount = match ? parseInt(match[1], 10) || 20 : 20
+    const summonCount = match ? parseInt(match[1], 10) || 20 : 20
 
     for (let i = 0; i < summonCount; i++) {
       const res = await e.reply(atSegments)
@@ -328,7 +329,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async MassMuteAll(e) {
+  async MassMuteAll (e) {
     const match = e.msg.match(/^#一键(加害|封杀|禁言)(\d+)?( )?(\d+)?$/)
     if (!match) {
       return e.reply('命令格式不正确，请检查并重新发送')
@@ -367,11 +368,11 @@ export class GroupPlugin extends plugin {
     await e.reply(forwardMessage)
   }
 
-  async getMemberList(e) {
+  async getMemberList (e) {
     try {
       const match = e.msg.match(/^[#/]保存(全部)?群员名单\s*(\d*)$/i)
       let groupIds = []
-      let responseMessages = []
+      const responseMessages = []
 
       if (match && match[2]) {
         groupIds = [match[2]]
@@ -381,7 +382,7 @@ export class GroupPlugin extends plugin {
         groupIds = [e.group_id]
       }
 
-      for (let groupId of groupIds) {
+      for (const groupId of groupIds) {
         try {
           const group = Bot.pickGroup(groupId)
           if (!group) {
@@ -422,13 +423,13 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async privateForward(e) {
+  async privateForward (e) {
     const msg = e.msg.match(/^[#/]一键私发\\s*(.*)$/i)
     const startTime = Date.now()
     let successCount = 0
     let failCount = 0
     const failedUsers = []
-    for (let user of Bot[e.self_id].fl.keys()) {
+    for (const user of Bot[e.self_id].fl.keys()) {
       try {
         await Bot[e.self_id].pickUser(user).sendMsg(msg)
         successCount++
@@ -454,7 +455,7 @@ export class GroupPlugin extends plugin {
     e.reply(msgText, true)
   }
 
-  async groupForward(e) {
+  async groupForward (e) {
     const msg = e.msg.match(/^[#/]一键群发\\s*(.*)$/i)
 
     const startTime = Date.now()
@@ -462,7 +463,7 @@ export class GroupPlugin extends plugin {
     let failCount = 0
     const failedGroups = []
 
-    for (let group of Bot[e.self_id].gl.keys()) {
+    for (const group of Bot[e.self_id].gl.keys()) {
       try {
         await Bot[e.self_id].pickGroup(group).sendMsg(msg)
         successCount++
@@ -488,9 +489,9 @@ export class GroupPlugin extends plugin {
     e.reply(msgText, true)
   }
 
-  async groupSign(e) {
+  async groupSign (e) {
     try {
-      for (let group of Bot[e.self_id].gl.keys()) {
+      for (const group of Bot[e.self_id].gl.keys()) {
         Bot.pickGroup(group).sign()
         // Bot.sleep(100)
       }
@@ -501,7 +502,7 @@ export class GroupPlugin extends plugin {
     }
   }
 
-  async whoAtme(e) {
+  async whoAtme (e) {
     if (!e.isGroup) return e.reply('只支持群聊使用')
 
     const atTarget = e.atBot ? Bot.uin : (e.msg.includes('我') ? e.user_id : e.at)
@@ -524,7 +525,7 @@ export class GroupPlugin extends plugin {
     e.reply(forwardMsg)
   }
 
-  async clearAt(e) {
+  async clearAt (e) {
     if (!e.isGroup) return e.reply('只支持群聊使用')
 
     const key = `Yz:whoAtme:${e.group_id}_${e.user_id}`
@@ -535,20 +536,20 @@ export class GroupPlugin extends plugin {
     e.reply('已成功清除', true)
   }
 
-  async clearAll(e) {
+  async clearAll (e) {
     const keys = await redis.keys(`Yz:whoAtme:${e.group_id}_*`)
     for (const key of keys) await redis.del(key)
 
     e.reply('已成功清除本群的全部艾特数据')
   }
 
-  async atAll(e) {
+  async atAll (e) {
     if (!e.isMaster) return logger.warn('[memz-plugin] 艾特全体只有主人才能使用')
     if (!e.isGroup) return e.reply('艾特全体只支持群聊使用', true)
 
     const recallMsg = e.msg.includes('撤回')
     e.recall()
-    let { atalltext, atChunkSize } = Config.getConfig('memz')
+    const { atalltext, atChunkSize } = Config.getConfig('memz')
     const members = await this.e.group.getMemberMap()
     const qqNumbers = [...members.keys()]
 
@@ -582,7 +583,7 @@ export class GroupPlugin extends plugin {
   }
 }
 export class 主人解禁 extends plugin {
-  constructor() {
+  constructor () {
     super({
       name: '主人解禁',
       dsc: '主人解禁',
@@ -597,7 +598,7 @@ export class 主人解禁 extends plugin {
     )
   }
 
-  async 主人被禁言解禁(e) {
+  async 主人被禁言解禁 (e) {
     if (!e.isMaster) return false
 
     const { helpMaster, helpMasterText, nohelpMasterText } = Config.getConfig('memz')

@@ -62,7 +62,7 @@ export class RedisStatus extends plugin {
     const { RedisStatusAll } = Config.getConfig('memz')
     if (!RedisStatusAll && !e.isMaster) { return logger.warn('[memz-plugin]Redis状态当前为仅主人可用') }
 
-    let qw = e.msg.match(
+    const qw = e.msg.match(
       /^#?redis(状态|统计|狀態|統計)(\s*pro)?(\s*文本)?(\s*;?\s*([^;]*);\s*([^;]*);\s*([^;]*))?/i
     )
 
@@ -114,7 +114,7 @@ export class RedisStatus extends plugin {
   parseRedisInfo (info) {
     const lines = info.split('\r\n')
     const stats = {}
-    for (let line of lines) {
+    for (const line of lines) {
       if (line && line.includes(':')) {
         const [key, value] = line.split(':')
         stats[key] = value

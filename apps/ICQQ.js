@@ -31,28 +31,28 @@ export class ICQQ extends plugin {
   }
 
   async jiajin (e) {
-    let time = e.msg.match(/(\d+)/) ? e.msg.match(/(\d+)/) : 1
+    const time = e.msg.match(/(\d+)/) ? e.msg.match(/(\d+)/) : 1
     e.group._setting({ 17: time })
   }
 
   async fetchQQAge (e) {
     const { fetchQQAgeAll } = Config.getConfig('icqq')
     if (!fetchQQAgeAll && !e.isMaster) return logger.warn('[memz-plugin] 未开启Q龄查询功能')
-    let qqNumber = e.at || (e.msg.match(/^#?查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
+    const qqNumber = e.at || (e.msg.match(/^#?查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
     const { ICQQBotQQ } = Config.getConfig('icqq')
     if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
-    let body = {
+    const body = {
       1: Number(qqNumber),
       2: 0,
       3: [{ 1: 20026 }]
     }
     try {
-      let qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', body, { message_type: 32 })
+      const qqResponse = await Bot[ICQQBotQQ].sendOidbSvcTrpcTcp('OidbSvcTrpcTcp.0xfe1_2', body, { message_type: 32 })
 
       const registrationTimestamp = qqResponse?.[1]?.[2]?.[1]?.[2]
       if (registrationTimestamp) {
-        let registrationDate = new Date(registrationTimestamp * 1000)
-        let formattedDate = registrationDate.toISOString().replace('T', ' ').slice(0, 19)
+        const registrationDate = new Date(registrationTimestamp * 1000)
+        const formattedDate = registrationDate.toISOString().replace('T', ' ').slice(0, 19)
         e.reply(`QQ ${qqNumber} 注册日期\n${formattedDate}`, true)
       } else {
         e.reply('未能获取到注册时间戳或数据格式不正确')
@@ -75,7 +75,7 @@ export class ICQQ extends plugin {
     if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 
-    if (match[0] == '帮助') { return e.reply('参数#音卡测试Appid,标题,内容,跳转链接,图片链接,群号', true) }
+    if (match[0] === '帮助') { return e.reply('参数#音卡测试Appid,标题,内容,跳转链接,图片链接,群号', true) }
 
     const customParams = match[1].split(',').map(param => param.trim())
 
@@ -98,7 +98,7 @@ export class ICQQ extends plugin {
 }
 
 async function executeShareCard (ICQQBotQQ, type, title, content, singer, image, groupId) {
-  let appInfo = appidData[type]
+  const appInfo = appidData[type]
 
   if (!appInfo) {
     logger.error(`Error: type '${type}' not found in appidData.`)
@@ -111,7 +111,7 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
     type, title, content, singer, image, groupId, appid, packageName, sign
   })}`)
 
-  let 分享卡 = {
+  const 分享卡 = {
     1: 2935,
     2: 9,
     4: {
@@ -139,11 +139,11 @@ async function executeShareCard (ICQQBotQQ, type, title, content, singer, image,
   }
 
   try {
-    let 结果 = BotName === 'Trss-Yunzai'
+    const 结果 = BotName === 'Trss-Yunzai'
       ? await Bot[ICQQBotQQ].sdk.sendUni('OidbSvc.0xb77_9', Bot[ICQQBotQQ].icqq.core.pb.encode(分享卡))
       // eslint-disable-next-line
       : await Bot[ICQQBotQQ].sendUni('OidbSvc.0xb77_9', core.pb.encode(分享卡))
-    let result = BotName === 'Trss-Yunzai'
+    const result = BotName === 'Trss-Yunzai'
       ? Bot[ICQQBotQQ].icqq.core.pb.decode(结果)
       // eslint-disable-next-line
       : core.pb.decode(结果)

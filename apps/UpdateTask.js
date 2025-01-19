@@ -5,7 +5,7 @@ import { normalizeCronExpression } from '#model'
 const { checkupdate, CUSTOM_REPOSITORY, cron } = Config.getConfig('update')
 
 const prefix = 'memz:codeUpdateTask:'
-let REPOSITORY_LIST = []
+const REPOSITORY_LIST = []
 
 init()
 
@@ -41,7 +41,7 @@ export class UpdateTask extends plugin {
       return false
     }
 
-    let content = []
+    const content = []
     for (let index = 0; index < uniqueRepositories.length; index++) {
       const item = uniqueRepositories[index]
       if (index > 0) {
@@ -49,14 +49,14 @@ export class UpdateTask extends plugin {
       }
 
       logger.info(`[memz-plugin]开始检查仓库更新：${item.owner}/${item.repo}`)
-      let repositoryData = await this.getRepositoryLatestCommit(item.source, item.owner, item.repo)
+      const repositoryData = await this.getRepositoryLatestCommit(item.source, item.owner, item.repo)
       if (!repositoryData?.sha) {
         logger.warn(`[memz-plugin]未能获取到提交信息：${item.owner}/${item.repo}`)
         continue
       }
 
       const redisKey = `${prefix}${item.owner}/${item.repo}`
-      let redisSha = await redis.get(redisKey)
+      const redisSha = await redis.get(redisKey)
       logger.debug(`[memz-plugin]Redis中缓存的SHA值：${redisSha}，最新的SHA值：${repositoryData.sha}`)
 
       if (redisSha && String(redisSha) === String(repositoryData.sha)) {

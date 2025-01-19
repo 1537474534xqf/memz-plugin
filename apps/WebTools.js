@@ -4,12 +4,12 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import dns from 'dns'
 import net from 'net'
-import punycode from 'punycode/punycode.js';
+import punycode from 'punycode/punycode.js'
 import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
 import { Config, PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
-async function encodeToUnicode(msg) {
+async function encodeToUnicode (msg) {
   return msg
     .split('')
     .map((char) => {
@@ -19,13 +19,13 @@ async function encodeToUnicode(msg) {
     .join('')
 }
 
-async function decodeFromUnicode(unicodeStr) {
+async function decodeFromUnicode (unicodeStr) {
   return unicodeStr.replace(/\\u[\dA-Fa-f]{4}/g, (match) =>
     String.fromCharCode(parseInt(match.replace('\\u', ''), 16))
   )
 }
 
-async function encodeToAscii(msg) {
+async function encodeToAscii (msg) {
   return msg
     .split('')
     .map((char) => {
@@ -35,13 +35,13 @@ async function encodeToAscii(msg) {
     .join('')
 }
 
-async function decodeFromAscii(asciiStr) {
+async function decodeFromAscii (asciiStr) {
   return asciiStr.replace(/\\x[\dA-Fa-f]{2}/g, (match) =>
     String.fromCharCode(parseInt(match.replace('\\x', ''), 16))
   )
 }
 
-async function convertBase(number, fromBase, toBase) {
+async function convertBase (number, fromBase, toBase) {
   if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
     throw new Error('Base must be in the range 2-36')
   }
@@ -57,7 +57,7 @@ async function convertBase(number, fromBase, toBase) {
  * @param {string} domain - 域名
  * @returns {Promise<boolean>} 返回布尔值,true表示未注册，false表示已注册
  */
-export async function isDomainAvailable(domain) {
+export async function isDomainAvailable (domain) {
   const url = `https://checkapi.aliyun.com/check/v2/domaincheck?domainName=${encodeURIComponent(domain)}&productID=16093&checkRegistry=true`
 
   try {
@@ -92,7 +92,7 @@ export async function isDomainAvailable(domain) {
  * @param {number} count - 返回的结果数量，最大为 5
  * @returns {Promise<string>} 返回文本格式
  */
-export async function fetchDomainPricing(domain, order = 'new', count = 5) {
+export async function fetchDomainPricing (domain, order = 'new', count = 5) {
   const apiUrl = 'https://www.nazhumi.com/api/v1'
 
   try {
@@ -147,7 +147,7 @@ export async function fetchDomainPricing(domain, order = 'new', count = 5) {
   }
 }
 export class WebTools extends plugin {
-  constructor() {
+  constructor () {
     super({
       name: 'WebTools',
       dsc: 'WebTools',
@@ -217,20 +217,21 @@ export class WebTools extends plugin {
       ]
     })
   }
-  async handlePunycodeOperation(e) {
-    const { PunycodeOperationAll } = Config.getConfig('memz');
+
+  async handlePunycodeOperation (e) {
+    const { PunycodeOperationAll } = Config.getConfig('memz')
     if (!PunycodeOperationAll && !e.isMaster) {
-      return logger.warn('[memz-plugin] Punycode操作当前为仅主人可用');
+      return logger.warn('[memz-plugin] Punycode操作当前为仅主人可用')
     }
 
-    const match = e.msg.match(/^#punycode(编码|解码)\s*(.*)$/i);
+    const match = e.msg.match(/^#punycode(编码|解码)\s*(.*)$/i)
     if (!match) {
-      return e.reply('请输入正确的命令，例如：#punycode编码 文本 或 #punycode解码 Punycode 字符串', true);
+      return e.reply('请输入正确的命令，例如：#punycode编码 文本 或 #punycode解码 Punycode 字符串', true)
     }
 
-    const [, operation, content] = match;
+    const [, operation, content] = match
     if (!content) {
-      return e.reply(`请提供需要${operation}的文本。`, true);
+      return e.reply(`请提供需要${operation}的文本。`, true)
     }
 
     try {
@@ -238,27 +239,27 @@ export class WebTools extends plugin {
 
       if (operation === '编码') {
         // 中文域名的处理
+        // eslint-disable-next-line no-control-regex
         if (/[^\x00-\x7F]+/.test(content) && !/xn--/i.test(content)) {
-          result = punycode.toASCII(content);
+          result = punycode.toASCII(content)
         } else {
-          result = punycode.toASCII(content);
+          result = punycode.toASCII(content)
         }
-        return e.reply(`编码结果：${result}`, true);
-
+        return e.reply(`编码结果：${result}`, true)
       } else if (operation === '解码') {
         if (/^xn--[a-z0-9-]+$/i.test(content)) {
-          result = punycode.toUnicode(content);
-          return e.reply(`解码结果：${result}`, true);
+          result = punycode.toUnicode(content)
+          return e.reply(`解码结果：${result}`, true)
         } else {
-          return e.reply('提供的字符串不是有效的 Punycode 字符串。', true);
+          return e.reply('提供的字符串不是有效的 Punycode 字符串。', true)
         }
       }
-
     } catch (error) {
-      return e.reply('无效的 Punycode 字符串或编码操作出错。请确保输入的是有效的内容。', error.message, true);
+      return e.reply('无效的 Punycode 字符串或编码操作出错。请确保输入的是有效的内容。', error.message, true)
     }
   }
-  async removeSpaces(e) {
+
+  async removeSpaces (e) {
     const { removeSpacesAll } = Config.getConfig('memz')
 
     if (!removeSpacesAll && !e.isMaster) {
@@ -272,7 +273,7 @@ export class WebTools extends plugin {
     return e.reply(noSpacesText, true)
   }
 
-  async SslInfo(e) {
+  async SslInfo (e) {
     const { SslInfoAll } = Config.getConfig('memz')
 
     if (!SslInfoAll && !e.isMaster) {
@@ -308,7 +309,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async DomainMinPricing(e) {
+  async DomainMinPricing (e) {
     const { DomainMinPricingAll } = Config.getConfig('memz')
     if (!DomainMinPricingAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
@@ -345,24 +346,24 @@ export class WebTools extends plugin {
     }
   }
 
-  async httpStatusCheck(e) {
+  async httpStatusCheck (e) {
     const { httpStatusAll } = Config.getConfig('memz')
 
     if (!httpStatusAll && !e.isMaster) {
       return logger.warn('[memz-plugin] HTTP 状态检查功能当前为仅主人可用')
     }
 
-    let urlMatch = e.msg.match(/^#?http状态查询\s*(.+)/i)
+    const urlMatch = e.msg.match(/^#?http状态查询\s*(.+)/i)
     if (!urlMatch) {
       return await e.reply('请输入有效的网址', true)
     }
 
-    let url = urlMatch[1].trim()
-    let status = await checkHttpStatus(url)
+    const url = urlMatch[1].trim()
+    const status = await checkHttpStatus(url)
     e.reply(status, true)
   }
 
-  async fetchSeoInfoHandler(e) {
+  async fetchSeoInfoHandler (e) {
     const { SeoAll } = Config.getConfig('memz')
     if (!SeoAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
@@ -382,14 +383,14 @@ export class WebTools extends plugin {
       if (seoInfo.error) {
         return await e.reply(`SEO抓取失败: ${seoInfo.message}`, true)
       }
-      const result = `---SEO信息---\n页面标题: ${seoInfo.title}\n描述: ${seoInfo.description}\n关键词: ${seoInfo.keywords}`
+      const result = `----SEO信息----\n页面标题: ${seoInfo.title}\n描述: ${seoInfo.description}\n关键词: ${seoInfo.keywords}`
       await e.reply(result, true)
     } catch (error) {
       await e.reply(`抓取失败: ${error.message}`, true)
     }
   }
 
-  async handleReply(e, handler) {
+  async handleReply (e, handler) {
     const msg = e.msg.match(handler.reg)
     const operation = msg[2]
     const action = msg[3]
@@ -407,7 +408,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleUrlEncodingDecoding(e) {
+  async handleUrlEncodingDecoding (e) {
     const { UrlAll } = Config.getConfig('memz')
     if (!UrlAll && !e.isMaster) { return logger.warn('[memz-plugin]URL状态当前为仅主人可用') }
     await this.handleReply(e, {
@@ -416,7 +417,7 @@ export class WebTools extends plugin {
     })
   }
 
-  async unicodehandleReply(e, handler) {
+  async unicodehandleReply (e, handler) {
     const msg = e.msg.match(handler.reg)
     const operation = msg[2]
     const action = msg[3]
@@ -438,7 +439,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleEncodingDecoding(e) {
+  async handleEncodingDecoding (e) {
     const { UnicodeAll } = Config.getConfig('memz')
     if (!UnicodeAll && !e.isMaster) { return logger.warn('[memz-plugin]Unicode功能当前为仅主人可用') }
     await this.unicodehandleReply(e, {
@@ -447,7 +448,7 @@ export class WebTools extends plugin {
     })
   }
 
-  async Whois(e) {
+  async Whois (e) {
     const { WhoisAll } = Config.getConfig('memz')
     if (!WhoisAll && !e.isMaster) {
       return logger.warn('[memz-plugin] Whois状态当前为仅主人可用')
@@ -492,7 +493,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async domainIcp(e) {
+  async domainIcp (e) {
     const { icpBeianAll } = Config.getConfig('memz')
 
     if (!icpBeianAll && !e.isMaster) {
@@ -505,7 +506,7 @@ export class WebTools extends plugin {
       return await e.reply('未识别到有效的域名，请确保输入格式正确。', true)
     }
 
-    let domain = domainMatch[1].trim()
+    const domain = domainMatch[1].trim()
 
     try {
       logger.debug(`[memz-plugin] 备案查询域名: ${domain}`)
@@ -529,7 +530,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async webpage(e) {
+  async webpage (e) {
     const { webpage } = Config.getConfig('memz')
     if (!webpage && !e.isMaster) {
       return logger.warn('[memz-plugin] 网页截图状态当前为仅主人可用')
@@ -569,10 +570,10 @@ export class WebTools extends plugin {
     }
   }
 
-  async BaseConversion(e) {
+  async BaseConversion (e) {
     const { BaseConversionAll } = Config.getConfig('memz')
     if (!BaseConversionAll && !e.isMaster) { return logger.warn('[memz-plugin]进制转换状态当前为仅主人可用') }
-    let args = e.msg
+    const args = e.msg
       .match(/#?进制转换\s*(.+)/)[1]
       .trim()
       .split(/\s+/)
@@ -598,7 +599,7 @@ export class WebTools extends plugin {
     }
   }
 
-  async handleHexOperation(e) {
+  async handleHexOperation (e) {
     const { HexOperationAll } = Config.getConfig('memz')
 
     if (!HexOperationAll && !e.isMaster) {
@@ -627,7 +628,7 @@ export class WebTools extends plugin {
   }
 
   // 获取网站图标
-  async getFavicon(e) {
+  async getFavicon (e) {
     const { getFaviconAll } = Config.getConfig('memz')
 
     if (!getFaviconAll && !e.isMaster) {
@@ -675,7 +676,7 @@ export class WebTools extends plugin {
   }
 
   // IP 信息
-  async ipinfo(e) {
+  async ipinfo (e) {
     const { IpinfoApi } = Config.getConfig('memz')
 
     const apiMapping = {
@@ -718,7 +719,7 @@ export class WebTools extends plugin {
   }
 
   // 发送请求
-  async fetchIpInfo(e, ipAddress, api) {
+  async fetchIpInfo (e, ipAddress, api) {
     let url
     switch (api) {
       case 'ipinfoIo':
@@ -761,7 +762,7 @@ export class WebTools extends plugin {
   }
 
   // 格式化 IP API 返回信息
-  formatIpInfo(ipInfo, ipAddress, api) {
+  formatIpInfo (ipInfo, ipAddress, api) {
     const formatters = {
       ipinfoIo: this.formatIpinfoIo,
       bilibiliIpinfo: this.formatBilibiliIpinfo,
@@ -771,20 +772,20 @@ export class WebTools extends plugin {
       ipApiIs: this.formatipApiIs,
       inipIn: this.formatInipIn,
       mir6: this.formatMir6
-    };
+    }
 
-    const formatter = formatters[api];
+    const formatter = formatters[api]
 
     if (formatter) {
-      return formatter.call(this, ipInfo, ipAddress);
+      return formatter.call(this, ipInfo, ipAddress)
     } else {
-      return '无法识别的 API 格式';
+      return '无法识别的 API 格式'
     }
   }
 
   // inipIn 数据格式化
-  formatInipIn(ipInfo, ipAddress) {
-    ipInfo = ipInfo.data;
+  formatInipIn (ipInfo, ipAddress) {
+    ipInfo = ipInfo.data
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.country_code ? `国家代码：${ipInfo.country_code}` : null,
@@ -806,11 +807,11 @@ export class WebTools extends plugin {
       ipInfo.ip_type ? `IP 类型：${ipInfo.ip_type}` : null,
       ipInfo.metro_code ? `地铁代码：${ipInfo.metro_code}` : null
     ]
-    return info.filter(Boolean).join('\n');
+    return info.filter(Boolean).join('\n')
   }
 
   // ipApiIs 数据格式化
-  formatipApiIs(ipInfo, ipAddress) {
+  formatipApiIs (ipInfo, ipAddress) {
     const info = [
       `---IP ${ipAddress} 信息---`,
       `RIR：${ipInfo.rir}`,
@@ -863,14 +864,14 @@ export class WebTools extends plugin {
       ipInfo.location && ipInfo.location.timezone ? `时区：${ipInfo.location.timezone}` : null,
       ipInfo.location && ipInfo.location.local_time ? `本地时间：${ipInfo.location.local_time}` : null,
       ipInfo.location && ipInfo.location.local_time_unix ? `本地时间（Unix时间戳）：${ipInfo.location.local_time_unix}` : null,
-      ipInfo.location && ipInfo.location.is_dst ? `夏令时：${ipInfo.location.is_dst ? '是' : '否'}` : null,
+      ipInfo.location && ipInfo.location.is_dst ? `夏令时：${ipInfo.location.is_dst ? '是' : '否'}` : null
       // 查询耗时：${ipInfo.elapsed_ms}毫秒`
     ]
     return info.filter(Boolean).join('\n')
   }
 
   // Ip2locationIo 数据格式化
-  formatIp2locationIo(ipInfo, ipAddress) {
+  formatIp2locationIo (ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.country_code ? `国家代码：${ipInfo.country_code}` : null,
@@ -889,7 +890,7 @@ export class WebTools extends plugin {
   }
 
   // ipinfo.io 数据格式化
-  formatIpinfoIo(ipInfo, ipAddress) {
+  formatIpinfoIo (ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
@@ -908,7 +909,7 @@ export class WebTools extends plugin {
   }
 
   // bilibili接口 信息格式化
-  formatBilibiliIpinfo(ipInfo, ipAddress) {
+  formatBilibiliIpinfo (ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.data?.addr ? `IP 地址：${ipInfo.data.addr}` : null,
@@ -923,7 +924,7 @@ export class WebTools extends plugin {
   }
 
   // ip-api 数据格式化
-  formatIpApi(ipInfo, ipAddress) {
+  formatIpApi (ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.country ? `国家：${ipInfo.country}` : null,
@@ -940,7 +941,7 @@ export class WebTools extends plugin {
   }
 
   // ip.sb 数据格式化
-  formatIpSb(ipInfo, ipAddress) {
+  formatIpSb (ipInfo, ipAddress) {
     const info = [
       `IP 信息 - ${ipAddress}`,
       ipInfo.ip ? `IP 地址：${ipInfo.ip}` : null,
@@ -958,9 +959,10 @@ export class WebTools extends plugin {
     ]
     return info.filter(Boolean).join('\n')
   }
+
   // Mir6 数据格式化
-  formatMir6(ipInfo, ipAddress) {
-    const data = ipInfo.data;
+  formatMir6 (ipInfo, ipAddress) {
+    const data = ipInfo.data
     const info = [
       `IP 信息 - ${ipAddress}`,
       data.country ? `国家：${data.country}` : null,
@@ -978,10 +980,11 @@ export class WebTools extends plugin {
       // data.myip ? `我的IP：${data.myip}` : null,
       data.time ? `时间：${data.time}` : null
     ]
-    return info.filter(Boolean).join('\n');
+    return info.filter(Boolean).join('\n')
   }
+
   // 解析域名IP
-  async resolveDomainToIp(domain) {
+  async resolveDomainToIp (domain) {
     return new Promise((resolve, reject) => {
       dns.lookup(domain, (err, address) => {
         if (err) reject(err)

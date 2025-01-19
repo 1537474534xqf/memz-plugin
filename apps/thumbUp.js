@@ -83,14 +83,14 @@ export class 自动点赞 extends plugin {
 
     qq = Array.from(qq)
 
-    let bot = this.filterStdin(Bot.uin)
+    const bot = this.filterStdin(Bot.uin)
 
     logger.info(`[memz-plugin] 共有 ${qq.length} 个 QQ 需要点赞`)
 
     // 执行点赞
-    for (let uin of bot) {
+    for (const uin of bot) {
       logger.info(`[memz-plugin] 开始处理 QQ：${uin}`)
-      for (let i of Users) {
+      for (const i of Users) {
         try {
           // 好友
           if (await Bot[uin].fl.has(i)) {

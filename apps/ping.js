@@ -4,7 +4,7 @@ import { Config } from '#components'
 // 避免每次都重新启动puppeteer
 let globalBrowserInstance
 // 浏览器实例
-async function getBrowserInstance(launchOptions) {
+async function getBrowserInstance (launchOptions) {
   if (globalBrowserInstance && globalBrowserInstance.isConnected()) {
     return globalBrowserInstance
   } else {
@@ -14,7 +14,7 @@ async function getBrowserInstance(launchOptions) {
 }
 
 export class PingScreenshot extends plugin {
-  constructor() {
+  constructor () {
     super({
       name: '[memz-plugin]Ping',
       dsc: 'MEMZ-Plugin-Ping',
@@ -29,10 +29,10 @@ export class PingScreenshot extends plugin {
     })
   }
 
-  async ping(e) {
-    const { PingAll, PingApi } = Config.getConfig('memz');
+  async ping (e) {
+    const { PingAll, PingApi } = Config.getConfig('memz')
     if (!PingAll && !e.isMaster) {
-      return logger.warn('[memz-plugin]Ping功能当前为仅主人可用');
+      return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
     }
 
     const pingActions = {
@@ -46,108 +46,108 @@ export class PingScreenshot extends plugin {
       7: this.qingMeng.bind(this)
     }
 
-    const action = pingActions[PingApi];
+    const action = pingActions[PingApi]
 
     if (action) {
-      logger.info(`PingApi配置为${PingApi}, 执行相应操作`);
-      await action(e);
+      logger.info(`PingApi配置为${PingApi}, 执行相应操作`)
+      await action(e)
     } else {
-      logger.error('PingApi配置错误, 默认使用本地Ping');
-      await this.Local(e);
+      logger.error('PingApi配置错误, 默认使用本地Ping')
+      await this.Local(e)
     }
   }
 
-  async Local(e) {
-    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i);
+  async Local (e) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
-      logger.warn('未匹配到正确的Ping命令');
-      return await e.reply('请输入正确的Ping命令', true);
+      logger.warn('未匹配到正确的Ping命令')
+      return await e.reply('请输入正确的Ping命令', true)
     }
 
-    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 });
+    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 })
 
-    const url = match[2];
+    const url = match[2]
 
     try {
       const results = await Promise.all(
         Array.from({ length: 10 }).map(() =>
           ping.promise.probe(url).then((res) => (res.alive ? res.time : null))
         )
-      );
+      )
 
-      const validPingTimes = results.filter((time) => time !== null);
+      const validPingTimes = results.filter((time) => time !== null)
 
       if (validPingTimes.length === 0) {
-        const msg = 'Ping 失败，主机不可达';
-        logger.error(msg);
-        return await e.reply(msg, true);
+        const msg = 'Ping 失败，主机不可达'
+        logger.error(msg)
+        return await e.reply(msg, true)
       }
 
-      const minPingTime = Math.min(...validPingTimes);
-      const maxPingTime = Math.max(...validPingTimes);
-      const avgPingTime = validPingTimes.reduce((a, b) => a + b, 0) / validPingTimes.length;
+      const minPingTime = Math.min(...validPingTimes)
+      const maxPingTime = Math.max(...validPingTimes)
+      const avgPingTime = validPingTimes.reduce((a, b) => a + b, 0) / validPingTimes.length
 
       const msg = `URL: ${url}
 最小Ping耗时：${minPingTime}ms
 最大Ping耗时：${maxPingTime}ms
-平均Ping耗时：${avgPingTime.toFixed(2)}ms`;
+平均Ping耗时：${avgPingTime.toFixed(2)}ms`
 
-      await e.reply(msg, true);
+      await e.reply(msg, true)
     } catch (err) {
-      logger.error(`Ping 出错：${err.message}`);
-      await e.reply(`无法执行Ping命令: ${err.message}`, true);
+      logger.error(`Ping 出错：${err.message}`)
+      await e.reply(`无法执行Ping命令: ${err.message}`, true)
     }
   }
 
   // 通用请求
-  async handlePingCommand(e, apiUrl, params, dataHandler) {
-    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i);
+  async handlePingCommand (e, apiUrl, params, dataHandler) {
+    const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
-      logger.warn('未匹配到正确的Ping命令');
-      return await e.reply('请输入正确的Ping命令', true);
+      logger.warn('未匹配到正确的Ping命令')
+      return await e.reply('请输入正确的Ping命令', true)
     }
 
-    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 });
+    await e.reply('正在执行Ping命令...请稍等......', true, { recallMsg: 5 })
 
     try {
-      const response = await fetch(`${apiUrl}?${params}=${encodeURIComponent(match[2])}`);
+      const response = await fetch(`${apiUrl}?${params}=${encodeURIComponent(match[2])}`)
       if (!response.ok) {
-        throw new Error(`API请求失败，状态码：${response.status}`);
+        throw new Error(`API请求失败，状态码：${response.status}`)
       }
-      const data = await response.json();
-      const msg = dataHandler(data);
-      await e.reply(msg, true);
+      const data = await response.json()
+      const msg = dataHandler(data)
+      await e.reply(msg, true)
     } catch (error) {
-      await e.reply(`错误: ${error.message}`, true);
+      await e.reply(`错误: ${error.message}`, true)
     }
   }
 
   // 格式化数据
-  mmpCcDataHandler(data) {
+  mmpCcDataHandler (data) {
     return [
       `IP: ${data.IP || '未知'}`,
       data.延迟 && `延迟: ${data.延迟}`,
       data.IP地址 && `IP地址: ${data.IP地址}`,
-      data.本机地址 && `本机地址: ${data.本机地址}`,
+      data.本机地址 && `本机地址: ${data.本机地址}`
     ]
       .filter(Boolean)
-      .join('\n');
+      .join('\n')
   }
 
-  uapisCnDataHandler(data) {
+  uapisCnDataHandler (data) {
     return [
       `host: ${data.host || '未知'}`,
       `IP: ${data.ip || '未知'}`,
       data.location && `位置：${data.location}`,
       data.min && `最小Ping耗时: ${data.min} ms`,
       data.avg && `平均Ping耗时: ${data.avg} ms`,
-      data.max && `最大Ping耗时: ${data.max} ms`,
+      data.max && `最大Ping耗时: ${data.max} ms`
     ]
       .filter(Boolean)
-      .join('\n');
+      .join('\n')
   }
 
-  blogsInkDataHandler(data) {
+  blogsInkDataHandler (data) {
     return [
       `host: ${data.data.host || '未知'}`,
       `IP: ${data.data.ip || '未知'}`,
@@ -155,12 +155,13 @@ export class PingScreenshot extends plugin {
       data.data.ping_time_min && `最小Ping耗时: ${data.data.ping_time_min} ms`,
       data.data.ping_time_avg && `平均Ping耗时: ${data.data.ping_time_avg} ms`,
       data.data.ping_time_max && `最大Ping耗时: ${data.data.ping_time_max} ms`,
-      data.data.node && `节点: ${data.data.node}`,
+      data.data.node && `节点: ${data.data.node}`
     ]
       .filter(Boolean)
-      .join('\n');
+      .join('\n')
   }
-  yuanXiDataHandler(data) {
+
+  yuanXiDataHandler (data) {
     return [
       `host: ${data.host || '未知'}`,
       `IP: ${data.ip || '未知'}`,
@@ -168,12 +169,13 @@ export class PingScreenshot extends plugin {
       data.ping_time_min && `最小Ping耗时: ${data.ping_time_min} ms`,
       data.ping_time_avg && `平均Ping耗时: ${data.ping_time_avg} ms`,
       data.ping_time_max && `最大Ping耗时: ${data.ping_time_max} ms`,
-      data.node && `节点: ${data.node}`,
+      data.node && `节点: ${data.node}`
     ]
       .filter(Boolean)
-      .join('\n');
+      .join('\n')
   }
-  qingMengDataHandler(data) {
+
+  qingMengDataHandler (data) {
     return [
       `网址: ${data.网址 || '未知'}`,
       `IP地址: ${data.IP地址 || '未知'}`,
@@ -187,27 +189,31 @@ export class PingScreenshot extends plugin {
       data.总耗时 && `总耗时: ${data.总耗时}`
     ]
       .filter(Boolean)
-      .join('\n');
+      .join('\n')
   }
+
   // 请求
-  async mmpCc(e) {
-    await this.handlePingCommand(e, 'https://api.mmp.cc/api/ping', 'text', this.mmpCcDataHandler);
+  async mmpCc (e) {
+    await this.handlePingCommand(e, 'https://api.mmp.cc/api/ping', 'text', this.mmpCcDataHandler)
   }
 
-  async uapisCn(e) {
-    await this.handlePingCommand(e, 'https://uapis.cn/api/ping', 'host', this.uapisCnDataHandler);
+  async uapisCn (e) {
+    await this.handlePingCommand(e, 'https://uapis.cn/api/ping', 'host', this.uapisCnDataHandler)
   }
 
-  async blogsInk(e) {
-    await this.handlePingCommand(e, 'https://api.blogs.ink/api/SuperPingOne', 'url', this.blogsInkDataHandler);
+  async blogsInk (e) {
+    await this.handlePingCommand(e, 'https://api.blogs.ink/api/SuperPingOne', 'url', this.blogsInkDataHandler)
   }
-  async yuanXi(e) {
-    await this.handlePingCommand(e, 'https://www.yuanxiapi.cn/api/pingspeed', 'host', this.yuanXiDataHandler);
+
+  async yuanXi (e) {
+    await this.handlePingCommand(e, 'https://www.yuanxiapi.cn/api/pingspeed', 'host', this.yuanXiDataHandler)
   }
-  async qingMeng(e) {
-    await this.handlePingCommand(e, 'https://api.317ak.com/API/zzgj/ping/ping.php', 'url', this.qingMengDataHandler);
+
+  async qingMeng (e) {
+    await this.handlePingCommand(e, 'https://api.317ak.com/API/zzgj/ping/ping.php', 'url', this.qingMengDataHandler)
   }
-  async Zhalema(e) {
+
+  async Zhalema (e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
 
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
@@ -307,7 +313,7 @@ export class PingScreenshot extends plugin {
     }
   }
 
-  async itdog(e) {
+  async itdog (e) {
     const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
 
     logger.debug('开始处理 Itdog 命令')

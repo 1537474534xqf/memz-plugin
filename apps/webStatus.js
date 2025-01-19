@@ -104,7 +104,7 @@ export class WebStatus extends plugin {
         }
       } catch (error) {
         if (attempts === retry) {
-          let errorMessage = this.getErrorMessage(error, url)
+          const errorMessage = this.getErrorMessage(error, url)
 
           throw new Error(errorMessage)
         }
