@@ -14,11 +14,11 @@ import { RedisConfig } from '../components/Redis.js'
 let config = Config.getConfig('api')
 
 const redis = new Redis({
-  host: config.redisHost || (RedisConfig?.host) || 'localhost',
-  port: config.redisPort || (RedisConfig?.port) || 6379,
-  username: config.redisUsername || (RedisConfig?.username) || '',
-  password: config.redisPassword || (RedisConfig?.password) || '',
-  db: config.redisDB || (RedisConfig?.db) || 2
+  host: config.redisHost || RedisConfig.host || 'localhost',
+  port: config.redisPort || RedisConfig.port || 6379,
+  username: config.redisUsername || RedisConfig.username || '',
+  password: config.redisPassword || RedisConfig.password || '',
+  db: config.redisDB || RedisConfig.db || 2
 });
 
 const apiHandlersCache = {}
