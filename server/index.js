@@ -26,6 +26,18 @@ const apiHandlersCache = {}
 const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
 const REDIS_STATS_KEY = 'MEMZ/API'
 
+// 生成Token
+if (config.token == "") {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const length = 32; // 32是不是有点大?
+  logger.warn(chalk.yellow('[MEMZ-API] [Token] Token 未设置，将自动生成一个随机 Token'))
+  let token = '';
+  for (let i = 0; i < length; i++) {
+    token += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  Config.modify('api', 'token', token)
+}
+
 // 日志记录
 const updateRequestStats = async (ip, route) => {
   const normalizedIp = ip.replace(/:/g, '.')

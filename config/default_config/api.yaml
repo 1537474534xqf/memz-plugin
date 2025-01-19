@@ -12,7 +12,7 @@ loglevel: "info"
 #*Redis地址
 redisHost: ""
 #*Redis端口
-redisPort:
+redisPort: ""
 #*Redis用户名
 redisUsername: ""
 #*Redis密码
@@ -37,7 +37,7 @@ corsorigin: "*"
 rateLimitwindowMs: 60000 #*时间窗口，单位为毫秒
 rateLimitmax: 100 #*每秒最大请求数
 #*鉴权token
-token: "为什么不玩原神"
+token: ""
 #*鉴权在时间窗口内最大失败次数
 maxFailAttempts: 5
 #*鉴权时间窗口
