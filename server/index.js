@@ -487,7 +487,12 @@ const getLocalIPs = async () => {
 }
 const handleRequest = async (req, res) => {
   const startTime = Date.now();
-  let ip = req.socket.remoteAddress || req.headers['x-forwarded-for'] || req.headers['x-real-ip']
+  let ip
+  if (config.cdn) {
+    ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
+  } else {
+    ip = req.socket.remoteAddress || req.headers['x-forwarded-for'] || req.headers['x-real-ip']
+  }
 
   // 处理多个 X-Forwarded-For 头部中的多个 IP 地址，取最右边的 IP
   if (ip && ip.includes(',')) {

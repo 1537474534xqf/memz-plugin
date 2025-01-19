@@ -14,6 +14,12 @@ export default [
     component: 'Switch'
   },
   {
+    field: 'api.cdn',
+    label: '环境为反代',
+    bottomHelpMessage: '是否使用CDN,内网穿透等',
+    component: 'Switch'
+  },
+  {
     field: 'api.host',
     label: 'host',
     bottomHelpMessage: '0.0.0.0 表示监听所有IP(公网可访问)',
