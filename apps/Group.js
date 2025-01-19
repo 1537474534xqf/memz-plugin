@@ -130,10 +130,33 @@ export class GroupPlugin extends plugin {
           reg: /^#(\d+)?filelist\s*/,
           fnc: 'getFileList',
           permission: 'master'
+        },
+        {
+          reg: '^#一键清空群文件$',
+          fnc: 'clearFile',
+          permission: 'master'
         }
       ]
     })
   }
+
+  async clearFile(e) {
+    try {
+      const files = await e.group.fs.ls();
+      const removePromises = files.map(file => e.group.fs.rm(file.fid));
+      const result = await Promise.allSettled(removePromises);
+
+      // 统计数量
+      const successCount = result.filter(res => res.status === 'fulfilled').length;
+      const failureCount = result.filter(res => res.status === 'rejected').length;
+
+      return e.reply(`清理完成：成功清理了 ${successCount} 个文件，失败 ${failureCount} 个文件。`);
+    } catch (error) {
+      logger.error("清理文件时出错:", error);
+      e.reply("清理文件时出错，详细信息已记录。", error);
+    }
+  }
+
   /**
    * 格式化字节数为可读的格式。
    * @param {number} bytes - 字节数

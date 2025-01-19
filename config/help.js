@@ -198,6 +198,31 @@ export const groupHelpList = [
         icon: 75,
         title: '#查找@某人',
         desc: '查找某人所在群'
+      },
+      {
+        icon: 68,
+        title: '#全体假禁',
+        desc: '假禁言,需要管理员'
+      }
+    ]
+  },
+  {
+    group: '群文件系统',
+    list: [
+      {
+        icon: 47,
+        title: '#fileusage',
+        desc: '查看群文件使用情况'
+      },
+      {
+        icon: 48,
+        title: '#filelist',
+        desc: '查看群文件列表'
+      },
+      {
+        icon: 49,
+        title: '#一键清空群文件',
+        desc: '谨慎使用'
       }
     ]
   }
@@ -211,11 +236,6 @@ export const qqHelpList = [
         icon: 67,
         title: '#查Q龄',
         desc: '查询QQ注册时间'
-      },
-      {
-        icon: 68,
-        title: '#全体假禁',
-        desc: '全体禁言,但是假的'
       }
     ]
   }
