@@ -1,6 +1,6 @@
 import logger from '../server/lib/logger.js';
 
-let RedisConfig = null;
+let RedisConfig = { host, port, username, password, db, };
 let RedisHost = null;
 let RedisPort = null;
 let RedisPassword = null;
