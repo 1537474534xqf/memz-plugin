@@ -11,7 +11,7 @@ import { PluginPath, isFramework } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
 
-let config = Config.getConfig('api')
+const config = Config.getConfig('api')
 
 const redis = new Redis({
   host: config.redisHost || RedisConfig.host || 'localhost',
@@ -19,20 +19,20 @@ const redis = new Redis({
   username: config.redisUsername || RedisConfig.username || '',
   password: config.redisPassword || RedisConfig.password || '',
   db: config.redisDB || RedisConfig.db || 2
-});
+})
 
 const apiHandlersCache = {}
 const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
 const REDIS_STATS_KEY = 'MEMZ/API'
 
 // 生成Token
-if (config.token == "") {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const length = 32; // 32是不是有点大?
+if (config.token === '') {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  const length = 32 // 32是不是有点大?
   logger.warn(chalk.yellow('[MEMZ-API] [Token] Token 未设置，将自动生成一个随机 Token'))
-  let token = '';
+  let token = ''
   for (let i = 0; i < length; i++) {
-    token += characters.charAt(Math.floor(Math.random() * characters.length));
+    token += characters.charAt(Math.floor(Math.random() * characters.length))
   }
   Config.modify('api', 'token', token)
 }
@@ -158,7 +158,7 @@ const escapeHtml = (str) => {
 const web = (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
 
-  let { apiList } = Config.getConfig('api')
+  const { apiList } = Config.getConfig('api')
 
   let htmlContent = `
     <html>
@@ -391,41 +391,41 @@ const serveFavicon = async (req, res) => {
 
 // 加载 API 服务
 const loadApiHandler = async (filePath, routePrefix = '') => {
-  const route = `${routePrefix}/${path.basename(filePath, '.js')}`;
-  const startTime = Date.now();
+  const route = `${routePrefix}/${path.basename(filePath, '.js')}`
+  const startTime = Date.now()
 
   try {
-    const handlerModule = await import(pathToFileURL(filePath));
-    const handler = handlerModule.default;
+    const handlerModule = await import(pathToFileURL(filePath))
+    const handler = handlerModule.default
 
     // 判断模块是否为有效的处理函数
     if (typeof handler === 'function') {
-      apiHandlersCache[route] = handler;
-      const loadTime = Date.now() - startTime;
-      loadStats.routeTimes.push({ route, time: loadTime });
+      apiHandlersCache[route] = handler
+      const loadTime = Date.now() - startTime
+      loadStats.routeTimes.push({ route, time: loadTime })
 
       // 加载成功
-      logger.debug(chalk.blueBright(`[MEMZ-API] API加载完成 路由: ${route}, 耗时: ${loadTime}ms`));
-      loadStats.success++;
+      logger.debug(chalk.blueBright(`[MEMZ-API] API加载完成 路由: ${route}, 耗时: ${loadTime}ms`))
+      loadStats.success++
     } else {
       // 无效文件
-      logger.warn(chalk.yellow(`[MEMZ-API] API服务跳过无效文件: ${filePath}`));
-      loadStats.failure++;
+      logger.warn(chalk.yellow(`[MEMZ-API] API服务跳过无效文件: ${filePath}`))
+      loadStats.failure++
     }
   } catch (err) {
     // 捕获错误的堆栈信息
-    const stackTrace = err.stack ? err.stack.split('\n') : [];
+    const stackTrace = err.stack ? err.stack.split('\n') : []
     stackTrace.forEach(line => {
       if (line.includes('at ')) {
-        logger.error(chalk.red(`[MEMZ-API] 错误位置: ${line}`));
+        logger.error(chalk.red(`[MEMZ-API] 错误位置: ${line}`))
       }
-    });
+    })
 
-    logger.error(`[MEMZ-API] [加载调试] 错误详情:\n${err.stack}`);
+    logger.error(`[MEMZ-API] [加载调试] 错误详情:\n${err.stack}`)
 
-    loadStats.failure++;
+    loadStats.failure++
   }
-};
+}
 
 // 递归加载 API 服务
 const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
@@ -441,7 +441,7 @@ const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
   await Promise.all(loadPromises)
 }
 // 获取公网 IP
-async function getPublicIP() {
+async function getPublicIP () {
   const apiUrls = [
     'https://v4.ip.zxinc.org/info.php?type=json',
     'https://ipinfo.io/json'
@@ -486,7 +486,7 @@ const getLocalIPs = async () => {
   }
 }
 const handleRequest = async (req, res) => {
-  const startTime = Date.now();
+  const startTime = Date.now()
   let ip
   if (config.cdn) {
     ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
@@ -496,94 +496,94 @@ const handleRequest = async (req, res) => {
 
   // 处理多个 X-Forwarded-For 头部中的多个 IP 地址，取最右边的 IP
   if (ip && ip.includes(',')) {
-    ip = ip.split(',').pop().trim();
+    ip = ip.split(',').pop().trim()
   }
 
   // 如果 IP 是 IPv6 映射的 IPv4 地址，去掉 "::ffff:" 前缀
   if (ip && ip.startsWith('::ffff:')) {
-    ip = ip.replace('::ffff:', '');
+    ip = ip.replace('::ffff:', '')
   }
 
-  logger.debug(`[${config.port}][MEMZ-API] [请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`);
+  logger.debug(`[${config.port}][MEMZ-API] [请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
 
   // 黑名单和白名单检查
   if (config.blacklistedIPs.includes(ip)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('403 禁止访问：您的 IP 已被列入黑名单');
-    logger.warn(`[MEMZ-API] [黑名单 IP] ${ip}`);
-    return;
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
+    res.end('403 禁止访问：您的 IP 已被列入黑名单')
+    logger.warn(`[MEMZ-API] [黑名单 IP] ${ip}`)
+    return
   }
 
   if (config.whitelistedIPs.length > 0 && !config.whitelistedIPs.includes(ip)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('403 禁止访问：您的 IP 不在白名单中');
-    return;
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
+    res.end('403 禁止访问：您的 IP 不在白名单中')
+    return
   }
 
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const route = url.pathname;
+  const url = new URL(req.url, `http://${req.headers.host}`)
+  const route = url.pathname
 
   // 记录请求日志
   const logRequest = async (route, ip) => {
-    let log = [`[${config.port}][MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`];
-    const queryParams = new URLSearchParams(url.search);
+    const log = [`[${config.port}][MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`]
+    const queryParams = new URLSearchParams(url.search)
     if ([...queryParams].length > 0) {
-      const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',');
-      log.push(`参数: ${paramString}`);
+      const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',')
+      log.push(`参数: ${paramString}`)
     }
-    logger.info(log.join(' '));
-    await updateRequestStats(ip, route);
-  };
+    logger.info(log.join(' '))
+    await updateRequestStats(ip, route)
+  }
 
   // 路由处理
   if (route === '/') {
-    logRequest(route, ip);
-    return web(req, res);
+    logRequest(route, ip)
+    return web(req, res)
   }
 
   if (route === '/health') {
-    logRequest(route, ip);
-    return healthCheck(req, res);
+    logRequest(route, ip)
+    return healthCheck(req, res)
   }
 
   if (route === '/stats') {
-    logRequest(route, ip);
-    return await getStats(req, res);
+    logRequest(route, ip)
+    return await getStats(req, res)
   }
 
   if (route === '/favicon.ico') {
-    logRequest(route, ip);
-    return await serveFavicon(req, res);
+    logRequest(route, ip)
+    return await serveFavicon(req, res)
   }
 
-  const handler = apiHandlersCache[route];
+  const handler = apiHandlersCache[route]
   if (handler) {
     try {
-      logRequest(route, ip);
+      logRequest(route, ip)
 
       if (config.corsenabled) {
-        res.setHeader('Access-Control-Allow-Origin', config.corsorigin);
+        res.setHeader('Access-Control-Allow-Origin', config.corsorigin)
       }
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8')
 
-      await handler(req, res);
+      await handler(req, res)
     } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end(`500 服务器内部错误：${err.message}`);
-      logger.error(`[${config.port}][MEMZ-API] 路由: ${route} 错误: ${err.message}`);
+      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' })
+      res.end(`500 服务器内部错误：${err.message}`)
+      logger.error(`[${config.port}][MEMZ-API] 路由: ${route} 错误: ${err.message}`)
     }
   } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('404 未找到：接口不存在');
-    logger.warn(`[${config.port}][MEMZ-API] [404] 路由不存在: ${route}`);
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
+    res.end('404 未找到：接口不存在')
+    logger.warn(`[${config.port}][MEMZ-API] [404] 路由不存在: ${route}`)
   }
 
-  const endTime = Date.now();
-  logger.info(`[${config.port}][MEMZ-API] [请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`);
-};
+  const endTime = Date.now()
+  logger.info(`[${config.port}][MEMZ-API] [请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`)
+}
 
 // 启动服务
-export async function startServer() {
+export async function startServer () {
   try {
     const startTime = Date.now()
 
@@ -604,9 +604,9 @@ export async function startServer() {
 
     const serverOptions = config.httpsenabled
       ? {
-        key: await fs.readFile(config.httpskey),
-        cert: await fs.readFile(config.httpscert)
-      }
+          key: await fs.readFile(config.httpskey),
+          cert: await fs.readFile(config.httpscert)
+        }
       : {}
 
     const server = config.httpsenabled
