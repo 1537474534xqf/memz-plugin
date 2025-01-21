@@ -532,28 +532,18 @@ export class WebTools extends plugin {
 
   async webpage (e) {
     const { webpage } = Config.getConfig('memz')
-    if (!webpage && !e.isMaster) {
-      return logger.warn('[memz-plugin] 网页截图状态当前为仅主人可用')
-    }
+    if (!webpage && !e.isMaster) { return logger.warn('[memz-plugin] 网页截图状态当前为仅主人可用') }
 
     let url = e.msg.match(/^#?网页截图\s*(\S+.*)/)?.[1].trim()
-
-    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url
-    }
-
-    if (!url) {
-      return await e.reply('请输入有效的网址', true)
-    }
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) { url = 'https://' + url }
+    if (!url) { return await e.reply('请输入有效的网址', true) }
 
     try {
       if (!puppeteer.browser) {
         await puppeteer.browserInit()
       }
       const page = await puppeteer.browser.newPage()
-
       await page.setViewport({ width: 1920, height: 1080 })
-
       await page.goto(url, { waitUntil: 'load' })
 
       const screenshotBase64 = await page.screenshot({
@@ -632,7 +622,7 @@ export class WebTools extends plugin {
     const { getFaviconAll } = Config.getConfig('memz')
 
     if (!getFaviconAll && !e.isMaster) {
-      return logger.warn('[memz-plugin] 进制转换状态当前为仅主人可用')
+      return logger.warn('[memz-plugin] 获取网站图标当前为仅主人可用')
     }
 
     let url = e.msg.match(/^#?(获取)?网站图标\s*(\S+.*)/)?.[2]?.trim()
@@ -704,7 +694,7 @@ export class WebTools extends plugin {
     if (!net.isIPv4(siteName) && !net.isIPv6(siteName)) {
       ipAddress = await this.resolveDomainToIp(siteName)
       if (!ipAddress) {
-        await e.reply('无法解析域名的 IP 地址！', e.isGroup)
+        await e.reply('无法解析域名的 IP 地址！', true)
         return false
       }
     }
@@ -712,6 +702,7 @@ export class WebTools extends plugin {
     logger.info(`目标 IP 地址: ${ipAddress}`)
 
     const ipInfo = await this.fetchIpInfo(e, ipAddress, selectedApi)
+
     if (ipInfo) {
       const formattedInfo = this.formatIpInfo(ipInfo, ipAddress, selectedApi)
       await e.reply(formattedInfo, true)

@@ -15,10 +15,10 @@ export class Setting extends plugin {
       rule: [
         { reg: /^#?(memz)(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'help' },
         { reg: /^#?(memz)(全部|all)(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'allHelp' },
-        { reg: /^#?(memz)(web|网络)(工具|tool)(s)?(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'webHelp' },
-        { reg: /^#?(memz)(群|群聊)(功能|功能列表|功能help)(s)?(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'groupHelp' },
-        { reg: /^#?(memz)(ic)?(qq)(功能|功能列表|功能help)(s)?(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'qqHelp' },
-        { reg: /^#?(memz)(搜索|搜索功能)(s)?(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'searchHelp' },
+        { reg: /^#?(memz)(web|网络)?(工具|tool)(s)?(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'webHelp' },
+        { reg: /^#?(memz)(群|群聊|Group)(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'groupHelp' },
+        { reg: /^#?(memz)(ic)?(qq)(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'qqHelp' },
+        { reg: /^#?(memz)(搜索|搜索功能)(帮助|help|菜单|幫助|菜單)(列表|list)?$/i, fnc: 'searchHelp' },
         { reg: /^#?(memz)(系统|system|管理|admin)(帮助|功能|功能|help)(列表|list)?$/i, fnc: 'systemHelp' }
       ]
     })

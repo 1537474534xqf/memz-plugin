@@ -99,8 +99,8 @@ export class 自动点赞 extends plugin {
             await this.sleep(2000)
           } else {
           // 非好友
-            Bot[uin].pickUser(i).thumbUp(20)
-            logger.info(`[memz-plugin] 为 ${uin} 的非好友 ${i} 点赞 20 下`)
+            Bot[uin].pickUser(i).thumbUp(50)
+            logger.info(`[memz-plugin] 为 ${uin} 的非好友 ${i} 点赞 50 下`)
             await this.sleep(2000)
           }
         } catch (error) {
