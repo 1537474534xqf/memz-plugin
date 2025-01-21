@@ -2,9 +2,11 @@ import { URL } from 'url'
 import { fetchSeoFromHtml } from '../../../model/webtool.js'
 import { copyright } from '#components'
 import logger from '../../lib/logger.js'
-const time = new Date().toISOString()
+
+const title = 'SEO查询'
 
 export default async (req, res) => {
+  const time = new Date().toISOString()
   try {
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
@@ -16,7 +18,7 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 400,
         message: '缺少必要的URL参数, 请在查询参数中添加url参数',
-        title: 'SEO查询',
+        title,
         time,
         copyright
       }))
@@ -37,7 +39,7 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 500,
         message: `查询失败: ${seoInfo.message}`,
-        title: 'SEO查询',
+        title,
         time,
         copyright
       }))
@@ -47,7 +49,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 0,
       message: '查询成功',
-      title: 'SEO查询',
+      title,
       time,
       data: seoInfo,
       copyright
@@ -57,7 +59,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: `查询失败: ${error.message}`,
-      title: 'SEO查询',
+      title,
       time,
       error: error.message,
       copyright

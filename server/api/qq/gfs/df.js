@@ -1,8 +1,10 @@
 import { df } from '../../../../model/Gfs.js'
+
+const title = '群文件信息'
+
 export default async (req, res) => {
   try {
     const time = new Date().toISOString()
-    const title = '群文件信息'
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
 

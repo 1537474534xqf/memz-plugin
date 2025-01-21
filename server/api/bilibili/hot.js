@@ -1,8 +1,10 @@
 import { copyright } from '#components'
+
+const title = 'BiliBili热榜'
+
 export default async (req, res) => {
   if (req.method === 'GET') {
     const time = new Date().toISOString()
-    const title = 'BiliBili热榜'
     try {
       const response = await fetch('https://api.bilibili.com/x/web-interface/wbi/search/square?limit=10')
       const rawData = await response.json()

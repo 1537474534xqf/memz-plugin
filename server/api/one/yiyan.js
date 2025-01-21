@@ -4,11 +4,11 @@ import { getRandomYiyan } from '../../../model/one.js'
 import path from 'path'
 
 const yiyanFilePath = path.join(PluginData, 'one', 'yiyan.txt')
+const title = '一言API'
 
 export default async (req, res) => {
+  const time = new Date().toISOString()
   try {
-    const time = new Date().toISOString()
-    const title = '一言API'
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
     let type = parsedUrl.searchParams.get('type')
@@ -61,6 +61,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: '请求失败',
+      time,
       error: error.message,
       copyright
     }))

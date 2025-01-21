@@ -1,8 +1,11 @@
 import { copyright } from '#components'
 import logger from '../../lib/logger.js'
+
+const title = 'QQ头像查询'
+
 export default async (req, res) => {
+  const time = new Date().toLocaleString()
   try {
-    const title = 'QQ头像查询'
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
 
@@ -34,6 +37,7 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 500,
         message: '无法获取QQ头像',
+        time,
         copyright
       }))
     }
@@ -64,6 +68,7 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 500,
         message: '请求失败',
+        time,
         error: error.message,
         copyright
       }))

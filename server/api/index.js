@@ -2,7 +2,7 @@ import { Config, copyright } from '#components'
 import { categorizeApiRoutes } from '../model/index.js'
 
 export default async (req, res) => {
-  let { apiList } = Config.getConfig('api')
+  const { apiList } = Config.getConfig('api')
   if (req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
 

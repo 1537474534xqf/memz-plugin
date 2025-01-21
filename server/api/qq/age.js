@@ -1,10 +1,12 @@
 import { copyright } from '#components'
 import logger from '../../lib/logger.js'
 import { fetchQQRegistrationDate } from '../../model/QQ/QQAge.js'
+
+const title = 'QQ注册时间查询'
+
 export default async (req, res) => {
+  const time = new Date().toISOString()
   try {
-    const time = new Date().toISOString()
-    const title = 'QQ注册时间查询'
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
 
@@ -48,6 +50,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: '请求失败',
+      time,
       error: error.message,
       copyright
     }))

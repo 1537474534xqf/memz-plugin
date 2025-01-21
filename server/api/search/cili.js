@@ -1,6 +1,7 @@
 import { performCiliSearch } from '../../../model/Search.js'
-
 import { copyright } from '#components'
+const title = '磁力搜索'
+
 export default async (req, res) => {
   const time = new Date().toISOString()
   try {
@@ -14,7 +15,7 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 400,
         message: '缺少必要的查询参数, 请在查询参数中添加key参数',
-        title: '磁力搜索',
+        title,
         time,
         copyright
       }))
@@ -27,7 +28,7 @@ export default async (req, res) => {
       return res.end(JSON.stringify({
         code: 404,
         message: '未找到相关的搜索结果',
-        title: '磁力搜索',
+        title,
         time,
         copyright
       }))
@@ -37,7 +38,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 0,
       message: '查询成功',
-      title: '磁力搜索',
+      title,
       time,
       data: searchResults,
       copyright
@@ -47,7 +48,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: '查询失败',
-      title: '磁力搜索',
+      title,
       time,
       error: error.message,
       copyright

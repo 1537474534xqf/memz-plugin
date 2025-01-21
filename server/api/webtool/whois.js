@@ -3,9 +3,11 @@ import { URL } from 'url'
 import { translateWhoisData } from '../../../model/webtool.js'
 import { copyright } from '#components'
 import logger from '../../lib/logger.js'
-const time = new Date().toISOString()
+
+const title = 'Whois查询'
 
 export default async (req, res) => {
+  const time = new Date().toISOString()
   try {
     const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
@@ -19,7 +21,7 @@ export default async (req, res) => {
       res.end(JSON.stringify({
         code: 400,
         message: '缺少必要的域名参数, 请在查询参数中添加domain参数',
-        title: 'Whois查询',
+        title,
         time,
         copyright
       }))
@@ -34,7 +36,7 @@ export default async (req, res) => {
       res.end(JSON.stringify({
         code: 404,
         message: '未能获取到有效的WHOIS数据',
-        title: 'Whois查询',
+        title,
         time,
         copyright
       }))
@@ -49,7 +51,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 0,
       message: '查询成功',
-      title: 'Whois查询',
+      title,
       time,
       data: chineseData,
       copyright
@@ -60,7 +62,7 @@ export default async (req, res) => {
     res.end(JSON.stringify({
       code: 500,
       message: '查询失败',
-      title: 'Whois查询',
+      title,
       time,
       error: error.message,
       copyright
