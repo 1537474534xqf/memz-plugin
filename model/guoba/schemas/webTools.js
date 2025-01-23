@@ -109,7 +109,8 @@ export default [
         { label: 'Ip2locationIo接口', value: 5 },
         { label: 'IpApiIs接口', value: 6 },
         { label: 'InIp.In接口', value: 7 },
-        { label: 'Mir6接口', value: 8 }
+        { label: 'Mir6接口', value: 8 },
+        { label: 'CIP.CC接口', value: 9 }
       ],
       placeholder: '请选择使用的IpInfo接口'
     }

@@ -102,8 +102,8 @@ export async function fetchSeoFromHtml (url) {
 // 网页状态检查
 export async function checkHttpStatus (url) {
   let redirectCount = 0 // 跳转次数
-  let responseDetails = [] // 用来保存每次请求的响应信息
-  let visitedUrls = new Set() // 跟踪已经访问过的 URL，以防止死循环
+  const responseDetails = [] // 用来保存每次请求的响应信息
+  const visitedUrls = new Set() // 跟踪已经访问过的 URL，以防止死循环
 
   if (!/^https?:\/\//i.test(url)) {
     url = 'https://' + url

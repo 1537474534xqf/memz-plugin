@@ -677,7 +677,8 @@ export class WebTools extends plugin {
       5: 'ip2locationIo',
       6: 'ipApiIs',
       7: 'inipIn',
-      8: 'mir6'
+      8: 'mir6',
+      9: 'cipcc'
     }
 
     const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
@@ -737,6 +738,9 @@ export class WebTools extends plugin {
       case 'mir6':
         url = `https://api.mir6.com/api/ip?ip=${ipAddress}&type=json`
         break
+      case 'cipcc':
+        url = `https://api.plugin.memzjs.us.kg/webtool/ip/info/cipcc?ip=${ipAddress}`
+        break
       default:
         return null
     }
@@ -762,7 +766,8 @@ export class WebTools extends plugin {
       ip2locationIo: this.formatIp2locationIo,
       ipApiIs: this.formatipApiIs,
       inipIn: this.formatInipIn,
-      mir6: this.formatMir6
+      mir6: this.formatMir6,
+      cipcc: this.formatCipcc
     }
 
     const formatter = formatters[api]
@@ -772,6 +777,18 @@ export class WebTools extends plugin {
     } else {
       return '无法识别的 API 格式'
     }
+  }
+
+  // cip.cc 数据格式化
+  formatCipcc (ipInfo, ipAddress) {
+    ipInfo = ipInfo.data
+    const info = [
+      `IP 信息 - ${ipAddress}`,
+      ipInfo.address ? `地址: ${ipInfo.address}` : null,
+      ipInfo.data1 ? `数据二：${ipInfo.data1}` : null,
+      ipInfo.data2 ? `数据三：${ipInfo.data2}` : null
+    ]
+    return info.filter(Boolean).join('\n')
   }
 
   // inipIn 数据格式化

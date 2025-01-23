@@ -69,7 +69,7 @@ export async function searchResources (keyword, data) {
   // 如果关键词长度大于等于3，使用 Fuse 进行模糊匹配
   if (keyword.length >= 3) {
     // 配置 Fuse.js
-    let { threshold } = Config.getConfig('memz')
+    const { threshold } = Config.getConfig('memz')
     const fuseOptions = {
       keys: ['关键词'],
       threshold, // 设置阈值，模糊匹配的宽松度
