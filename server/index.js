@@ -11,6 +11,7 @@ import { PluginPath, isFramework } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
 import { generateApiDocs, generateMarkdownDocs } from './model/apiDocs.js'
+import chokidar from 'chokidar'
 
 const config = Config.getConfig('api')
 
@@ -25,6 +26,101 @@ const redis = new Redis({
 const apiHandlersCache = {}
 const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
 const REDIS_STATS_KEY = 'MEMZ/API'
+
+// 开发模式监听器
+let watcher = null
+
+// 重载单个API模块
+async function reloadApiModule(filePath) {
+  try {
+    const relativePath = path.relative(path.join(PluginPath, 'server', 'api'), filePath)
+    const route = '/' + relativePath.replace(/\\/g, '/').replace(/\.js$/, '')
+
+    // 清除模块缓存
+    const moduleUrl = pathToFileURL(filePath).href
+    delete apiHandlersCache[route]
+
+    // 重新加载模块
+    const startTime = Date.now()
+    const handlerModule = await import(`${moduleUrl}?update=${Date.now()}`)
+    const handler = handlerModule.default
+
+    if (typeof handler === 'function') {
+      apiHandlersCache[route] = handler
+      const loadTime = Date.now() - startTime
+
+      logger.info(chalk.green(`[${config.port}][MEMZ-API] [DEV] 重载模块成功: ${route}`))
+      logger.info(chalk.blue(`[${config.port}][MEMZ-API] [DEV] 重载耗时: ${loadTime}ms`))
+
+      // 输出模块信息
+      const moduleInfo = {
+        title: handlerModule.title,
+        method: handlerModule.method || 'GET',
+        params: handlerModule.key || {},
+        description: handlerModule.description
+      }
+      logger.info(chalk.cyan(`[${config.port}][MEMZ-API] [DEV] 模块信息:`))
+      logger.info(chalk.cyan(JSON.stringify(moduleInfo, null, 2)))
+
+      // 重新生成文档
+      const apiDoc = await generateMarkdownDocs()
+      await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
+    } else {
+      logger.warn(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 模块 ${route} 未导出有效的处理函数`))
+    }
+  } catch (error) {
+    logger.error(chalk.red(`[${config.port}][MEMZ-API] [DEV] 重载模块失败: ${error.message}`))
+    logger.error(chalk.red(error.stack))
+  }
+}
+
+// 启动开发模式监听
+function startDevMode() {
+  const apiDir = path.join(PluginPath, 'server', 'api')
+
+  logger.info(chalk.green(`[${config.port}][MEMZ-API] [DEV] 开发模式已启动`))
+  logger.info(chalk.blue(`[${config.port}][MEMZ-API] [DEV] 监听目录: ${apiDir}`))
+
+  watcher = chokidar.watch(apiDir, {
+    ignored: /(^|[/\\])\../, // 忽略隐藏文件
+    persistent: true,
+    ignoreInitial: true
+  })
+
+  watcher
+    .on('change', async filePath => {
+      logger.info(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 检测到文件变更: ${filePath}`))
+      await reloadApiModule(filePath)
+    })
+    .on('add', async filePath => {
+      logger.info(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 检测到新文件: ${filePath}`))
+      await reloadApiModule(filePath)
+    })
+    .on('unlink', async filePath => {
+      const relativePath = path.relative(apiDir, filePath)
+      const route = '/' + relativePath.replace(/\\/g, '/').replace(/\.js$/, '')
+
+      delete apiHandlersCache[route]
+      logger.info(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 移除模块: ${route}`))
+
+      // 重新生成文档
+      const apiDoc = await generateMarkdownDocs()
+      await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
+      logger.info(chalk.green(`[${config.port}][MEMZ-API] [DEV] API文档已更新`))
+    })
+    .on('error', error => {
+      logger.error(chalk.red(`[${config.port}][MEMZ-API] [DEV] 监听错误: ${error}`))
+    })
+}
+
+// 停止开发模式监听
+function stopDevMode() {
+  if (watcher) {
+    watcher.close()
+    watcher = null
+    logger.info(chalk.yellow(`[DEV] 开发模式已停止`))
+  }
+}
 
 // 生成Token
 if (config.token === '') {
@@ -145,7 +241,7 @@ const getStats = async (req, res) => {
 const web = async (req, res) => {
   try {
     const apiDocs = await generateApiDocs()
-    
+
     // 递归生成HTML
     const generateApiHtml = (apis, level = 0) => {
       let html = ''
@@ -704,6 +800,11 @@ export async function startServer() {
     const apiDoc = await generateMarkdownDocs()
     await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
 
+    // 启动开发模式
+    if (config.dev) {
+      startDevMode()
+    }
+
     const serverOptions = config.httpsenabled
       ? {
         key: await fs.readFile(config.httpskey),
@@ -758,6 +859,13 @@ export async function startServer() {
       } catch (error) {
         logger.error(chalk.red('获取本地 IP 地址时出错:', error))
       }
+    })
+
+    // 添加关闭处理
+    process.on('SIGINT', () => {
+      stopDevMode()
+      server.close()
+      process.exit()
     })
 
     return server

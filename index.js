@@ -121,7 +121,7 @@ watcher.on('change', async (filePath) => {
     logger.info(chalk.yellow(`[memz-plugin] 文件发生变化：${filePath}`))
 
     const moduleName = path.basename(filePath, '.js')
-    const fileUrl = pathToFileURL(filePath).href
+    const fileUrl = pathToFileURL(filePath).hrefi
 
     try {
       delete moduleCache[fileUrl]
