@@ -24,10 +24,22 @@ async function getJsFiles (dir) {
   return files
 }
 
+// 缓存API文档
+let apiDocsCache = null
+let lastUpdateTime = 0
+const CACHE_TTL = 5000 // 缓存5秒
+
 /**
  * 生成API文档
  */
 export async function generateApiDocs () {
+  const now = Date.now()
+
+  // 如果缓存存在且未过期,直接返回缓存
+  if (apiDocsCache && (now - lastUpdateTime < CACHE_TTL)) {
+    return apiDocsCache
+  }
+
   const apiDir = path.join(PluginPath, 'server', 'api')
   const files = await getJsFiles(apiDir)
 
@@ -87,6 +99,10 @@ export async function generateApiDocs () {
     }
   }
 
+  // 更新缓存
+  apiDocsCache = apiDocs
+  lastUpdateTime = now
+
   return apiDocs
 }
 
@@ -141,4 +157,10 @@ export async function generateMarkdownDocs () {
   doc += '3. 所有接口支持跨域访问(CORS)\n'
 
   return doc
+}
+
+// 在开发模式下清除缓存
+export function clearApiDocsCache () {
+  apiDocsCache = null
+  lastUpdateTime = 0
 }

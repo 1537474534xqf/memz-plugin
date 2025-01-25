@@ -5,15 +5,15 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 
 ## Bilibili 相关接口
 
-### BiliBili热榜 No.10
+### BiliBili热榜No.10
 - 接口: `/bilibili/hot`
 - 方法: `GET`
-- 说明: BiliBili热榜 No.10
+- 说明: BiliBili热榜No.10
 
 ## API文档
 - 接口: `/index`
 - 方法: `GET`
-- 说明: API文档
+- 说明: 获取所有API接口的文档信息
 
 ## One 相关接口
 

@@ -10,7 +10,7 @@ import Redis from 'ioredis'
 import { PluginPath, isFramework } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
-import { generateApiDocs, generateMarkdownDocs } from './model/apiDocs.js'
+import { generateApiDocs, generateMarkdownDocs, clearApiDocsCache } from './model/apiDocs.js'
 import chokidar from 'chokidar'
 
 const config = Config.getConfig('api')
@@ -39,6 +39,7 @@ async function reloadApiModule(filePath) {
     // 清除模块缓存
     const moduleUrl = pathToFileURL(filePath).href
     delete apiHandlersCache[route]
+    clearApiDocsCache()
 
     // 重新加载模块
     const startTime = Date.now()

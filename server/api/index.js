@@ -2,6 +2,8 @@ import { copyright } from '#components'
 import { generateApiDocs } from '../model/apiDocs.js'
 
 export const title = 'API文档'
+export const method = 'GET'
+export const description = '获取所有API接口的文档信息'
 
 export default async (req, res) => {
   if (req.method === 'GET') {
@@ -9,10 +11,13 @@ export default async (req, res) => {
       const apiDocs = await generateApiDocs()
 
       const apiDocumentation = {
+        code: 0,
+        message: '获取成功',
         name: 'MEMZ-API',
         version: '1.0.12',
         description: '这是一个基于 MEMZ-API 搭建的服务',
-        apis: apiDocs,
+        time: new Date().toISOString(),
+        data: apiDocs,
         copyright
       }
 
