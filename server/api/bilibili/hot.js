@@ -1,6 +1,6 @@
 import { copyright } from '#components'
 
-const title = 'BiliBili热榜'
+export const title = 'BiliBili热榜'
 
 export default async (req, res) => {
   if (req.method === 'GET') {

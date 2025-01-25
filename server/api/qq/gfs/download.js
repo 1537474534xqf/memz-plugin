@@ -1,6 +1,7 @@
 import { download } from '../../../../model/Gfs.js'
 
-const title = '群文件下载'
+export const title = '群文件下载'
+export const key = { group: ['需要查询的群号'], fid: ['需要查询的文件ID'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

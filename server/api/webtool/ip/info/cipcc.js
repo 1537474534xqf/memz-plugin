@@ -3,7 +3,8 @@ import fetch from 'node-fetch'
 import * as cheerio from 'cheerio'
 import { copyright } from '#components'
 
-const title = 'IP查询'
+export const title = 'IP查询-CIPCC'
+export const key = { ip: ['需要查询的IP'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

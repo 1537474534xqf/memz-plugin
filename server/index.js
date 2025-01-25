@@ -10,6 +10,7 @@ import Redis from 'ioredis'
 import { PluginPath, isFramework } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
+import { generateApiDocs, generateMarkdownDocs } from './model/apiDocs.js'
 
 const config = Config.getConfig('api')
 
@@ -140,228 +141,325 @@ const getStats = async (req, res) => {
   }
 }
 
-// 简单的前端处理
-const escapeHtml = (str) => {
-  return str.replace(/[&<>"']/g, (match) => {
-    const escapeMap = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }
-    return escapeMap[match]
-  })
-}
-
 // 前端页面
-const web = (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
-
-  const { apiList } = Config.getConfig('api')
-
-  let htmlContent = `
-    <html>
-    <head>
-      <title>MEMZ-API 服务列表</title>
-      <style>
-        /* 页面整体样式 */
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background-color: #f4f7fc;
-          background-image: url('https://image.admilk.us.kg/image/imgs/20241213144637342.png'); /* 背景图像 */
-          background-size: cover;
-          background-position: center center;
-          background-attachment: fixed;
-          background-repeat: no-repeat;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          min-height: 100vh;
-          overflow-x: hidden;
-          overflow-y: auto;
-          box-sizing: border-box;
-        }
-
-        /* API 服务列表容器 */
-        .api-list {
-          position: relative;
-          display: flex;
-          width: 90%;
-          max-width: 1200px;
-          padding: 20px;
-          background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
-          border-radius: 12px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          backdrop-filter: blur(10px); /* 适度模糊效果 */
-          margin-top: 20px;
-          text-align: center;
-        }
-
-        /* 卡片容器 */
-        .card-container {
-          display: flex;
-          flex-wrap: wrap; /* 使卡片可以换行 */
-          gap: 20px; /* 卡片之间的间隔 */
-          justify-content: center; /* 居中排列卡片 */
-          margin-top: 20px;
-        }
-
-        /* 卡片样式 */
-        .card {
-          background-color: rgba(255, 255, 255, 0.5); /* 更透明的背景 */
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          width: calc(33.33% - 20px); /* 每行显示3个卡片，减去间隙 */
-          margin-bottom: 30px;
-          padding: 20px;
-          backdrop-filter: blur(10px); /* 模糊效果 */
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-          transform: translateY(-8px); /* 卡片悬浮效果 */
-          box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* 标题样式 */
-        h1 {
-          color: #333;
-          margin-bottom: 40px;
-          font-size: 28px;
-          font-weight: bold;
-        }
-
-        /* 卡片标题样式 */
-        .card h2 {
-          margin: 0;
-          font-size: 24px;
-          color: #333;
-        }
-
-        /* 卡片描述文本 */
-        .card p {
-          font-size: 16px;
-          color: #555;
-          line-height: 1.6;
-          margin: 10px 0;
-        }
-
-        /* 认证样式 */
-        .card .auth {
-          font-size: 14px;
-          color: #888;
-        }
-
-        /* 请求参数样式 */
-        .key {
-          margin-top: 20px;
-          padding: 10px;
-          background-color: #f9f9f9;
-          border-radius: 6px;
-          border: 1px solid #ddd;
-        }
-
-        .key p {
-          margin: 5px 0;
-          font-size: 14px;
-          color: #666;
-        }
-
-        .key strong {
-          color: #333;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-          .card {
-            width: calc(50% - 20px); /* 平板显示每行2个卡片 */
-          }
-
-          h1 {
-            font-size: 24px; /* 调整标题大小 */
-          }
-        }
-
-        /* 更小屏幕适配 */
-        @media (max-width: 480px) {
-          .card {
-            width: 100%; /* 手机屏幕显示每行1个卡片 */
-          }
-
-          h1 {
-            font-size: 20px;
-          }
-
-          .card h2 {
-            font-size: 20px;
-          }
-
-          .card p {
-            font-size: 14px;
-          }
-
-          .key p {
-            font-size: 12px;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-  `
-  const cardsHtml = apiList.map(api => {
-    const apiName = escapeHtml(api.name)
-    const apiPath = escapeHtml(api.path)
-    const apiMethod = escapeHtml(api.method)
-    const apiDescription = escapeHtml(api.description)
-    const auth = api.authentication ? '需要认证' : '不需要认证'
-
-    let keyHtml = ''
-    if (api.key && api.key.length > 0) {
-      keyHtml = `
-        <div class="key"><strong>请求参数:</strong>
-        ${api.key.map(param => {
-        const paramName = escapeHtml(param.name)
-        const paramDescription = escapeHtml(param.description)
-        const paramType = escapeHtml(param.type)
-        const paramRequired = param.required ? '是' : '否'
-        return `
-            <p><strong>${paramName}:</strong> ${paramDescription} (类型: ${paramType}, 必填: ${paramRequired})</p>
+const web = async (req, res) => {
+  try {
+    const apiDocs = await generateApiDocs()
+    
+    // 递归生成HTML
+    const generateApiHtml = (apis, level = 0) => {
+      let html = ''
+      for (const [key, value] of Object.entries(apis)) {
+        if (value.path) {
+          // API卡片
+          html += `
+            <div class="card">
+              <div class="card-header">
+                <h2>${value.title}</h2>
+                <span class="method ${value.method.toLowerCase()}">${value.method}</span>
+              </div>
+              <div class="card-body">
+                <div class="info-section">
+                  <div class="info-row">
+                    <span class="label">路径:</span>
+                    <code class="path">${value.path}</code>
+                  </div>
+                  ${value.description ? `
+                    <div class="info-row">
+                      <span class="label">说明:</span>
+                      <span class="description">${value.description}</span>
+                    </div>
+                  ` : ''}
+                </div>
+                ${value.params?.length > 0 ? `
+                  <div class="params-section">
+                    <div class="params-header">参数列表</div>
+                    <div class="params-list">
+                      ${value.params.map(param => `
+                        <div class="param-item">
+                          <div class="param-name-wrap">
+                            <code class="param-name">${param.name}</code>
+                            ${param.required ? '<span class="badge required">必填</span>' : '<span class="badge optional">可选</span>'}
+                          </div>
+                          <div class="param-desc">${param.description}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
           `
-      }).join('')}
-        </div>
-      `
+        } else {
+          // 分类标题
+          html += `
+            <div class="category-section">
+              <div class="category-header">
+                <h${level + 2}>${key.charAt(0).toUpperCase() + key.slice(1)} 相关接口</h${level + 2}>
+              </div>
+              <div class="category-content">
+                ${generateApiHtml(value, level + 1)}
+              </div>
+            </div>
+          `
+        }
+      }
+      return html
     }
 
-    return `
-      <div class="card">
-        <h2>${apiName}</h2>
-        <p><strong>路由:</strong> ${apiPath}</p>
-        <p><strong>方法:</strong> ${apiMethod}</p>
-        <p><strong>描述:</strong> ${apiDescription}</p>
-        <p class="auth"><strong>认证:</strong> ${auth}</p>
-        ${keyHtml}
-      </div>
+    // 样式优化
+    const styles = `
+      :root {
+        --primary-color: #3498db;
+        --success-color: #2ecc71;
+        --warning-color: #f1c40f;
+        --danger-color: #e74c3c;
+        --text-color: #2c3e50;
+        --border-color: #eee;
+        --bg-color: #f8f9fa;
+        --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: var(--bg-color);
+        background-image: url('https://image.admilk.us.kg/image/imgs/20241213144637342.png');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: var(--text-color);
+        line-height: 1.6;
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 30px;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5em;
+        color: var(--text-color);
+      }
+
+      .category-section {
+        margin-bottom: 40px;
+      }
+
+      .category-header h2,
+      .category-header h3,
+      .category-header h4 {
+        color: var(--text-color);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+
+      .category-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        grid-auto-rows: 1fr; /* 确保每行高度一致 */
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden; /* 防止内容溢出 */
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(52, 152, 219, 0.05);
+      }
+
+      .card-header h2 {
+        font-size: 1.2em;
+        margin: 0;
+        color: var(--text-color);
+      }
+
+      .card-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+        min-height: 0; /* 允许内容收缩 */
+      }
+
+      .info-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .label {
+        font-weight: 500;
+        color: var(--text-color);
+        white-space: nowrap;
+      }
+
+      code {
+        background: var(--bg-color);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 0.9em;
+      }
+
+      .path {
+        color: var(--primary-color);
+        word-break: break-all;
+      }
+
+      .params-section {
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+        margin-top: auto;
+      }
+
+      .params-header {
+        font-weight: 500;
+        margin-bottom: 12px;
+        color: var(--text-color);
+      }
+
+      .params-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        max-height: 200px;
+      }
+
+      .param-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
+        background: var(--bg-color);
+        border-radius: 6px;
+      }
+
+      .param-name-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .param-name {
+        color: #e83e8c;
+      }
+
+      .param-desc {
+        color: #666;
+        font-size: 0.9em;
+        word-break: break-word;
+      }
+
+      .method {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .method.get { background: #e3f2fd; color: #1976d2; }
+      .method.post { background: #e8f5e9; color: #388e3c; }
+      .method.put { background: #fff3e0; color: #f57c00; }
+      .method.delete { background: #ffebee; color: #d32f2f; }
+
+      .badge {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.75em;
+        font-weight: 500;
+      }
+
+      .badge.required {
+        background: #ffebee;
+        color: #d32f2f;
+      }
+
+      .badge.optional {
+        background: #f5f5f5;
+        color: #757575;
+      }
+
+      @media (max-width: 768px) {
+        body { padding: 10px; }
+        .container { padding: 15px; }
+        .category-content { 
+          grid-template-columns: 1fr;
+          grid-auto-rows: auto;
+        }
+        .card-header { 
+          flex-direction: column; 
+          gap: 10px; 
+          align-items: flex-start;
+        }
+      }
     `
-  }).join('')
 
-  // 包裹所有卡片的容器，使用 Flexbox 布局
-  htmlContent += `
-    <div class="card-container">
-      ${cardsHtml}
-    </div>
-  `
-
-  htmlContent += `
-    </div>
-  </body>
-  </html>
-  `
-
-  res.end(htmlContent)
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+    res.end(`
+      <!DOCTYPE html>
+      <html lang="zh-CN">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MEMZ-API 服务列表</title>
+        <style>${styles}</style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>MEMZ-API 服务列表</h1>
+          ${generateApiHtml(apiDocs)}
+        </div>
+      </body>
+      </html>
+    `)
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' })
+    res.end('生成API文档页面失败: ' + error.message)
+  }
 }
 
 // 健康检查
@@ -441,7 +539,7 @@ const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
   await Promise.all(loadPromises)
 }
 // 获取公网 IP
-async function getPublicIP () {
+async function getPublicIP() {
   const apiUrls = [
     'https://v4.ip.zxinc.org/info.php?type=json',
     'https://ipinfo.io/json'
@@ -583,7 +681,7 @@ const handleRequest = async (req, res) => {
 }
 
 // 启动服务
-export async function startServer () {
+export async function startServer() {
   try {
     const startTime = Date.now()
 
@@ -602,11 +700,15 @@ export async function startServer () {
     })
     logger.info(chalk.greenBright('**********************************'))
 
+    // 生成API文档
+    const apiDoc = await generateMarkdownDocs()
+    await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
+
     const serverOptions = config.httpsenabled
       ? {
-          key: await fs.readFile(config.httpskey),
-          cert: await fs.readFile(config.httpscert)
-        }
+        key: await fs.readFile(config.httpskey),
+        cert: await fs.readFile(config.httpscert)
+      }
       : {}
 
     const server = config.httpsenabled

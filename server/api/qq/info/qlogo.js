@@ -1,7 +1,8 @@
 import { copyright } from '#components'
-import logger from '../../lib/logger.js'
+import logger from '../../../lib/logger.js'
 
-const title = 'QQ头像查询'
+export const title = 'QQ头像查询'
+export const key = { qq: 'QQ号码' }
 
 export default async (req, res) => {
   const time = new Date().toLocaleString()

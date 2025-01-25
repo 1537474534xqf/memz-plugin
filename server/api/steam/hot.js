@@ -1,6 +1,6 @@
 import { copyright } from '#components'
 
-const title = 'Steam Charts'
+export const title = 'Steam Charts'
 
 export default async (req, res) => {
   const url = 'https://steamcharts.com/top'

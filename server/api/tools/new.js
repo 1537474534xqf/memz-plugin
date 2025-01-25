@@ -1,7 +1,8 @@
 import { URL } from 'url'
 import { copyright } from '#components'
 
-const title = '跳转'
+export const title = '跳转'
+export const key = { url: ['需要跳转的URL'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

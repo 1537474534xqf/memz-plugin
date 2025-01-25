@@ -1,6 +1,7 @@
 import { df } from '../../../../model/Gfs.js'
 
-const title = '群文件信息'
+export const title = '群文件信息'
+export const key = { group: ['需要查询的群号'] }
 
 export default async (req, res) => {
   try {

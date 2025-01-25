@@ -3,7 +3,9 @@ import { PluginData, copyright } from '#components'
 import path from 'path'
 
 const folderPath = path.join(PluginData, 'xlsx')
-const title = '游戏搜索'
+
+export const title = '游戏搜索'
+export const key = { key: ['需要搜索的关键词'] }
 
 // 缓存
 let cachedData = null

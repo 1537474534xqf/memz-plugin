@@ -3,7 +3,8 @@ import { fetchSeoFromHtml } from '../../../model/webtool.js'
 import { copyright } from '#components'
 import logger from '../../lib/logger.js'
 
-const title = 'SEO查询'
+export const title = 'SEO查询'
+export const key = { url: ['需要查询的URL'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

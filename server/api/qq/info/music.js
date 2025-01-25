@@ -1,5 +1,9 @@
-import { executeShareCard } from '../../model/QQ/b77.js'
+import { executeShareCard } from '../../../model/QQ/b77.js'
 import { copyright } from '#components'
+
+export const title = 'QQ音乐分享卡片'
+export const key = { type: '类型', title: '标题', content: '内容', singer: '歌手', image: '图片' }
+export const method = 'POST'
 
 export default async (req, res) => {
   if (req.method !== 'POST') {

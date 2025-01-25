@@ -4,7 +4,9 @@ import { getRandomYiyan } from '../../../model/one.js'
 import path from 'path'
 
 const yiyanFilePath = path.join(PluginData, 'one', 'yiyan.txt')
-const title = '一言API'
+
+export const title = '一言API'
+export const key = { type: ['text', 'json'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

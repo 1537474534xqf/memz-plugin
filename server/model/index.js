@@ -1,8 +1,8 @@
-import { categorizeApiRoutes } from './apiList.js'
+import { generateApiDocs } from './apiDocs.js'
 import { executeShareCard } from './QQ/b77.js'
 export {
   // 分类API路由
-  categorizeApiRoutes,
+  generateApiDocs,
   // 音卡签名
   executeShareCard
 }

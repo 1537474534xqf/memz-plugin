@@ -1,8 +1,9 @@
 import { copyright } from '#components'
-import logger from '../../lib/logger.js'
-import { fetchQQRegistrationDate } from '../../model/QQ/QQAge.js'
+import logger from '../../../lib/logger.js'
+import { fetchQQRegistrationDate } from '../../../model/QQ/QQAge.js'
 
-const title = 'QQ注册时间查询'
+export const title = 'QQ注册时间查询'
+export const key = { qq: 'QQ号码' }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

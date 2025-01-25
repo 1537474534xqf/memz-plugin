@@ -2,7 +2,9 @@ import { URL } from 'url'
 import { fetchIcpInfo } from '../../../model/webtool.js'
 import { copyright } from '#components'
 import logger from '../../lib/logger.js'
-const title = 'ICP备案查询'
+
+export const title = 'ICP备案查询'
+export const key = { domain: ['需要查询的域名'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()

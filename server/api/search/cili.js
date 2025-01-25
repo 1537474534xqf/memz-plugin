@@ -1,6 +1,8 @@
 import { performCiliSearch } from '../../../model/Search.js'
 import { copyright } from '#components'
-const title = '磁力搜索'
+
+export const title = '磁力搜索'
+export const key = { key: ['需要搜索的关键词'] }
 
 export default async (req, res) => {
   const time = new Date().toISOString()
