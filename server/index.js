@@ -31,7 +31,7 @@ const REDIS_STATS_KEY = 'MEMZ/API'
 let watcher = null
 
 // 重载单个API模块
-async function reloadApiModule(filePath) {
+async function reloadApiModule (filePath) {
   try {
     const relativePath = path.relative(path.join(PluginPath, 'server', 'api'), filePath)
     const route = '/' + relativePath.replace(/\\/g, '/').replace(/\.js$/, '')
@@ -50,8 +50,8 @@ async function reloadApiModule(filePath) {
       apiHandlersCache[route] = handler
       const loadTime = Date.now() - startTime
 
-      logger.info(chalk.green(`[${config.port}][MEMZ-API] [DEV] 重载模块成功: ${route}`))
-      logger.info(chalk.blue(`[${config.port}][MEMZ-API] [DEV] 重载耗时: ${loadTime}ms`))
+      logger.info(chalk.green(`[DEV] 重载模块成功: ${route}`))
+      logger.info(chalk.blue(`[DEV] 重载耗时: ${loadTime}ms`))
 
       // 输出模块信息
       const moduleInfo = {
@@ -60,27 +60,27 @@ async function reloadApiModule(filePath) {
         params: handlerModule.key || {},
         description: handlerModule.description
       }
-      logger.info(chalk.cyan(`[${config.port}][MEMZ-API] [DEV] 模块信息:`))
+      logger.info(chalk.cyan('[DEV] 模块信息:'))
       logger.info(chalk.cyan(JSON.stringify(moduleInfo, null, 2)))
 
       // 重新生成文档
       const apiDoc = await generateMarkdownDocs()
       await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
     } else {
-      logger.warn(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 模块 ${route} 未导出有效的处理函数`))
+      logger.warn(chalk.yellow(`[DEV] 模块 ${route} 未导出有效的处理函数`))
     }
   } catch (error) {
-    logger.error(chalk.red(`[${config.port}][MEMZ-API] [DEV] 重载模块失败: ${error.message}`))
+    logger.error(chalk.red(`[DEV] 重载模块失败: ${error.message}`))
     logger.error(chalk.red(error.stack))
   }
 }
 
 // 启动开发模式监听
-function startDevMode() {
+function startDevMode () {
   const apiDir = path.join(PluginPath, 'server', 'api')
 
-  logger.info(chalk.green(`[${config.port}][MEMZ-API] [DEV] 开发模式已启动`))
-  logger.info(chalk.blue(`[${config.port}][MEMZ-API] [DEV] 监听目录: ${apiDir}`))
+  logger.info(chalk.green('[DEV] 开发模式已启动'))
+  logger.info(chalk.blue(`[DEV] 监听目录: ${apiDir}`))
 
   watcher = chokidar.watch(apiDir, {
     ignored: /(^|[/\\])\../, // 忽略隐藏文件
@@ -90,11 +90,11 @@ function startDevMode() {
 
   watcher
     .on('change', async filePath => {
-      logger.info(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 检测到文件变更: ${filePath}`))
+      logger.info(chalk.yellow(`[DEV] 检测到文件变更: ${filePath}`))
       await reloadApiModule(filePath)
     })
     .on('add', async filePath => {
-      logger.info(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 检测到新文件: ${filePath}`))
+      logger.info(chalk.yellow(`[DEV] 检测到新文件: ${filePath}`))
       await reloadApiModule(filePath)
     })
     .on('unlink', async filePath => {
@@ -102,24 +102,24 @@ function startDevMode() {
       const route = '/' + relativePath.replace(/\\/g, '/').replace(/\.js$/, '')
 
       delete apiHandlersCache[route]
-      logger.info(chalk.yellow(`[${config.port}][MEMZ-API] [DEV] 移除模块: ${route}`))
+      logger.info(chalk.yellow(`[DEV] 移除模块: ${route}`))
 
       // 重新生成文档
       const apiDoc = await generateMarkdownDocs()
       await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
-      logger.info(chalk.green(`[${config.port}][MEMZ-API] [DEV] API文档已更新`))
+      logger.info(chalk.green('[DEV] API文档已更新'))
     })
     .on('error', error => {
-      logger.error(chalk.red(`[${config.port}][MEMZ-API] [DEV] 监听错误: ${error}`))
+      logger.error(chalk.red(`[DEV] 监听错误: ${error}`))
     })
 }
 
 // 停止开发模式监听
-function stopDevMode() {
+function stopDevMode () {
   if (watcher) {
     watcher.close()
     watcher = null
-    logger.info(chalk.yellow(`[DEV] 开发模式已停止`))
+    logger.info(chalk.yellow('[DEV] 开发模式已停止'))
   }
 }
 
@@ -127,7 +127,7 @@ function stopDevMode() {
 if (config.token === '') {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   const length = 32 // 32是不是有点大?
-  logger.warn(chalk.yellow('[MEMZ-API] [Token] Token 未设置，将自动生成一个随机 Token'))
+  logger.warn(chalk.yellow('[Token] Token 未设置，将自动生成一个随机 Token'))
   let token = ''
   for (let i = 0; i < length; i++) {
     token += characters.charAt(Math.floor(Math.random() * characters.length))
@@ -153,7 +153,7 @@ const updateRequestStats = async (ip, route) => {
 
     await pipeline.exec()
   } catch (err) {
-    logger.error(chalk.red(`[MEMZ-API] [请求统计错误] 更新统计失败: IP=${ip}, Route=${route}, 错误=${err.message}`))
+    logger.error(chalk.red(`[请求统计错误] 更新统计失败: IP=${ip}, Route=${route}, 错误=${err.message}`))
   }
 }
 /**
@@ -232,7 +232,7 @@ const getStats = async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify(stats, null, 2))
   } catch (err) {
-    logger.error(chalk.red(`[MEMZ-API] [统计错误] 获取统计信息失败: ${err.message}`))
+    logger.error(chalk.red(`[统计错误] 获取统计信息失败: ${err.message}`))
     res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
     res.end(JSON.stringify({ error: '获取统计信息失败', details: err.message }))
   }
@@ -261,14 +261,17 @@ const web = async (req, res) => {
                     <span class="label">路径:</span>
                     <code class="path">${value.path}</code>
                   </div>
-                  ${value.description ? `
+                  ${value.description
+              ? `
                     <div class="info-row">
                       <span class="label">说明:</span>
                       <span class="description">${value.description}</span>
                     </div>
-                  ` : ''}
+                  `
+              : ''}
                 </div>
-                ${value.params?.length > 0 ? `
+                ${value.params?.length > 0
+              ? `
                   <div class="params-section">
                     <div class="params-header">参数列表</div>
                     <div class="params-list">
@@ -283,7 +286,8 @@ const web = async (req, res) => {
                       `).join('')}
                     </div>
                   </div>
-                ` : ''}
+                `
+              : ''}
               </div>
             </div>
           `
@@ -580,7 +584,7 @@ const serveFavicon = async (req, res) => {
   } catch (err) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('404 未找到：favicon.ico')
-    logger.warn(`[MEMZ-API] [favicon] 加载失败: ${err.message}`)
+    logger.warn(`[favicon] 加载失败: ${err.message}`)
   }
 }
 
@@ -600,11 +604,11 @@ const loadApiHandler = async (filePath, routePrefix = '') => {
       loadStats.routeTimes.push({ route, time: loadTime })
 
       // 加载成功
-      logger.debug(chalk.blueBright(`[MEMZ-API] API加载完成 路由: ${route}, 耗时: ${loadTime}ms`))
+      logger.debug(chalk.blueBright(`API加载完成 路由: ${route}, 耗时: ${loadTime}ms`))
       loadStats.success++
     } else {
       // 无效文件
-      logger.warn(chalk.yellow(`[MEMZ-API] API服务跳过无效文件: ${filePath}`))
+      logger.warn(chalk.yellow(`API服务跳过无效文件: ${filePath}`))
       loadStats.failure++
     }
   } catch (err) {
@@ -612,11 +616,11 @@ const loadApiHandler = async (filePath, routePrefix = '') => {
     const stackTrace = err.stack ? err.stack.split('\n') : []
     stackTrace.forEach(line => {
       if (line.includes('at ')) {
-        logger.error(chalk.red(`[MEMZ-API] 错误位置: ${line}`))
+        logger.error(chalk.red(`错误位置: ${line}`))
       }
     })
 
-    logger.error(`[MEMZ-API] [加载调试] 错误详情:\n${err.stack}`)
+    logger.error(`[加载调试] 错误详情:\n${err.stack}`)
 
     loadStats.failure++
   }
@@ -636,7 +640,7 @@ const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
   await Promise.all(loadPromises)
 }
 // 获取公网 IP
-async function getPublicIP() {
+async function getPublicIP () {
   const apiUrls = [
     'https://v4.ip.zxinc.org/info.php?type=json',
     'https://ipinfo.io/json'
@@ -699,13 +703,13 @@ const handleRequest = async (req, res) => {
     ip = ip.replace('::ffff:', '')
   }
 
-  logger.debug(`[${config.port}][MEMZ-API] [请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
+  logger.debug(`[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
 
   // 黑名单和白名单检查
   if (config.blacklistedIPs.includes(ip)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('403 禁止访问：您的 IP 已被列入黑名单')
-    logger.warn(`[MEMZ-API] [黑名单 IP] ${ip}`)
+    logger.warn(`[黑名单 IP] ${ip}`)
     return
   }
 
@@ -720,7 +724,7 @@ const handleRequest = async (req, res) => {
 
   // 记录请求日志
   const logRequest = async (route, ip) => {
-    const log = [`[${config.port}][MEMZ-API] [请求日志] IP: ${ip} 路由: ${route}`]
+    const log = [`[请求日志] IP: ${ip} 路由: ${route}`]
     const queryParams = new URLSearchParams(url.search)
     if ([...queryParams].length > 0) {
       const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',')
@@ -770,15 +774,15 @@ const handleRequest = async (req, res) => {
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('404 未找到：接口不存在')
-    logger.warn(`[${config.port}][MEMZ-API] [404] 路由不存在: ${route}`)
+    logger.warn(`[404] 路由不存在: ${route}`)
   }
 
   const endTime = Date.now()
-  logger.info(`[${config.port}][MEMZ-API] [请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`)
+  logger.info(`[请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`)
 }
 
 // 启动服务
-export async function startServer() {
+export async function startServer () {
   try {
     const startTime = Date.now()
 
@@ -808,9 +812,9 @@ export async function startServer() {
 
     const serverOptions = config.httpsenabled
       ? {
-        key: await fs.readFile(config.httpskey),
-        cert: await fs.readFile(config.httpscert)
-      }
+          key: await fs.readFile(config.httpskey),
+          cert: await fs.readFile(config.httpscert)
+        }
       : {}
 
     const server = config.httpsenabled
@@ -888,9 +892,9 @@ const handleServerError = (error) => {
 // 处理启动错误
 const handleStartupError = (error) => {
   if (error.code === 'ENOENT') {
-    logger.error(`[MEMZ-API] 文件未找到: ${error.path}。请检查配置文件中的路径是否正确。`)
+    logger.error(`文件未找到: ${error.path}。请检查配置文件中的路径是否正确。`)
   } else {
-    logger.error(`[MEMZ-API] 启动服务器时发生错误: ${error.message}`)
+    logger.error(`启动服务器时发生错误: ${error.message}`)
   }
 }
 

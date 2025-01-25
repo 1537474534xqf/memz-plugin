@@ -2,58 +2,85 @@ import log4js from 'log4js'
 import fs from 'node:fs'
 import path from 'path'
 import { Config, PluginTemp } from '#components'
-const { loglevel } = Config.getConfig('api')
+
 const logsDir = path.join(PluginTemp, 'logs')
-/**
- * 设置日志样式并直接导出已配置的logger
- */
 
 // 确保logs目录存在
 if (!fs.existsSync(logsDir)) { fs.mkdirSync(logsDir, { recursive: true }) }
 
-// 自定义日志级别
-log4js.levels.addLevels({
-  fatal: { value: 500, colour: 'red' }, // fatal级别
-  off: { value: 1000, colour: 'grey' } // off级别
-})
+let logger = null
+let pluginLogger = null
 
-// 配置log4js
-log4js.configure({
-  appenders: {
-    console: {
-      type: 'console',
-      layout: {
-        type: 'pattern',
-        pattern: '%[[%d{hh:mm:ss.SSS}][%4.4p]%]%m'
+const getLogger = () => {
+  if (!logger) {
+    const { loglevel, port } = Config.getConfig('api')
+
+    // MEMZ专属logger配置
+    pluginLogger = log4js.configure({
+      appenders: {
+        memzConsole: {
+          type: 'console',
+          layout: {
+            type: 'pattern',
+            pattern: '%[[%d{hh:mm:ss.SSS}][%4.4p][MEMZ-API]%] %m'
+          }
+        },
+        memzFile: {
+          type: 'dateFile',
+          filename: `${logsDir}/memz-api`,
+          pattern: 'yyyy-MM-dd.log',
+          numBackups: 15,
+          alwaysIncludePattern: true,
+          layout: {
+            type: 'pattern',
+            pattern: '[%d{hh:mm:ss.SSS}][%4.4p][MEMZ-API] %m'
+          }
+        },
+        memzError: {
+          type: 'file',
+          filename: `${logsDir}/memz-api-error.log`,
+          alwaysIncludePattern: true,
+          layout: {
+            type: 'pattern',
+            pattern: '[%d{hh:mm:ss.SSS}][%4.4p][MEMZ-API] %m'
+          }
+        }
+      },
+      categories: {
+        default: {
+          appenders: ['memzConsole'],
+          level: loglevel
+        },
+        memzApi: {
+          appenders: ['memzConsole', 'memzFile'],
+          level: loglevel
+        },
+        memzError: {
+          appenders: ['memzConsole', 'memzFile', 'memzError'],
+          level: 'error'
+        }
       }
-    },
-    command: {
-      type: 'dateFile', // 可以是console,dateFile,file,Logstash等
-      filename: `${logsDir}/command`, // 将会按照filename和pattern拼接文件名
-      pattern: 'yyyy-MM-dd.log',
-      numBackups: 15,
-      alwaysIncludePattern: true,
-      layout: {
-        type: 'pattern',
-        pattern: '[%d{hh:mm:ss.SSS}][%4.4p]%m'
-      }
-    },
-    error: {
-      type: 'file',
-      filename: `${logsDir}/error.log`,
-      alwaysIncludePattern: true,
-      layout: {
-        type: 'pattern',
-        pattern: '[%d{hh:mm:ss.SSS}][%4.4p]%m'
+    })
+
+    logger = pluginLogger.getLogger('memzApi')
+    const portStr = `[${port || '????'}]`
+
+    return {
+      info: (msg) => logger.info(`${portStr} ${msg}`),
+      warn: (msg) => logger.warn(`${portStr} ${msg}`),
+      error: (msg) => {
+        const errorLogger = pluginLogger.getLogger('memzError')
+        errorLogger.error(`${portStr} ${msg}`)
+      },
+      debug: (msg) => logger.debug(`${portStr} ${msg}`),
+      trace: (msg) => logger.trace(`${portStr} ${msg}`),
+      fatal: (msg) => {
+        const errorLogger = pluginLogger.getLogger('memzError')
+        errorLogger.fatal(`${portStr} ${msg}`)
       }
     }
-  },
-  categories: {
-    default: { appenders: ['console'], level: loglevel },
-    command: { appenders: ['console', 'command'], level: 'warn' },
-    error: { appenders: ['console', 'command', 'error'], level: 'error' }
   }
-})
+  return logger
+}
 
-const logger = log4js.getLogger()
-export default logger
+export default getLogger()
