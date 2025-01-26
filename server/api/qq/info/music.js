@@ -1,85 +1,54 @@
+import { BaseApiHandler } from '../../../lib/baseHandler.js'
 import { executeShareCard } from '../../../model/QQ/b77.js'
-import { copyright } from '#components'
+import logger from '../../../lib/logger.js'
 
 export const title = 'QQ音乐分享卡片'
-export const key = { type: '类型', title: '标题', content: '内容', singer: '歌手', image: '图片' }
+export const key = {
+  type: '类型',
+  title: '标题',
+  content: '内容',
+  singer: '歌手',
+  image: '图片'
+}
 export const method = 'POST'
 
 export default async (req, res) => {
-  if (req.method !== 'POST') {
-    res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8' })
-    return res.end(JSON.stringify({
-      code: 405,
-      message: '仅支持 POST 请求',
-      copyright
-    }))
-  }
+  const handler = new BaseApiHandler(req, res, { title })
 
   try {
-    let body = ''
+    if (!handler.validateMethod('POST')) return
 
-    req.on('data', chunk => {
-      body += chunk
+    const body = await new Promise((resolve, reject) => {
+      let data = ''
+      req.on('data', chunk => { data += chunk })
+      req.on('end', () => resolve(data))
+      req.on('error', reject)
     })
 
-    req.on('end', async () => {
-      try {
-        const { type, title, content, singer, image } = JSON.parse(body)
+    const params = JSON.parse(body)
+    const required = ['type', 'title', 'content', 'singer', 'image']
+    const missing = required.filter(key => !params[key])
 
-        if (!type || !title || !content || !singer || !image) {
-          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-          return res.end(JSON.stringify({
-            code: 400,
-            message: '缺少必要的请求参数，请在请求体中提供 type, title, content, singer, image',
-            copyright
-          }))
-        }
+    if (missing.length) {
+      return handler.sendParamError(`缺少参数: ${missing.join(', ')}`)
+    }
 
-        const shareCardResult = await executeShareCard(type, title, content, singer, image)
+    logger.debug(`[音乐卡片] 开始生成: ${params.title}`)
+    const shareCardResult = await executeShareCard(
+      params.type,
+      params.title,
+      params.content,
+      params.singer,
+      params.image
+    )
 
-        if (!shareCardResult) {
-          res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-          return res.end(JSON.stringify({
-            code: 500,
-            message: '失败，无法获取数据',
-            copyright
-          }))
-        }
+    if (!shareCardResult) {
+      return handler.handleError(new Error('生成失败'), '无法生成音乐卡片')
+    }
 
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-        return res.end(JSON.stringify({
-          code: 0,
-          message: '成功',
-          data: JSON.parse(shareCardResult),
-          copyright
-        }))
-      } catch (error) {
-        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-        return res.end(JSON.stringify({
-          code: 500,
-          message: '请求失败，无法解析请求体',
-          error: error.message,
-          copyright
-        }))
-      }
-    })
-
-    req.on('error', (error) => {
-      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-      return res.end(JSON.stringify({
-        code: 500,
-        message: '请求失败，读取请求体时发生错误',
-        error: error.message,
-        copyright
-      }))
-    })
+    handler.sendSuccess(JSON.parse(shareCardResult))
+    logger.debug(`[音乐卡片] 生成成功: ${params.title}`)
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    return res.end(JSON.stringify({
-      code: 500,
-      message: '服务器错误',
-      error: error.message,
-      copyright
-    }))
+    handler.handleError(error)
   }
 }

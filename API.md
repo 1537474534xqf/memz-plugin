@@ -3,13 +3,6 @@
 ## API 说明
 MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格式数据(除特殊说明)。
 
-## Bilibili 相关接口
-
-### BiliBili热榜No.10
-- 接口: `/bilibili/hot`
-- 方法: `GET`
-- 说明: BiliBili热榜No.10
-
 ## API文档
 - 接口: `/index`
 - 方法: `GET`
@@ -21,8 +14,8 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 接口: `/one/yiyan`
 - 方法: `GET`
 - 参数:
-  - `type`: text json
-- 说明: 一言API
+  - `type`: text/json 返回格式
+- 说明: 随机返回一条句子
 
 ## Qq 相关接口
 
@@ -85,21 +78,21 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 方法: `GET`
 - 参数:
   - `key`: 需要搜索的关键词
-- 说明: 磁力搜索
+- 说明: 搜索磁力资源
 
 ### 游戏搜索
 - 接口: `/search/game`
 - 方法: `GET`
 - 参数:
   - `key`: 需要搜索的关键词
-- 说明: 游戏搜索
+- 说明: 搜索游戏资源
 
 ## Steam 相关接口
 
 ### Steam Charts
 - 接口: `/steam/hot`
 - 方法: `GET`
-- 说明: Steam Charts
+- 说明: 获取Steam热门游戏排行
 
 ## Tools 相关接口
 
@@ -108,7 +101,7 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 方法: `GET`
 - 参数:
   - `url`: 需要跳转的URL
-- 说明: 跳转
+- 说明: URL重定向
 
 ## Webtool 相关接口
 
@@ -128,7 +121,7 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 方法: `GET`
 - 参数:
   - `ip`: 需要查询的IP
-- 说明: IP查询-CIPCC
+- 说明: 查询IP地址的信息
 
 ### SEO查询
 - 接口: `/webtool/seo`

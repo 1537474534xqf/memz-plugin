@@ -1,71 +1,40 @@
-import { PluginData, copyright } from '#components'
 import logger from '../../lib/logger.js'
-import { getRandomYiyan } from '../../../model/one.js'
 import path from 'path'
+import { BaseApiHandler } from '../../lib/baseHandler.js'
+import { PluginData } from '#components'
+import { getRandomYiyan } from '../../../model/one.js'
 
 const yiyanFilePath = path.join(PluginData, 'one', 'yiyan.txt')
-
 export const title = '一言API'
-export const key = { type: ['text', 'json'] }
+export const key = { type: 'text/json 返回格式' }
+export const description = '随机返回一条句子'
 
 export default async (req, res) => {
-  const time = new Date().toISOString()
+  const handler = new BaseApiHandler(req, res, { title })
+
   try {
-    const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-    const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
-    let type = parsedUrl.searchParams.get('type')
+    if (!handler.validateMethod('GET')) return
 
-    if (type && type !== 'text' && type !== 'json') {
-      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
-        code: 400,
-        message: '无效的 type 参数，仅支持 "text" 或 "json"',
-        copyright
-      }))
-      return
+    const type = handler.url.searchParams.get('type') || 'json'
+    if (!['text', 'json'].includes(type)) {
+      return handler.sendParamError('type参数只能是 text 或 json')
     }
 
-    if (!type) {
-      type = 'json'
-    }
+    logger.debug('[一言] 开始获取')
+    const yiyan = await getRandomYiyan(type, yiyanFilePath)
 
-    const randomYiyan = await getRandomYiyan(type, yiyanFilePath)
-    logger.debug(`[MEMZ-API] 随机一言：${JSON.stringify(randomYiyan)}`)
-
-    if (!randomYiyan) {
-      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
-        code: 500,
-        message: '一言文件读取失败或文件为空',
-        copyright
-      }))
-      return
+    if (!yiyan) {
+      return handler.handleError(new Error('获取失败'), '无法获取一言数据')
     }
 
     if (type === 'text') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' })
-      res.end(randomYiyan)
-    } else {
-      const result = {
-        code: 0,
-        message: '获取成功',
-        title,
-        time,
-        data: randomYiyan,
-        type,
-        copyright
-      }
-      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify(result))
+      return res.end(yiyan.hitokoto)
     }
+
+    handler.sendSuccess(yiyan)
+    logger.debug('[一言] 获取成功')
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({
-      code: 500,
-      message: '请求失败',
-      time,
-      error: error.message,
-      copyright
-    }))
+    handler.handleError(error)
   }
 }

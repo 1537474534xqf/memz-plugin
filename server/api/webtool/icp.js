@@ -1,62 +1,32 @@
-import { URL } from 'url'
+import { BaseApiHandler } from '../../lib/baseHandler.js'
 import { fetchIcpInfo } from '../../../model/webtool.js'
-import { copyright } from '#components'
 import logger from '../../lib/logger.js'
 
 export const title = 'ICP备案查询'
-export const key = { domain: ['需要查询的域名'] }
+export const key = { domain: '需要查询的域名' }
 
 export default async (req, res) => {
-  const time = new Date().toISOString()
+  const handler = new BaseApiHandler(req, res, { title })
+
   try {
-    const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-    const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
+    if (!handler.validateMethod('GET')) return
 
-    const domain = parsedUrl.searchParams.get('domain')
-
-    if (!domain) {
-      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-      return res.end(JSON.stringify({
-        code: 400,
-        message: '缺少必要的域名参数, 请在查询参数中添加domain参数',
-        title,
-        time,
-        copyright
-      }))
+    const missing = handler.validateParams({ domain: true })
+    if (missing.length) {
+      return handler.sendParamError(`缺少参数: ${missing.join(', ')}`)
     }
+
+    const domain = handler.url.searchParams.get('domain')
+    logger.debug(`[ICP] 开始查询: ${domain}`)
 
     const icpInfo = await fetchIcpInfo(domain)
-    logger.debug(`[memz-plugin] 备案查询数据: ${JSON.stringify(icpInfo)}`)
-
-    if (!icpInfo || Object.keys(icpInfo).length === 0) {
-      res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' })
-      return res.end(JSON.stringify({
-        code: 404,
-        message: '未找到该域名的ICP备案信息',
-        title,
-        time,
-        copyright
-      }))
+    if (!icpInfo) {
+      return handler.handleError(new Error('查询失败'), '无法获取ICP信息')
     }
 
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({
-      code: 0,
-      message: '查询成功',
-      title,
-      time,
-      data: icpInfo,
-      copyright
-    }))
+    handler.sendSuccess(icpInfo)
+    logger.debug(`[ICP] 查询成功: ${domain}`)
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({
-      code: 500,
-      message: '查询失败',
-      title,
-      time,
-      error: error.message,
-      copyright
-    }))
+    handler.handleError(error)
   }
 }

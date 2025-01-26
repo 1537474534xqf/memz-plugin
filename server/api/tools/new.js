@@ -1,39 +1,34 @@
-import { URL } from 'url'
-import { copyright } from '#components'
+import { BaseApiHandler } from '../../lib/baseHandler.js'
+import logger from '../../lib/logger.js'
 
 export const title = '跳转'
-export const key = { url: ['需要跳转的URL'] }
+export const key = { url: '需要跳转的URL' }
+export const description = 'URL重定向'
 
 export default async (req, res) => {
-  const time = new Date().toISOString()
+  const handler = new BaseApiHandler(req, res, { title })
 
   try {
-    const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-    const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
-    const targetUrl = parsedUrl.searchParams.get('url')
+    if (!handler.validateMethod('GET')) return
 
-    if (!targetUrl) {
-      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-      return res.end(JSON.stringify({
-        code: 400,
-        message: '缺少必要的url参数, 请在查询参数中添加url参数',
-        title,
-        time,
-        copyright
-      }))
+    const missing = handler.validateParams({ url: true })
+    if (missing.length) {
+      return handler.sendParamError(`缺少参数: ${missing.join(', ')}`)
     }
 
-    res.writeHead(302, { Location: targetUrl })
-    res.end()
+    const url = handler.url.searchParams.get('url')
+    logger.debug(`[跳转] 目标URL: ${url}`)
+
+    // 验证URL格式
+    try {
+      const parsedUrl = new URL(url)
+      res.writeHead(302, { Location: parsedUrl.href })
+      res.end()
+      logger.debug(`[跳转] 成功: ${parsedUrl.href}`)
+    } catch (e) {
+      return handler.sendParamError('无效的URL格式')
+    }
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({
-      code: 500,
-      message: '跳转失败',
-      title,
-      time,
-      error: error.message,
-      copyright
-    }))
+    handler.handleError(error)
   }
 }

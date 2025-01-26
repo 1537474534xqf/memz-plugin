@@ -1,59 +1,35 @@
-import { copyright } from '#components'
-import logger from '../../../lib/logger.js'
+import { BaseApiHandler } from '../../../lib/baseHandler.js'
 import { fetchQQRegistrationDate } from '../../../model/QQ/QQAge.js'
+import logger from '../../../lib/logger.js'
 
 export const title = 'QQ注册时间查询'
 export const key = { qq: 'QQ号码' }
 
 export default async (req, res) => {
-  const time = new Date().toISOString()
+  const handler = new BaseApiHandler(req, res, { title })
+
   try {
-    const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-    const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
+    // 验证请求方法
+    if (!handler.validateMethod('GET')) return
 
-    const qqNumber = parsedUrl.searchParams.get('qq')
-
-    if (!qqNumber) {
-      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
-        code: 400,
-        message: '缺少 qq 参数,请提供要查询的 QQ 号码, qq=?',
-        copyright
-      }))
-      return
+    // 验证参数
+    const missing = handler.validateParams({ qq: true })
+    if (missing.length) {
+      return handler.sendParamError(`缺少参数: ${missing.join(', ')}`)
     }
 
+    const qqNumber = handler.url.searchParams.get('qq')
+    logger.debug(`[QQ注册时间] 开始查询: ${qqNumber}`)
+
+    // 获取数据
     const registrationInfo = await fetchQQRegistrationDate(qqNumber)
-    logger.debug(`[MEMZ-API] 查询QQ注册时间：QQ号 ${qqNumber}, 注册时间: ${JSON.stringify(registrationInfo)}`)
-
     if (!registrationInfo) {
-      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
-        code: 500,
-        message: '无法获取QQ注册时间',
-        copyright
-      }))
-      return
+      return handler.handleError(new Error('无法获取数据'), '无法获取QQ注册时间')
     }
 
-    const result = {
-      code: 0,
-      message: '获取成功',
-      title,
-      time,
-      data: registrationInfo,
-      copyright
-    }
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify(result))
+    logger.debug(`[QQ注册时间] 查询成功: ${JSON.stringify(registrationInfo)}`)
+    handler.sendSuccess(registrationInfo)
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({
-      code: 500,
-      message: '请求失败',
-      time,
-      error: error.message,
-      copyright
-    }))
+    handler.handleError(error)
   }
 }

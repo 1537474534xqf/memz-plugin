@@ -13,7 +13,7 @@ import {
 const MEMZ_NAME = 'MEMZ-Plugin'
 const { apiby } = Config.getConfig('api')
 const copyright = `Copyright © 2024-${new Date().getFullYear()} ${MEMZ_NAME} - ${apiby}`
-let BotName = Version.isTrss
+const BotName = Version.isTrss
   ? 'Trss-Yunzai'
   : Version.isMiao
     ? 'Miao-Yunzai'

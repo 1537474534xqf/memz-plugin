@@ -1,6 +1,7 @@
 import { copyright } from '#components'
 
 export const title = 'Steam Charts'
+export const description = '获取Steam热门游戏排行'
 
 export default async (req, res) => {
   const url = 'https://steamcharts.com/top'
