@@ -26,15 +26,15 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 方法: `GET`
 - 参数:
   - `group`: 需要查询的群号
-- 说明: 群文件信息
+- 说明: 获取群文件信息
 
-#### 群文件信息
+#### 群文件目录
 - 接口: `/qq/gfs/dir`
 - 方法: `GET`
 - 参数:
   - `group`: 需要查询的群号
   - `pid`: 需要查询的文件ID
-- 说明: 群文件信息
+- 说明: 获取群文件目录
 
 #### 群文件下载
 - 接口: `/qq/gfs/download`
@@ -42,7 +42,7 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 参数:
   - `group`: 需要查询的群号
   - `fid`: 需要查询的文件ID
-- 说明: 群文件下载
+- 说明: 下载群文件
 
 ### Info 相关接口
 
@@ -89,10 +89,12 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 
 ## Steam 相关接口
 
-### Steam Charts
+### Steam 热门游戏榜单
 - 接口: `/steam/hot`
 - 方法: `GET`
-- 说明: 获取Steam热门游戏排行
+- 参数:
+  - `type`: text/json 返回格式
+- 说明: 获取 Steam 热门游戏排行
 
 ## Tools 相关接口
 
