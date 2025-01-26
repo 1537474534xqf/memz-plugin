@@ -1,54 +1,31 @@
+import { BaseApiHandler } from '../../../lib/baseHandler.js'
+import logger from '../../../lib/logger.js'
 import { dir } from '../../../../model/Gfs.js'
 
-export const title = '群文件信息'
-export const key = { group: ['需要查询的群号'], pid: ['需要查询的文件ID'] }
+export const title = '群文件目录'
+export const key = { group: '需要查询的群号', pid: '需要查询的文件ID' }
+export const description = '获取群文件目录'
 
 export default async (req, res) => {
-  const time = new Date().toISOString()
+  const handler = new BaseApiHandler(req, res, { title })
+
   try {
-    const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-    const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
+    if (!handler.validateMethod('GET')) return
 
-    const groupId = parsedUrl.searchParams.get('group')
-    const pid = parsedUrl.searchParams.get('pid')
-
-    if (!groupId) {
-      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
-        code: 400,
-        message: '缺少参数,请提供要查询的群号, ?group=xxx&pid=xxx'
-      }))
-      return
+    const missing = handler.validateParams({ group: true, pid: false })
+    if (missing.length) {
+      return handler.sendParamError(`缺少参数: ${missing.join(', ')}`)
     }
 
-    const groupFileDir = await dir(groupId, pid)
+    const group = handler.url.searchParams.get('group')
+    const pid = handler.url.searchParams.get('pid')
+    logger.debug(`[群文件目录] 查询群号: ${group}, 文件ID: ${pid}`)
 
-    if (!groupFileDir) {
-      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({
-        code: 500,
-        message: '无法获取该群文件信息'
-      }))
-      return
-    }
+    const dirInfo = await dir(group, pid)
 
-    const result = {
-      code: 0,
-      message: '获取成功',
-      title,
-      groupId,
-      time,
-      data: groupFileDir
-    }
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify(result))
+    handler.sendSuccess(dirInfo)
+    logger.debug(`[群文件目录] 查询成功: ${JSON.stringify(dirInfo)}`)
   } catch (error) {
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({
-      code: 500,
-      message: '请求失败',
-      time,
-      error: error.message
-    }))
+    handler.handleError(error)
   }
 }
