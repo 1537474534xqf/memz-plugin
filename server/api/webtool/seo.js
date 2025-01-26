@@ -20,11 +20,18 @@ export default async (req, res) => {
     logger.debug(`[SEO] 开始查询: ${url}`)
 
     const seoInfo = await fetchSeoFromHtml(url)
-    if (!seoInfo) {
+    let parsedSeoInfo
+    try {
+      parsedSeoInfo = typeof seoInfo === 'string' ? JSON.parse(seoInfo) : seoInfo
+    } catch (error) {
+      return handler.handleError(new Error('无法解析SEO信息'), 'SEO信息格式错误')
+    }
+
+    if (!parsedSeoInfo) {
       return handler.handleError(new Error('查询失败'), '无法获取SEO信息')
     }
 
-    handler.sendSuccess(seoInfo)
+    handler.sendSuccess(parsedSeoInfo)
     logger.debug(`[SEO] 查询成功: ${url}`)
   } catch (error) {
     handler.handleError(error)

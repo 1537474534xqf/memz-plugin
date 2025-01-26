@@ -23,7 +23,6 @@ export default async (req, res) => {
     if (!icpInfo) {
       return handler.handleError(new Error('查询失败'), '无法获取ICP信息')
     }
-
     handler.sendSuccess(icpInfo)
     logger.debug(`[ICP] 查询成功: ${domain}`)
   } catch (error) {

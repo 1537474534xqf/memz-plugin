@@ -14,12 +14,7 @@ export default async (req, res) => {
 
   try {
     if (!handler.validateMethod('GET')) return
-
-    const type = handler.url.searchParams.get('type') || 'json'
-    if (!['text', 'json'].includes(type)) {
-      return handler.sendParamError('type参数只能是 text 或 json')
-    }
-
+    const type = handler.url.searchParams.get('type')
     logger.debug('[一言] 开始获取')
     const yiyan = await getRandomYiyan(type, yiyanFilePath)
 
@@ -29,7 +24,7 @@ export default async (req, res) => {
 
     if (type === 'text') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' })
-      return res.end(yiyan.hitokoto)
+      return res.end(yiyan)
     }
 
     handler.sendSuccess(yiyan)
