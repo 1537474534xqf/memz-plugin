@@ -126,6 +126,7 @@ pnpm install --filter=memz-plugin
 | 进制转换 | #进制转换原始数 起始进制 目标进制 | 主人/开放 | 否 | 数字进制转换 |
 
 注意：
+
 1. "主人"权限指在 Yunzai-Bot 配置文件中设置的主人账号
 2. "主人/开放"表示该功能默认主人可用，可通过配置开放给其他用户
 3. 部分功能可能需要额外配置，请查看具体说明
@@ -146,9 +147,9 @@ QQ交流群:745046386
 
 > 🌟 星光闪烁，你们的智慧如同璀璨的夜空。感谢所有为 **MEMZ-Plugin** 做出贡献的人！
 
-<img src="https://contrib.rocks/image?repo=MEMZ-MapleLeaf/memz-plugin" />
+<img src="https://contrib.rocks/image?repo=MEMLTS/memz-plugin" />
 
-![Alt](https://repobeats.axiom.co/api/embed/b8a76b0702cd42f06a3653ce1a15b175c298f27c.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/0eea68609d581f6655d5dba90c5cd07ae2495084.svg "Repobeats analytics image")
 
 ## 鸣谢
 
