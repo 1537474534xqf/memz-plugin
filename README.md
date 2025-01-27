@@ -21,30 +21,20 @@ Yunzai系列Bot插件,本插件基于TRSS-Yunzai作为开发环境,其他框架�
 
 #### 使用GitHub安装
 
-前往 [tokens/new](https://github.com/settings/tokens/new) 填写如下内容
-
-- Note: 随意内容
-- Expiration: No expiration
-- Select scopes: repo
-
-最后点击 **Generate token** 进行生成令牌
-
 ```bash
-git clone --depth=1 https://令牌@github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 如果无法访问GitHub,可以使用**Ghproxy**进行安装
 
 ```bash
-git clone --depth=1 https://令牌@ghp.ci/https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://ghp.ci/https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 #### 使用Gitee安装
 
-不用看了,反正你也没权限
-
 ```bash
-git clone --depth=1 https://@令牌gitee.com/memz-mapleleaf/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://gitee.com/memz-mapleleaf/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 ### 安装依赖
