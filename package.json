@@ -15,6 +15,8 @@
         "iconv-lite": "^0.6.3",
         "ioredis": "*",
         "log4js": "^6.9.1",
+        "mail-notifier": "^0.5.0",
+        "nodemailer": "^6.10.0",
         "ping": "^0.4.4",
         "punycode": "^2.3.1",
         "systeminformation": "*",

@@ -22,7 +22,7 @@ const getLogger = () => {
           type: 'console',
           layout: {
             type: 'pattern',
-            pattern: '%[[%d{hh:mm:ss.SSS}][%4.4p][MEMZ-API]%] %m'
+            pattern: '%[[%d{hh:mm:ss.SSS}][%4.4p]%] %m'
           }
         },
         memzFile: {
@@ -33,7 +33,7 @@ const getLogger = () => {
           alwaysIncludePattern: true,
           layout: {
             type: 'pattern',
-            pattern: '[%d{hh:mm:ss.SSS}][%4.4p][MEMZ-API] %m'
+            pattern: '[%d{hh:mm:ss.SSS}][%4.4p] %m'
           }
         },
         memzError: {
@@ -42,7 +42,7 @@ const getLogger = () => {
           alwaysIncludePattern: true,
           layout: {
             type: 'pattern',
-            pattern: '[%d{hh:mm:ss.SSS}][%4.4p][MEMZ-API] %m'
+            pattern: '[%d{hh:mm:ss.SSS}][%4.4p]%m'
           }
         }
       },
@@ -66,17 +66,17 @@ const getLogger = () => {
     const portStr = `[${port || '????'}]`
 
     return {
-      info: (msg) => logger.info(`${portStr} ${msg}`),
-      warn: (msg) => logger.warn(`${portStr} ${msg}`),
+      info: (msg) => logger.info(`[MEMZ-API] ${portStr} ${msg}`),
+      warn: (msg) => logger.warn(`[MEMZ-API] ${portStr} ${msg}`),
       error: (msg) => {
         const errorLogger = pluginLogger.getLogger('memzError')
-        errorLogger.error(`${portStr} ${msg}`)
+        errorLogger.error(`[MEMZ-API] ${portStr} ${msg}`)
       },
-      debug: (msg) => logger.debug(`${portStr} ${msg}`),
-      trace: (msg) => logger.trace(`${portStr} ${msg}`),
+      debug: (msg) => logger.debug(`[MEMZ-API] ${portStr} ${msg}`),
+      trace: (msg) => logger.trace(`[MEMZ-API] ${portStr} ${msg}`),
       fatal: (msg) => {
         const errorLogger = pluginLogger.getLogger('memzError')
-        errorLogger.fatal(`${portStr} ${msg}`)
+        errorLogger.fatal(`[MEMZ-API] ${portStr} ${msg}`)
       }
     }
   }

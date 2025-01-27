@@ -51,14 +51,5 @@ blacklistedIPs: []
 #*白名单 IP 列表
 whitelistedIPs: []
 
-email:
-  - name: '第一个接口'
-    host: 'smtp.qq.com'
-    port: 465
-    username: '123456@qq.com'
-    password: 'password'
-  - name: '第二个接口'
-    host: '127.0.0.1'
-    port: 25
-    username: 'test'
-    password: 'password'
+blackApiList:
+  - /mail/send

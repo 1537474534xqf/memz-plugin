@@ -26,10 +26,6 @@ import {
   // 规范化cron表达式
   normalizeCronExpression
 } from './cron.js'
-import {
-  // 随机一言
-  getRandomYiyan
-} from './one.js'
 
 export {
   // 截图
@@ -45,7 +41,5 @@ export {
   searchResources,
   performCiliSearch,
   // cron
-  normalizeCronExpression,
-  // 随机一?函数
-  getRandomYiyan
+  normalizeCronExpression
 }

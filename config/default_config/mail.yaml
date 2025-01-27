@@ -1,0 +1,21 @@
+imapMail:
+  - name: '第一个接口'
+    id: 1
+    enable: true
+    host: 'imap.qq.com'
+    port: 993
+    tls: true
+    username: '123456@qq.com'
+    password: 'password'
+    sendType: 1
+    groups: []
+    users: []
+smtpMail:
+  - name: '第一个接口'
+    enable: false
+    id: 1
+    host: 'smtp.qq.com'
+    port: 465
+    username: '123456@qq.com'
+    password: 'password'
+smtpMailId: 1  # 默认使用的邮箱ID

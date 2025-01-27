@@ -593,13 +593,26 @@ const loadApiHandler = async (filePath, routePrefix = '') => {
   const route = `${routePrefix}/${path.basename(filePath, '.js')}`
   const startTime = Date.now()
 
+  // 初始化 apiList 数组
+  if (!global.apiList) {
+    global.apiList = []
+  }
+
+  // 黑名单API
+  if (config.blackApiList.includes(route)) {
+    logger.info(chalk.yellow(`API加载跳过[黑名单]: ${route}`))
+    loadStats.skipped = (loadStats.skipped || 0) + 1
+    return
+  }
+
   try {
     const handlerModule = await import(pathToFileURL(filePath))
     const handler = handlerModule.default
 
-    // 判断模块是否为有效的处理函数
     if (typeof handler === 'function') {
       apiHandlersCache[route] = handler
+      global.apiList.push({ path: route, title: handlerModule.title || null }) // 将路由存储到 apiList
+
       const loadTime = Date.now() - startTime
       loadStats.routeTimes.push({ route, time: loadTime })
 
@@ -795,6 +808,7 @@ export async function startServer () {
     logger.info(chalk.green('MEMZ-API 服务载入完成'))
     logger.info(chalk.greenBright(`成功加载：${loadStats.success} 个`))
     logger.info(chalk.yellowBright(`加载失败：${loadStats.failure} 个`))
+    logger.info(chalk.greenBright(`黑名单列表：${loadStats.skipped} 个`))
     logger.info(chalk.cyanBright(`总耗时：${loadStats.totalTime} 毫秒`))
     loadStats.routeTimes.forEach(({ route, time }) => {
       logger.info(chalk.magentaBright(`路由: ${route}, 加载时间: ${time}ms`))

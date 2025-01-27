@@ -1,3 +1,12 @@
+// 获取所有API路由选项
+const getApiOptions = () => {
+  const apiList = global.apiList || []
+  return apiList.map(api => ({
+    label: api.title || api.path,
+    value: `${api.path}`
+  }))
+}
+
 export default [
   {
     label: 'API服务',
@@ -101,6 +110,17 @@ export default [
     label: '鉴权Token',
     bottomHelpMessage: '在需要鉴权的API中需要传入此参数,留空则鉴权失败',
     component: 'Input'
+  },
+  {
+    field: 'api.blackApiList',
+    label: '黑名单API列表',
+    bottomHelpMessage: '选择需要禁用的API接口',
+    component: 'Select',
+    componentProps: {
+      mode: 'multiple',
+      allowCreate: false,
+      options: getApiOptions()
+    }
   },
   {
     field: 'api.redisExpire',

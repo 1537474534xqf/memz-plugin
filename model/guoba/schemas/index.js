@@ -5,6 +5,7 @@ import icqq from './icqq.js'
 import group from './group.js'
 import Search from './Search.js'
 import webTools from './webTools.js'
+import mail from './mail.js'
 import { Config } from '#components'
 
 export const schemas = [
@@ -13,7 +14,8 @@ export const schemas = [
   icqq,
   group,
   Search,
-  webTools
+  webTools,
+  mail
 ].flat()
 
 export function getConfigData () {
@@ -23,28 +25,43 @@ export function getConfigData () {
     update: Config.getDefOrConfig('update'),
     api: Config.getDefOrConfig('api'),
     icqq: Config.getDefOrConfig('icqq'),
-    webStatus: Config.getDefOrConfig('webStatus')
+    webStatus: Config.getDefOrConfig('webStatus'),
+    mail: Config.getDefOrConfig('mail')
   }
 }
 
 export async function setConfigData (data, { Result }) {
-  let config = Config.getCfg()
+  const configFiles = new Map([
+    ['config', Config.getDefOrConfig('config')],
+    ['memz', Config.getDefOrConfig('memz')],
+    ['update', Config.getDefOrConfig('update')],
+    ['api', Config.getDefOrConfig('api')],
+    ['icqq', Config.getDefOrConfig('icqq')],
+    ['webStatus', Config.getDefOrConfig('webStatus')],
+    ['mail', Config.getDefOrConfig('mail')]
+  ])
 
-  for (const key in data) {
-    let split = key.split('.')
-    let currentConfig = config
+  for (const [key, value] of Object.entries(data)) {
+    const split = key.split('.')
+    const rootKey = split[0]
+    const configFile = configFiles.get(rootKey)
 
-    for (let i = 0; i < split.length - 1; i++) {
+    if (!configFile) continue
+
+    let currentConfig = configFile
+    for (let i = 1; i < split.length - 1; i++) {
       if (currentConfig[split[i]] === undefined) {
         currentConfig[split[i]] = {}
       }
       currentConfig = currentConfig[split[i]]
     }
 
-    let lastKey = split[split.length - 1]
-    if (!lodash.isEqual(currentConfig[lastKey], data[key])) {
-      Config.modify(split[0], lastKey, data[key])
+    const lastKey = split[split.length - 1]
+    if (!lodash.isEqual(currentConfig[lastKey], value)) {
+      currentConfig[lastKey] = value
+      Config.modify(rootKey, split.slice(1).join('.'), value)
     }
   }
+
   return Result.ok({}, '𝑪𝒊𝒂𝒍𝒍𝒐～(∠・ω< )⌒★')
 }

@@ -8,6 +8,18 @@ MEMZ-Plugin 提供了一系列 HTTP API 接口。所有接口均返回 JSON 格�
 - 方法: `GET`
 - 说明: 获取所有API接口的文档信息
 
+## Mail 相关接口
+
+### 发送邮件
+- 接口: `/mail/send`
+- 方法: `POST`
+- 参数:
+  - `mailId`: 邮箱ID(可选,默认使用配置中的smtpMailId)
+  - `to`: 收件人邮箱
+  - `subject`: 邮件主题(可选)
+  - `content`: 邮件内容
+- 说明: 发送邮件
+
 ## One 相关接口
 
 ### 一言API
