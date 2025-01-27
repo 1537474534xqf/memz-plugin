@@ -123,9 +123,7 @@ pnpm install --filter=memz-plugin
 
 ## 交流与反馈
 
-QQ交流群:745046386
-
-或者你可以提issue或者PR
+你可以提issue或者PR
 
 ## 免责声明
 
