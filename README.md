@@ -6,10 +6,10 @@ Yunzai系列Bot插件,本插件基于TRSS-Yunzai作为开发环境,其他框架�
 
 <div align="center">
 
-![GitHub stars](https://img.shields.io/github/stars/MEMZ-MapleLeaf/memz-plugin?style=social)
-![GitHub forks](https://img.shields.io/github/forks/MEMZ-MapleLeaf/memz-plugin?style=social)
-![GitHub issues](https://img.shields.io/github/issues/MEMZ-MapleLeaf/memz-plugin)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/MEMZ-MapleLeaf/memz-plugin)
+![GitHub stars](https://img.shields.io/github/stars/MEMLTS/memz-plugin?style=social)
+![GitHub forks](https://img.shields.io/github/forks/MEMLTS/memz-plugin?style=social)
+![GitHub issues](https://img.shields.io/github/issues/MEMLTS/memz-plugin)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/MEMLTS/memz-plugin)
 
 <img src="https://count.getloli.com/@MEMZ-Plugin?name=MEMZ-Plugin&theme=random&padding=7&offset=0&align=top&scale=1&pixelated=0&darkmode=auto" />
 
