@@ -1,15 +1,3 @@
-imapMail:
-  - name: '第一个接口'
-    id: 1
-    enable: true
-    host: 'imap.qq.com'
-    port: 993
-    tls: true
-    username: '123456@qq.com'
-    password: 'password'
-    sendType: 1
-    groups: []
-    users: []
 smtpMail:
   - name: '第一个接口'
     enable: false
