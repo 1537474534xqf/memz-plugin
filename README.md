@@ -47,7 +47,15 @@ pnpm install --filter=memz-plugin
 
 发送 `#MEMZ帮助`查看插件部分功能
 
-开启MEMZ-API服务(默认开启)后可通过 `#MEMZAPI帮助`查看API部分功能
+如果需要使用API功能,请确保已开启**MEMZ-API**服务后安装API拓展包
+
+```bash
+git clone --depth=1 https://github.com/MEMLTS/memz-api.git ./plugins/memz-plugin/server/api/
+```
+
+开启MEMZ-API服务后可访问<http://ip:host/index>查看API文档
+
+## 设置
 
 发送 `#MEMZ设置`可进行部分功能快捷设置
 
