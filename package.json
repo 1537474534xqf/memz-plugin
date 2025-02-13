@@ -25,6 +25,7 @@
     },
     "imports": {
         "#components": "./components/index.js",
-        "#model": "./model/index.js"
+        "#model": "./model/index.js",
+        "#api/lib": "./server/lib/index.js"
     }
 }

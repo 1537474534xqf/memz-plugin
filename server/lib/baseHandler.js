@@ -2,10 +2,22 @@ import logger from './logger.js'
 import { sendSuccess, sendError, sendParamError, sendMethodNotAllowed } from './response.js'
 
 export class BaseApiHandler {
+/**
+ * 构造函数
+ * 用于初始化请求处理对象
+ *
+ * @param {Object} req - 请求对象，包含请求相关信息（如URL、头部等）
+ * @param {Object} res - 响应对象，用于向客户端发送响应
+ * @param {Object} options - 可选配置对象，用于自定义请求处理行为，默认为空对象
+ */
   constructor (req, res, options = {}) {
+    // 请求对象
     this.req = req
+    // 响应对象
     this.res = res
+    // 可选配置对象
     this.options = options
+    // 如果x-forwarded-proto头部存在，则使用该值，否则根据请求连接是否加密来判断
     this.protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
     this.url = new URL(req.url, `${this.protocol}://${req.headers.host}`)
   }
@@ -33,11 +45,12 @@ export class BaseApiHandler {
         }
       })
 
+      // 监听请求体错误
       this.req.on('error', err => {
         reject(err)
       })
 
-      // 添加请求体大小限制
+      // 请求体大小限制
       if (this.req.headers['content-length'] > 1024 * 1024) { // 1MB
         reject(new Error('Request body too large'))
       }
@@ -61,6 +74,7 @@ export class BaseApiHandler {
   validateParams (params) {
     const missing = []
     for (const [key, required] of Object.entries(params)) {
+      // 判断参数是否为必填项且未传入
       if (required && !this.url.searchParams.get(key) &&
          (this.req.method === 'POST' ? !this.req.body?.[key] : true)) {
         missing.push(key)

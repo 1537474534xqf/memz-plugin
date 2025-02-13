@@ -8,7 +8,7 @@ const logsDir = path.join(PluginTemp, 'logs')
 // 确保logs目录存在
 if (!fs.existsSync(logsDir)) { fs.mkdirSync(logsDir, { recursive: true }) }
 
-let logger = null
+let logger
 let pluginLogger = null
 
 const getLogger = () => {
