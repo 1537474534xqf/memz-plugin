@@ -1,5 +1,3 @@
-import logger from '../server/lib/logger.js'
-
 let RedisConfig = { host: 'localhost', port: 6379, username: '', password: '', db: 0 }
 let RedisHost = RedisConfig.host
 let RedisPort = RedisConfig.port

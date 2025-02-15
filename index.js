@@ -2,15 +2,20 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import chalk from 'chalk'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { startServer } from './server/index.js'
 import Config from './components/Config.js'
 import chokidar from 'chokidar'
 
 const { enabled } = Config.getConfig('api')
 
 if (enabled) {
-  logger.info(chalk.cyan('[memz-plugin] MEMZ-API服务已启用，正在启动服务...'))
-  startServer()
+  import('./server/index.js')
+    .then(module => {
+      const startServer = module.startServer
+      startServer()
+    })
+    .catch(err => {
+      logger.error(chalk.red('[memz-plugin] 加载 MEMZ-API 服务失败:', err))
+    })
 } else {
   logger.warn(chalk.cyan('[memz-plugin] MEMZ-API服务未启用'))
 }

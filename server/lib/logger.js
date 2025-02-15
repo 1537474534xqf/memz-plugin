@@ -142,6 +142,7 @@ const getLogger = () => {
       }
     }
   }
+  logger.debug('[MEMZ-API] 获取日志实例成功')
   return memzLogger
 }
 
