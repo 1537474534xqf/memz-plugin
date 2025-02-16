@@ -13,6 +13,8 @@ port: 1941
 #*默认日志等级
 loglevel: "info"
 ##*Redis配置*
+#*是否启用Redis
+redisEnabled: true
 #*Redis地址
 redisHost: ""
 #*Redis端口
