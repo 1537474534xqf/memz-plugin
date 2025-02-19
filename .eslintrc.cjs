@@ -15,7 +15,8 @@ module.exports = {
     logger: true,
     plugin: true,
     Renderer: true,
-    segment: true
+    segment: true,
+    memz: true
   },
   rules: {
   }

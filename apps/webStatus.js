@@ -1,4 +1,3 @@
-import { Config } from '#components'
 import axios from 'axios'
 import https from 'https'
 
@@ -26,7 +25,7 @@ export class WebStatus extends plugin {
   }
 
   async webStatus (e) {
-    const { list } = Config.getConfig('webStatus') || {}
+    const { list } = memz.webStatus || {}
     if (!list || list.length === 0) return
 
     const forwardMessages = []

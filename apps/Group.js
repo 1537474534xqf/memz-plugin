@@ -2,8 +2,7 @@ import moment from 'moment'
 import path from 'path'
 import fs from 'fs/promises'
 import { df, dir, download } from '../model/Gfs.js'
-import { Config, PluginData } from '#components'
-const { whoAtmeTime } = Config.getConfig('memz')
+import { PluginData } from '#components'
 const MemberListPath = path.join(PluginData, 'MemberList')
 
 Bot.on('message.group', async (e) => {
@@ -19,7 +18,7 @@ Bot.on('message.group', async (e) => {
 
   if (!atQQs.length) return
 
-  const endTime = moment().add(whoAtmeTime, 'hours').format('YYYY-MM-DD HH:mm:ss')
+  const endTime = moment().add(memz.memz.whoAtmeTime, 'hours').format('YYYY-MM-DD HH:mm:ss')
   const ttlInSeconds = (new Date(endTime).getTime() - Date.now()) / 1000
 
   if (e.atall) {
@@ -549,7 +548,6 @@ export class GroupPlugin extends plugin {
 
     const recallMsg = e.msg.includes('撤回')
     e.recall()
-    const { atalltext, atChunkSize } = Config.getConfig('memz')
     const members = await this.e.group.getMemberMap()
     const qqNumbers = [...members.keys()]
 
@@ -561,14 +559,14 @@ export class GroupPlugin extends plugin {
       } else {
         atSegments.push(segment.at(qq))
       }
-      if (atalltext) {
-        atSegments.push(segment.text(atalltext))
+      if (memz.memz.atalltext) {
+        atSegments.push(segment.text(memz.memz.atalltext))
       }
     })
 
     const messageChunks = []
-    for (let i = 0; i < atSegments.length; i += atChunkSize * 2) {
-      const chunk = atSegments.slice(i, i + atChunkSize * 2)
+    for (let i = 0; i < atSegments.length; i += memz.memz.atChunkSize * 2) {
+      const chunk = atSegments.slice(i, i + memz.memz.atChunkSize * 2)
       messageChunks.push(chunk)
     }
 
@@ -600,14 +598,11 @@ export class 主人解禁 extends plugin {
 
   async 主人被禁言解禁 (e) {
     if (!e.isMaster) return false
-
-    const { helpMaster, helpMasterText, nohelpMasterText } = Config.getConfig('memz')
-
-    if (!helpMaster) return logger.warn('[memz-plugin] 主人解禁功能未开启')
+    if (!memz.memz.helpMaster) return logger.warn('[memz-plugin] 主人解禁功能未开启')
 
     if ((e.group.pickMember(this.e.user_id, true).is_admin && !e.group.is_owner) || (!e.bot.pickGroup(e.group_id).is_admin && !e.group.is_owner)) {
-      if (nohelpMasterText) {
-        return e.reply(nohelpMasterText)
+      if (memz.memz.nohelpMasterText) {
+        return e.reply(memz.memz.nohelpMasterText)
       } else {
         return false
       }
@@ -616,8 +611,8 @@ export class 主人解禁 extends plugin {
     if (e.duration === 0) return false
 
     await e.group.muteMember(e.user_id, 0)
-    if (helpMasterText) {
-      return e.reply(helpMasterText)
+    if (memz.memz.helpMasterText) {
+      return e.reply(memz.memz.helpMasterText)
     } else {
       return false
     }

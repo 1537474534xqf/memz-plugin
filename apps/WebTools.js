@@ -6,7 +6,7 @@ import dns from 'dns'
 import net from 'net'
 import punycode from 'punycode/punycode.js'
 import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
-import { Config, PluginPath } from '#components'
+import { PluginPath } from '#components'
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
 async function encodeToUnicode (msg) {
@@ -219,8 +219,7 @@ export class WebTools extends plugin {
   }
 
   async handlePunycodeOperation (e) {
-    const { PunycodeOperationAll } = Config.getConfig('memz')
-    if (!PunycodeOperationAll && !e.isMaster) {
+    if (!memz.memz.PunycodeOperationAll && !e.isMaster) {
       return logger.warn('[memz-plugin] Punycode操作当前为仅主人可用')
     }
 
@@ -260,9 +259,7 @@ export class WebTools extends plugin {
   }
 
   async removeSpaces (e) {
-    const { removeSpacesAll } = Config.getConfig('memz')
-
-    if (!removeSpacesAll && !e.isMaster) {
+    if (!memz.memz.removeSpacesAll && !e.isMaster) {
       return logger.warn('[memz-plugin] 去空格功能当前为仅主人可用')
     }
     const msg = e.msg.replace(/^#去空格\s*/, '')
@@ -274,9 +271,7 @@ export class WebTools extends plugin {
   }
 
   async SslInfo (e) {
-    const { SslInfoAll } = Config.getConfig('memz')
-
-    if (!SslInfoAll && !e.isMaster) {
+    if (!memz.memz.SslInfoAll && !e.isMaster) {
       return logger.warn('[memz-plugin] SSL证书查询当前为仅主人可用')
     }
 
@@ -310,8 +305,7 @@ export class WebTools extends plugin {
   }
 
   async DomainMinPricing (e) {
-    const { DomainMinPricingAll } = Config.getConfig('memz')
-    if (!DomainMinPricingAll && !e.isMaster) {
+    if (memz.memz.DomainMinPricingAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
     }
     let domain = e.msg.match(/^#?域名查询\s*(.+)/)
@@ -347,9 +341,7 @@ export class WebTools extends plugin {
   }
 
   async httpStatusCheck (e) {
-    const { httpStatusAll } = Config.getConfig('memz')
-
-    if (!httpStatusAll && !e.isMaster) {
+    if (!memz.memz.httpStatusAll && !e.isMaster) {
       return logger.warn('[memz-plugin] HTTP 状态检查功能当前为仅主人可用')
     }
 
@@ -364,8 +356,7 @@ export class WebTools extends plugin {
   }
 
   async fetchSeoInfoHandler (e) {
-    const { SeoAll } = Config.getConfig('memz')
-    if (!SeoAll && !e.isMaster) {
+    if (!memz.memz.SeoAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Seo状态当前为仅主人可用')
     }
 
@@ -409,8 +400,7 @@ export class WebTools extends plugin {
   }
 
   async handleUrlEncodingDecoding (e) {
-    const { UrlAll } = Config.getConfig('memz')
-    if (!UrlAll && !e.isMaster) { return logger.warn('[memz-plugin]URL状态当前为仅主人可用') }
+    if (!memz.memz.UrlAll && !e.isMaster) { return logger.warn('[memz-plugin]URL状态当前为仅主人可用') }
     await this.handleReply(e, {
       reg: /^(#?)(url)(编码|解码)\s*(.+)/,
       fn: this.handleReply
@@ -440,8 +430,7 @@ export class WebTools extends plugin {
   }
 
   async handleEncodingDecoding (e) {
-    const { UnicodeAll } = Config.getConfig('memz')
-    if (!UnicodeAll && !e.isMaster) { return logger.warn('[memz-plugin]Unicode功能当前为仅主人可用') }
+    if (!memz.memz.UnicodeAll && !e.isMaster) { return logger.warn('[memz-plugin]Unicode功能当前为仅主人可用') }
     await this.unicodehandleReply(e, {
       reg: /^(#?)(unicode|ascii)(编码|解码)\s*(.+)/,
       fn: this.unicodehandleReply
@@ -449,8 +438,7 @@ export class WebTools extends plugin {
   }
 
   async Whois (e) {
-    const { WhoisAll } = Config.getConfig('memz')
-    if (!WhoisAll && !e.isMaster) {
+    if (!memz.memz.WhoisAll && !e.isMaster) {
       return logger.warn('[memz-plugin] Whois状态当前为仅主人可用')
     }
 
@@ -494,9 +482,7 @@ export class WebTools extends plugin {
   }
 
   async domainIcp (e) {
-    const { icpBeianAll } = Config.getConfig('memz')
-
-    if (!icpBeianAll && !e.isMaster) {
+    if (!memz.memz.icpBeianAll && !e.isMaster) {
       return logger.warn('[memz-plugin] 备案查询状态当前为仅主人可用')
     }
 
@@ -531,8 +517,7 @@ export class WebTools extends plugin {
   }
 
   async webpage (e) {
-    const { webpage } = Config.getConfig('memz')
-    if (!webpage && !e.isMaster) { return logger.warn('[memz-plugin] 网页截图状态当前为仅主人可用') }
+    if (!memz.memz.webpage && !e.isMaster) { return logger.warn('[memz-plugin] 网页截图状态当前为仅主人可用') }
 
     let url = e.msg.match(/^#?网页截图\s*(\S+.*)/)?.[1].trim()
     if (url && !url.startsWith('http://') && !url.startsWith('https://')) { url = 'https://' + url }
@@ -561,8 +546,7 @@ export class WebTools extends plugin {
   }
 
   async BaseConversion (e) {
-    const { BaseConversionAll } = Config.getConfig('memz')
-    if (!BaseConversionAll && !e.isMaster) { return logger.warn('[memz-plugin]进制转换状态当前为仅主人可用') }
+    if (!memz.memz.BaseConversionAll && !e.isMaster) { return logger.warn('[memz-plugin]进制转换状态当前为仅主人可用') }
     const args = e.msg
       .match(/#?进制转换\s*(.+)/)[1]
       .trim()
@@ -590,9 +574,7 @@ export class WebTools extends plugin {
   }
 
   async handleHexOperation (e) {
-    const { HexOperationAll } = Config.getConfig('memz')
-
-    if (!HexOperationAll && !e.isMaster) {
+    if (!memz.memz.HexOperationAll && !e.isMaster) {
       return logger.warn('[memz-plugin] 进制转换状态当前为仅主人可用')
     }
     const match = e.msg.match(/^#hex(编码|解码)\s*(.*)$/i)
@@ -619,9 +601,7 @@ export class WebTools extends plugin {
 
   // 获取网站图标
   async getFavicon (e) {
-    const { getFaviconAll } = Config.getConfig('memz')
-
-    if (!getFaviconAll && !e.isMaster) {
+    if (!memz.memz.getFaviconAll && !e.isMaster) {
       return logger.warn('[memz-plugin] 获取网站图标当前为仅主人可用')
     }
 
@@ -667,8 +647,6 @@ export class WebTools extends plugin {
 
   // IP 信息
   async ipinfo (e) {
-    const { IpinfoApi } = Config.getConfig('memz')
-
     const apiMapping = {
       1: 'ipinfoIo',
       2: 'bilibiliIpinfo',
@@ -681,7 +659,7 @@ export class WebTools extends plugin {
       9: 'cipcc'
     }
 
-    const selectedApi = apiMapping[IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
+    const selectedApi = apiMapping[memz.memz.IpinfoApi] || 'bilibiliIpinfo' // 默认就使用哔哩哔哩接口好了
     logger.info(`使用${selectedApi}接口查询ip信息`)
 
     const match = e.msg.match(/^#(ipinfo|ip信息)\s*(\S+)$/i)
@@ -715,7 +693,7 @@ export class WebTools extends plugin {
     let url
     switch (api) {
       case 'ipinfoIo':
-        url = `https://ipinfo.io/${ipAddress}?token=${Config.getConfig('memz').IpinfoToken}`
+        url = `https://ipinfo.io/${ipAddress}?token=${memz.memz.IpinfoToken}`
         break
       case 'bilibiliIpinfo':
         url = `https://api.live.bilibili.com/ip_service/v1/ip_service/get_ip_addr?ip=${ipAddress}`

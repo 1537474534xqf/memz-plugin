@@ -4,6 +4,12 @@ import fs from 'node:fs'
 import YamlReader from './YamlReader.js'
 import _ from 'lodash'
 import { PluginPath } from './Path.js'
+
+// 初始化全局命名空间
+if (!global.memz) {
+  global.memz = {}
+}
+
 class Config {
   constructor () {
     this.config = {}
@@ -21,24 +27,34 @@ class Config {
     const files = fs
       .readdirSync(pathDef)
       .filter((file) => file.endsWith('.yaml'))
+
     for (const file of files) {
+      const configName = file.replace('.yaml', '')
+
+      // 初始化对应的全局配置对象
+      if (!global.memz[configName]) {
+        global.memz[configName] = {}
+      }
+
       if (!fs.existsSync(`${path}${file}`)) {
         fs.copyFileSync(`${pathDef}${file}`, `${path}${file}`)
+        // 加载默认配置到全局
+        const defConfig = YAML.parse(fs.readFileSync(`${pathDef}${file}`, 'utf8'))
+        global.memz[configName] = defConfig
       } else {
         const config = YAML.parse(fs.readFileSync(`${path}${file}`, 'utf8'))
-        const defConfig = YAML.parse(
-          fs.readFileSync(`${pathDef}${file}`, 'utf8')
-        )
-        const { differences, result } = this.mergeObjectsWithPriority(
-          config,
-          defConfig
-        )
+        const defConfig = YAML.parse(fs.readFileSync(`${pathDef}${file}`, 'utf8'))
+        const { differences, result } = this.mergeObjectsWithPriority(config, defConfig)
+
         if (differences) {
           fs.copyFileSync(`${pathDef}${file}`, `${path}${file}`)
           for (const key in result) {
-            this.modify(file.replace('.yaml', ''), key, result[key])
+            this.modify(configName, key, result[key])
           }
         }
+
+        // 将合并后的配置加载到全局
+        global.memz[configName] = result
       }
     }
   }
@@ -54,7 +70,13 @@ class Config {
 
     if (this.config[key]) return this.config[key]
 
-    this.config[key] = YAML.parse(fs.readFileSync(file, 'utf8'))
+    const config = YAML.parse(fs.readFileSync(file, 'utf8'))
+    this.config[key] = config
+
+    // 更新全局配置
+    if (type === 'config') {
+      global.memz[name] = { ...global.memz[name], ...config }
+    }
 
     this.watch(file, name, type)
 
@@ -101,6 +123,12 @@ class Config {
       delete this.config[key]
       if (typeof Bot === 'undefined') return
       logger.mark(`[memz-plugin][修改配置文件][${type}][${name}]`)
+
+      // 重新加载配置到全局
+      const newConfig = YAML.parse(fs.readFileSync(file, 'utf8'))
+      if (type === 'config') {
+        global.memz[name] = { ...global.memz[name], ...newConfig }
+      }
 
       if (name === 'config') {
         const oldConfig = this.oldConfig[key]
@@ -161,6 +189,12 @@ class Config {
     new YamlReader(path).set(key, value)
     this.oldConfig[key] = _.cloneDeep(this.config[key])
     delete this.config[`${type}.${name}`]
+
+    // 更新全局配置
+    if (!global.memz[name]) {
+      global.memz[name] = {}
+    }
+    _.set(global.memz[name], key, value)
   }
 
   /**
@@ -174,11 +208,21 @@ class Config {
   modifyarr (name, key, value, category = 'add', type = 'config') {
     const path = `${PluginPath}/config/${type}/${name}.yaml`
     const yaml = new YamlReader(path)
+
     if (category === 'add') {
       yaml.addIn(key, value)
+      // 更新 global 数组
+      if (!global.memz[name][key]) {
+        global.memz[name][key] = []
+      }
+      global.memz[name][key].push(value)
     } else {
       const index = yaml.jsonData[key].indexOf(value)
       yaml.delete(`${key}.${index}`)
+      // 更新 global 数组
+      if (global.memz[name][key]) {
+        global.memz[name][key] = global.memz[name][key].filter(item => item !== value)
+      }
     }
   }
 
@@ -188,6 +232,12 @@ class Config {
     const arr = yaml.get(key).slice()
     arr[item] = value
     yaml.set(key, arr)
+
+    // 更新 global 配置
+    if (!global.memz[name][key]) {
+      global.memz[name][key] = []
+    }
+    global.memz[name][key][item] = value
   }
 
   /**

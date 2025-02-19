@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { Config, PluginData } from '#components'
+import { PluginData } from '#components'
 import { loadDataFromExcelFiles, searchResources, performCiliSearch } from '#model'
 const folderPath = path.join(PluginData, 'xlsx')
 
@@ -72,8 +72,7 @@ export class Search extends plugin {
   }
 
   async handleSearch (e) {
-    const { SearchResource } = Config.getConfig('memz')
-    if (!SearchResource && !e.isMaster) {
+    if (!memz.memz.SearchResource && !e.isMaster) {
       return logger.warn('[memz-plugin] [搜资源] 搜资源状态当前为仅主人可用')
     }
 
@@ -141,8 +140,7 @@ export class Search extends plugin {
   }
 
   async CiliSearch (e) {
-    const { SearchMagnet } = Config.getConfig('memz')
-    if (!SearchMagnet && !e.isMaster) return logger.warn('[memz-plugin]磁力搜索状态当前为仅主人可用')
+    if (!memz.memz.SearchMagnet && !e.isMaster) return logger.warn('[memz-plugin]磁力搜索状态当前为仅主人可用')
 
     const msg = e.msg
     const searchQuery = msg.match(/^#?磁力搜索\s*(.+)$/)?.[1]
@@ -172,11 +170,7 @@ export class Search extends plugin {
   }
 
   async TheFilmAndTelevision (e) {
-    const { SearchMovie } = Config.getConfig('memz')
-    if (!SearchMovie) {
-      return logger.warn('[memz-plugin] 搜影视功能已禁用')
-    }
-
+    if (!memz.memz.SearchMovie) { return logger.warn('[memz-plugin] 搜影视功能已禁用') }
     const keyword = e.msg.match(/^#?搜(索)?影视\s*(\S+)$/)?.[2]
     if (!keyword) {
       return e.reply('请输入关键词进行搜索！', true)

@@ -1,6 +1,5 @@
 import os from 'os'
 import si from 'systeminformation'
-import { Config } from '#components'
 
 export class SystemStatus extends plugin {
   constructor () {
@@ -19,9 +18,7 @@ export class SystemStatus extends plugin {
   }
 
   async getSystemStatus (e) {
-    const { SystemStatusAll } = Config.getConfig('memz')
-
-    if (!SystemStatusAll && !e.isMaster) {
+    if (!global.memz.memz.SystemStatusAll && !e.isMaster) {
       logger.warn('[memz-plugin] 系统状态当前仅主人可用')
       return false
     }

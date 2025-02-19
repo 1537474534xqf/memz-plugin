@@ -1,8 +1,6 @@
 import cfg from '../../../lib/config/config.js'
 import moment from 'moment'
-import { Config } from '#components'
 import { normalizeCronExpression } from '#model'
-const { checkupdate, CUSTOM_REPOSITORY, cron } = Config.getConfig('update')
 
 const prefix = 'memz:codeUpdateTask:'
 const REPOSITORY_LIST = []
@@ -23,17 +21,17 @@ export class UpdateTask extends plugin {
       ]
     })
     this.task = []
-    if (checkupdate) {
+    if (memz.update.checkupdate) {
       this.task.push({
         name: '[memz-plugin]定时检查仓库更新',
-        cron: normalizeCronExpression(cron),
+        cron: normalizeCronExpression(memz.update.cron),
         fnc: () => this.UpdateTask()
       })
     }
   }
 
   async UpdateTask () {
-    if (!checkupdate) { return logger.warn('[memz-plugin]仓库定时检查更新已关闭') }
+    if (!memz.update.checkupdate) { return logger.warn('[memz-plugin]仓库定时检查更新已关闭') }
     // 去重
     const uniqueRepositories = Array.from(new Set(REPOSITORY_LIST.map(JSON.stringify))).map(JSON.parse)
     if (uniqueRepositories.length === 0) {
@@ -201,8 +199,8 @@ function init () {
     }
   }
 
-  if (Array.isArray(CUSTOM_REPOSITORY) && CUSTOM_REPOSITORY.length > 0) {
-    CUSTOM_REPOSITORY.forEach((item) => {
+  if (Array.isArray(memz.update.CUSTOM_REPOSITORY) && memz.update.CUSTOM_REPOSITORY.length > 0) {
+    memz.update.CUSTOM_REPOSITORY.forEach((item) => {
       gitRemoteUrl(item)
     })
   } else {

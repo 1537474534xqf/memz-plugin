@@ -1,4 +1,4 @@
-import { Config, PluginData, BotName } from '#components'
+import { PluginData, BotName } from '#components'
 import path from 'path'
 import fs from 'fs'
 const appidData = JSON.parse(fs.readFileSync(path.join(PluginData, 'music', 'appid.json'), 'utf-8'))
@@ -36,10 +36,9 @@ export class ICQQ extends plugin {
   }
 
   async fetchQQAge (e) {
-    const { fetchQQAgeAll } = Config.getConfig('icqq')
-    if (!fetchQQAgeAll && !e.isMaster) return logger.warn('[memz-plugin] 未开启Q龄查询功能')
+    if (!memz.icqq.fetchQQAgeAll && !e.isMaster) return logger.warn('[memz-plugin] 未开启Q龄查询功能')
     const qqNumber = e.at || (e.msg.match(/^#?查q龄(\d+)$/i) ? RegExp.$1 : e.user_id)
-    const { ICQQBotQQ } = Config.getConfig('icqq')
+    const { ICQQBotQQ } = memz.icqq
     if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
     const body = {
       1: Number(qqNumber),
@@ -71,7 +70,7 @@ export class ICQQ extends plugin {
       MusicSignContent,
       MusicSignUrl,
       MusicSignImageUrl
-    } = Config.getConfig('icqq')
+    } = memz.icqq
     if (!ICQQBotQQ) return e.reply('[memz-plugin] 未设置ICQQ Bot', true)
     const match = e.msg.match(/^#音卡测试(.*)$/i)
 

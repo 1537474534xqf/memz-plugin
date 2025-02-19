@@ -2,9 +2,7 @@ import path from 'node:path'
 import { exec } from 'child_process'
 import { PluginPath } from '../components/Path.js'
 import { Restart } from '../../other/restart.js'
-import { Config } from '#components'
-const { MEMZRestart } = Config.getConfig('memz')
-if (MEMZRestart) {
+if (memz.memz.MEMZRestart) {
   Restart.prototype.restart = async function () {
     if (process.platform !== 'win32') {
       this.e.reply('此功能只能在Windows系统中使用')

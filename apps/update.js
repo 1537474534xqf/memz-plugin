@@ -1,8 +1,8 @@
 import { update as Update } from '../../other/update.js'
-import { PluginName, Config } from '#components'
+import { PluginName } from '#components'
 import { normalizeCronExpression } from '#model'
 import cfg from '../../../lib/config/config.js'
-const { autoupdate, updatecron } = Config.getConfig('update')
+const { autoupdate, updatecron } = memz.update
 export class Updates extends plugin {
   constructor () {
     super({

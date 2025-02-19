@@ -3,3 +3,5 @@ config/config/*
 temp/*
 API.md
 server/api/*
+server/api
+server/api

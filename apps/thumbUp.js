@@ -1,5 +1,4 @@
 import cfg from '../../../lib/config/config.js'
-import { Config } from '#components'
 // 默认点赞名单
 let Users = [2173302144, 1011303349, 197728340, 3610159055]
 
@@ -40,7 +39,7 @@ export class 自动点赞 extends plugin {
   }
 
   async ThumbUp () {
-    const { AutoLike, AutoLikeList } = Config.getConfig('memz')
+    const { AutoLike, AutoLikeList } = memz.memz
 
     if (!AutoLike) {
       return logger.info('[memz-plugin] 未开启自动点赞功能')

@@ -1,6 +1,6 @@
 import fs from 'fs'
 import Redis from 'ioredis'
-import { Config, PluginPath } from '#components'
+import { PluginPath } from '#components'
 import { generateScreenshot } from '#model'
 import { RedisConfig } from '../components/Redis.js'
 export class RedisStatus extends plugin {
@@ -59,8 +59,7 @@ export class RedisStatus extends plugin {
   }
 
   async getRedisInfo (e) {
-    const { RedisStatusAll } = Config.getConfig('memz')
-    if (!RedisStatusAll && !e.isMaster) { return logger.warn('[memz-plugin]Redis状态当前为仅主人可用') }
+    if (!memz.memz.RedisStatusAll && !e.isMaster) { return logger.warn('[memz-plugin]Redis状态当前为仅主人可用') }
 
     const qw = e.msg.match(
       /^#?redis(状态|统计|狀態|統計)(\s*pro)?(\s*文本)?(\s*;?\s*([^;]*);\s*([^;]*);\s*([^;]*))?/i

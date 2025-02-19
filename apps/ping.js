@@ -1,6 +1,5 @@
 import puppeteer from 'puppeteer'
 import ping from 'ping'
-import { Config } from '#components'
 // 避免每次都重新启动puppeteer
 let globalBrowserInstance
 // 浏览器实例
@@ -30,7 +29,7 @@ export class PingScreenshot extends plugin {
   }
 
   async ping (e) {
-    const { PingAll, PingApi } = Config.getConfig('memz')
+    const { PingAll, PingApi } = memz.memz
     if (!PingAll && !e.isMaster) {
       return logger.warn('[memz-plugin]Ping功能当前为仅主人可用')
     }
@@ -214,7 +213,7 @@ export class PingScreenshot extends plugin {
   }
 
   async Zhalema (e) {
-    const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
+    const { PingProxy, PingProxyAddress } = memz.memz
 
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
     if (!match) {
@@ -314,7 +313,7 @@ export class PingScreenshot extends plugin {
   }
 
   async itdog (e) {
-    const { PingProxy, PingProxyAddress } = Config.getConfig('memz')
+    const { PingProxy, PingProxyAddress } = memz.memz
 
     logger.debug('开始处理 Itdog 命令')
     const match = e.msg.match(/^#(http|ping|tcping)\s*(\S+)$/i)
