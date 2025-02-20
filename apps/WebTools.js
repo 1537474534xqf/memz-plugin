@@ -1,12 +1,12 @@
-import fs from 'fs'
+import Render from '../components/Render.js'
 import whois from 'whois-json'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import dns from 'dns'
 import net from 'net'
 import punycode from 'punycode/punycode.js'
-import { generateScreenshot, fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
-import { PluginPath } from '#components'
+import { fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
+
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
 async function encodeToUnicode (msg) {
@@ -466,15 +466,20 @@ export class WebTools extends plugin {
       const translatedData = await translateWhoisData(whoisData)
       logger.debug(`[memz-plugin] WHOIS 数据翻译后: ${JSON.stringify(translatedData)}`)
 
-      const whoisDataHtml = Object.entries(translatedData)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('<br>')
+      const renderData = {
+        domain,
+        whoisData: Object.entries(translatedData).map(([key, value]) => ({
+          key,
+          value
+        }))
+      }
 
-      const htmlTemplate = fs.readFileSync(`${PluginPath}/resources/html/whois/whois.html`, 'utf8')
-      const html = htmlTemplate.replace('{{whoisdata}}', whoisDataHtml)
+      const image = await Render.render('html/whois/whois.html', renderData, {
+        e,
+        retType: 'base64'
+      })
 
-      const screenshotBuffer = await generateScreenshot(html)
-      await e.reply(segment.image(`base64://${screenshotBuffer}`), true)
+      await e.reply((image), true)
     } catch (error) {
       logger.error(`[memz-plugin] Whois查询失败: ${error.message}`)
       await e.reply(`错误: ${error.message}`, true)

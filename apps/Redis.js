@@ -1,8 +1,7 @@
-import fs from 'fs'
 import Redis from 'ioredis'
-import { PluginPath } from '#components'
-import { generateScreenshot } from '#model'
 import { RedisConfig } from '../components/Redis.js'
+import Render from '../components/Render.js'
+
 export class RedisStatus extends plugin {
   constructor () {
     super({
@@ -62,11 +61,11 @@ export class RedisStatus extends plugin {
     if (!memz.memz.RedisStatusAll && !e.isMaster) { return logger.warn('[memz-plugin]Redis状态当前为仅主人可用') }
 
     const qw = e.msg.match(
-      /^#?redis(状态|统计|狀態|統計)(\s*pro)?(\s*文本)?(\s*;?\s*([^;]*);\s*([^;]*);\s*([^;]*))?/i
+      /^#?redis(状态|统计|狀態|統計)(\s*pro)?(\s*图片)?(\s*;?\s*([^;]*);\s*([^;]*);\s*([^;]*))?/i
     )
 
     const isPro = !!qw[2]
-    const textMode = !!qw[3]
+    const imageMode = !!qw[3]
 
     let redisConfig
     if (qw && qw[5]) {
@@ -85,24 +84,41 @@ export class RedisStatus extends plugin {
     try {
       const info = await redisInstance.info()
       const stats = this.parseRedisInfo(info)
-
       const hitRate = this.calculateHitRate(stats)
-      const dbStats = this.getDbStats(stats, textMode)
+      const dbStats = this.getDbStats(stats, !imageMode)
 
-      if (textMode) {
+      if (!imageMode) {
         const textResponse = isPro
           ? this.generateProTextResponse(stats, hitRate, dbStats)
           : this.generateBasicTextResponse(stats, hitRate, dbStats)
         await e.reply(textResponse, true)
       } else {
-        const html = isPro
-          ? this.generateProHtml(stats, hitRate, dbStats)
-          : this.generateBasicHtml(stats, hitRate, dbStats)
-        const screenshotBuffer = await generateScreenshot(html)
-        await e.reply(segment.image(`base64://${screenshotBuffer}`), true)
+        const renderData = {
+          stats,
+          hitRate,
+          dbStats: dbStats.databaseStats
+        }
+
+        const image = await Render.render(
+          `HTML/redis/redis-${isPro ? 'pro' : 'basic'}.html`,
+          renderData,
+          {
+            e,
+            retType: 'base64',
+            renderCfg: {
+              scale: 1.4,
+              viewPort: {
+                width: 1800,
+                height: 'auto'
+              }
+            }
+          }
+        )
+
+        await e.reply(image, true)
       }
     } catch (error) {
-      await e.reply(`Error fetching Redis info: ${error.message}`)
+      await e.reply(`获取Redis信息失败: ${error.message}`)
     } finally {
       if (redisConfig !== '本体') {
         redisInstance.disconnect()
@@ -231,86 +247,5 @@ Pub/Sub 模式数量: ${stats.pubsub_patterns}
 
 数据库统计信息:
 ${dbStats.databaseStats}`
-  }
-
-  generateBasicHtml (stats, hitRate, dbStats) {
-    let htmlTemplate = fs.readFileSync(
-      `${PluginPath}/resources/html/redis/redis-basic.html`,
-      'utf-8'
-    )
-    htmlTemplate = htmlTemplate
-      .replace('{{uptime_in_days}}', stats.uptime_in_days)
-      .replace('{{tcp_port}}', stats.tcp_port)
-      .replace('{{connected_clients}}', stats.connected_clients)
-      .replace(
-        '{{used_memory_rss}}',
-        (stats.used_memory_rss / 1024 / 1024).toFixed(2)
-      )
-      .replace('{{used_memory}}', (stats.used_memory / 1024 / 1024).toFixed(2))
-      .replace(
-        '{{used_memory_peak}}',
-        (stats.used_memory_peak / 1024 / 1024).toFixed(2)
-      )
-      .replace('{{mem_fragmentation_ratio}}', stats.mem_fragmentation_ratio)
-      .replace('{{keyspace_hits}}', stats.keyspace_hits)
-      .replace('{{keyspace_misses}}', stats.keyspace_misses)
-      .replace('{{hit_rate}}', hitRate)
-      .replace('{{db_stats}}', dbStats.databaseStats)
-    return htmlTemplate
-  }
-
-  generateProHtml (stats, hitRate, dbStats) {
-    let htmlTemplate = fs.readFileSync(
-      `${PluginPath}/resources/html/redis/redis-pro.html`,
-      'utf-8'
-    )
-    htmlTemplate = htmlTemplate
-      .replace('{{uptime_in_days}}', stats.uptime_in_days)
-      .replace('{{tcp_port}}', stats.tcp_port)
-      .replace('{{connected_clients}}', stats.connected_clients)
-      .replace(
-        '{{used_memory_rss}}',
-        (stats.used_memory_rss / 1024 / 1024).toFixed(2)
-      )
-      .replace('{{used_memory}}', (stats.used_memory / 1024 / 1024).toFixed(2))
-      .replace(
-        '{{used_memory_peak}}',
-        (stats.used_memory_peak / 1024 / 1024).toFixed(2)
-      )
-      .replace('{{mem_fragmentation_ratio}}', stats.mem_fragmentation_ratio)
-      .replace(
-        '{{total_connections_received}}',
-        stats.total_connections_received
-      )
-      .replace('{{total_commands_processed}}', stats.total_commands_processed)
-      .replace('{{instantaneous_ops_per_sec}}', stats.instantaneous_ops_per_sec)
-      .replace('{{keyspace_hits}}', stats.keyspace_hits)
-      .replace('{{keyspace_misses}}', stats.keyspace_misses)
-      .replace('{{hit_rate}}', hitRate)
-      .replace('{{latest_fork_usec}}', stats.latest_fork_usec)
-      .replace('{{connected_slaves}}', stats.connected_slaves || 'N/A')
-      .replace('{{role}}', stats.role || 'N/A')
-      .replace(
-        '{{total_net_input_bytes}}',
-        (stats.total_net_input_bytes / 1024 / 1024).toFixed(2)
-      )
-      .replace(
-        '{{total_net_output_bytes}}',
-        (stats.total_net_output_bytes / 1024 / 1024).toFixed(2)
-      )
-      .replace('{{rejected_connections}}', stats.rejected_connections)
-      .replace('{{expired_keys}}', stats.expired_keys)
-      .replace('{{evicted_keys}}', stats.evicted_keys)
-      .replace('{{pubsub_channels}}', stats.pubsub_channels)
-      .replace('{{pubsub_patterns}}', stats.pubsub_patterns)
-      .replace('{{blocked_clients}}', stats.blocked_clients)
-      .replace('{{loading}}', stats.loading)
-      .replace('{{rdb_last_bgsave_status}}', stats.rdb_last_bgsave_status)
-      .replace('{{aof_last_write_status}}', stats.aof_last_write_status)
-      .replace('{{sync_full}}', stats.sync_full)
-      .replace('{{sync_partial_ok}}', stats.sync_partial_ok)
-      .replace('{{sync_partial_err}}', stats.sync_partial_err)
-      .replace('{{db_stats}}', dbStats.databaseStats)
-    return htmlTemplate
   }
 }

@@ -1,76 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redis Basic Status</title>
-  <style>
-    body {
-      font-family: 'Number', '汉仪文黑-65W', 'YS', 'PingFangSC-Medium', 'PingFang SC', sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 20px;
-      background-image: url('http://api.hlz7.com/BA');
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background-color: rgba(255, 255, 255, 0.9);
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    h1, h2 {
-      font-size: 2.5em;
-      text-align: center;
-      background-image: linear-gradient(271.14deg, #001bff 0.98%, #00f0ff 15.79%, #fce84a 37.33%, #f34628 55.77%, #b275ff 72.4%, #a50cdd 91.4%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 20px;
-    }
-    .stats, .db-stats {
-      margin: 20px 0;
-    }
-    .stats div, .db-stats div {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    .stats div span, .db-stats div span {
-      font-size: 1.1em;
-      font-weight: bold;
-      color: #333;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 1em;
-      color: #666;
-    }
-  </style>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/common/common.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/html/redis/redis.css"/>
 </head>
-<body>
-  <div class="container">
-    <h1>Redis 状态</h1>
+<body {{sys.scale}}>
+<div class="container">
+  <div class="redis-info">
+    <div class="header">Redis 状态</div>
     <div class="stats">
-      <div><span>已运行天数:</span> {{uptime_in_days}} days</div>
-      <div><span>当前监听端口:</span> {{tcp_port}}</div>
-      <div><span>连接的客户端数量:</span> {{connected_clients}}</div>
-      <div><span>当前 Redis 使用的内存大小:</span> {{used_memory}} MB</div>
-      <div><span>Redis 的内存消耗峰值:</span> {{used_memory_peak}} MB</div>
+      <div><span>已运行天数:</span> {{stats.uptime_in_days}} days</div>
+      <div><span>当前监听端口:</span> {{stats.tcp_port}}</div>
+      <div><span>连接的客户端数量:</span> {{stats.connected_clients}}</div>
+      <div><span>当前 Redis 使用的内存大小:</span> {{(stats.used_memory / 1024 / 1024).toFixed(2)}} MB</div>
+      <div><span>Redis 的内存消耗峰值:</span> {{(stats.used_memory_peak / 1024 / 1024).toFixed(2)}} MB</div>
     </div>
     <div class="db-stats">
-      <h2>数据库统计信息</h2>
-      {{db_stats}}
+      <div class="subtitle">数据库统计信息</div>
+      {{@dbStats}}
     </div>
-    <div class="footer">
-      Created By Yunzai-Bot & MEMZ-Plugin
-    </div>
+    <div class="footer">{{@copyright}}</div>
   </div>
+</div>
 </body>
 </html>
