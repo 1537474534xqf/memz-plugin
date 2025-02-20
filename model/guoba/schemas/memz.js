@@ -8,6 +8,13 @@ export default [
     label: '插件设置'
   },
   {
+    field: 'memz.renderScale',
+    label: '渲染精度',
+    bottomHelpMessage: '图片的渲染精度,数值越大越清晰,但会消耗更多的内存',
+    required: true,
+    component: 'InputNumber'
+  },
+  {
     field: 'memz.SystemStatusAll',
     label: '系统状态',
     bottomHelpMessage: '关闭时仅主人可用',

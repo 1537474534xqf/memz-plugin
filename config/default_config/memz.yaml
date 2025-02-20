@@ -1,4 +1,6 @@
 ### 插件设置
+# 渲染精度
+renderScale: 150
 # 系统状态是否所有人可用
 SystemStatusAll: false
 # Redis状态是否所有人可用
