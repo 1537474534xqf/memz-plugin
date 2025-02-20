@@ -3,10 +3,10 @@ import path from 'node:path'
 import chalk from 'chalk'
 import { fileURLToPath, pathToFileURL } from 'url'
 import Config from './components/Config.js'
-import chokidar from 'chokidar'
 
 const { enabled } = Config.getConfig('api')
 
+// 启动API服务
 if (enabled) {
   import('./server/index.js')
     .then(module => {
@@ -24,16 +24,31 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const appsDir = path.join(__dirname, 'apps')
 
+// 添加web目录路径常量
+const webDir = path.join(__dirname, 'web')
+
+// 确保web目录存在
+try {
+  await fs.access(webDir)
+} catch (error) {
+  if (error.code === 'ENOENT') {
+    await fs.mkdir(webDir, { recursive: true })
+    await fs.mkdir(path.join(webDir, 'html'), { recursive: true })
+    await fs.mkdir(path.join(webDir, 'css'), { recursive: true })
+    logger.info(chalk.green('[memz-plugin] 创建web目录结构'))
+  }
+}
+
+// 彩色分隔线
 const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
 const coloredDashes = Array.from({ length: 23 }, () => {
   const randomColor = colors[Math.floor(Math.random() * colors.length)]
   return chalk[randomColor]('*')
 }).join('')
 
+// 加载统计
 const startTime = Date.now()
 const apps = {}
-const moduleCache = {}
-
 let successCount = 0
 let failureCount = 0
 
@@ -45,7 +60,6 @@ async function scanDirectory (directory) {
 
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name)
-
     if (entry.isDirectory()) {
       tasks.push(...(await scanDirectory(fullPath)))
     } else if (entry.isFile() && entry.name.endsWith('.js')) {
@@ -59,106 +73,70 @@ async function scanDirectory (directory) {
   return tasks
 }
 
-try {
-  const filePaths = await scanDirectory(appsDir)
-  logger.debug(`[memz-plugin] 构建模块路径完成，共计 ${filePaths.length} 个模块。`)
+async function loadModule (name, filePath) {
+  const loadStartTime = Date.now()
+  try {
+    const moduleExports = await import(filePath)
 
-  logger.debug('[memz-plugin] 开始并发加载所有模块...')
+    // 获取所有导出的类
+    const exportedClasses = Object.values(moduleExports).filter(exp => {
+      return typeof exp === 'function' &&
+             exp.prototype &&
+             exp.prototype.constructor &&
+             exp.prototype instanceof plugin
+    })
 
-  const loadModules = filePaths.map(({ name, filePath }) => {
-    const loadStartTime = Date.now()
-
-    return (async () => {
-      try {
-        if (moduleCache[filePath]) {
-          apps[name] = moduleCache[filePath]
-          const loadTime = Date.now() - loadStartTime
-          logger.debug(chalk.green(`[memz-plugin] 从缓存加载模块：${name}，耗时 ${loadTime} ms`))
-          successCount++
-          return
-        }
-
-        const moduleExports = await import(filePath)
-        const defaultExport = moduleExports?.default || moduleExports[Object.keys(moduleExports)[0]]
-
-        if (!defaultExport) {
-          logger.debug(`[memz-plugin] 模块 ${name} 没有有效的导出内容`)
-          return
-        }
-
-        let newName = name
-        let counter = 1
-
-        while (apps[newName]) {
-          newName = `${name}_${counter}`
-          counter++
-        }
-
-        apps[newName] = defaultExport
-        moduleCache[filePath] = defaultExport
-
-        const loadTime = Date.now() - loadStartTime
-        logger.debug(chalk.green(`[memz-plugin] 成功载入模块：${newName}，耗时 ${loadTime} ms`))
-        successCount++
-      } catch (error) {
-        logger.error(chalk.red(`[memz-plugin] 加载模块失败：${name}`))
-        logger.error(error)
-        failureCount++
-      }
-    })()
-  })
-
-  await Promise.allSettled(loadModules)
-} catch (error) {
-  logger.error(`[memz-plugin] 扫描或加载文件时出错：${chalk.red(error.message)}`)
-  logger.debug(error)
-}
-
-const watcher = chokidar.watch(appsDir, {
-  persistent: true,
-  // eslint-disable-next-line no-useless-escape
-  ignored: /(^|[\/\\])\../, // 忽略隐藏文件
-  ignoreInitial: true // 不触发初始事件
-})
-
-watcher.on('change', async (filePath) => {
-  if (filePath.endsWith('.js')) {
-    logger.info(chalk.yellow(`[memz-plugin] 文件发生变化：${filePath}`))
-
-    const moduleName = path.basename(filePath, '.js')
-    const fileUrl = pathToFileURL(filePath).hrefi
-
-    try {
-      delete moduleCache[fileUrl]
-
-      const moduleExports = await import(fileUrl)
+    if (exportedClasses.length === 0) {
+      // 如果没有继承自plugin的类,使用默认导出或第一个导出
       const defaultExport = moduleExports?.default || moduleExports[Object.keys(moduleExports)[0]]
-
       if (!defaultExport) {
-        logger.debug(`[memz-plugin] 模块 ${moduleName} 没有有效的导出内容`)
+        logger.debug(`[memz-plugin] 模块 ${name} 没有有效的导出内容`)
         return
       }
-
-      // 更新缓存中的模块
-      apps[moduleName] = defaultExport
-
-      // logger.info(chalk.green(`[memz-plugin] 热更新模块：${moduleName}`))
-      // 热更新个🥚,我不会
-    } catch (error) {
-      logger.error(chalk.red(`[memz-plugin] 热更新模块失败：${moduleName}`))
-      logger.error(error)
+      apps[name] = defaultExport
+      const loadTime = Date.now() - loadStartTime
+      logger.debug(chalk.green(`[memz-plugin] 成功载入模块：${name}，耗时 ${loadTime}ms`))
+      successCount++
+    } else {
+      // 如果有多个继承自plugin的类,都加载
+      exportedClasses.forEach((ExportedClass, index) => {
+        const className = ExportedClass.name
+        const key = exportedClasses.length === 1 ? name : `${name}_${className}`
+        apps[key] = ExportedClass
+      })
+      const loadTime = Date.now() - loadStartTime
+      logger.debug(chalk.green(`[memz-plugin] 成功载入模块：${name} (${exportedClasses.length} 个插件类)，耗时 ${loadTime}ms`))
+      successCount += exportedClasses.length
     }
+  } catch (error) {
+    logger.error(chalk.red(`[memz-plugin] 加载模块失败：${name}`))
+    logger.error(error)
+    failureCount++
   }
-})
+}
 
-const endTime = Date.now()
-const elapsedTime = endTime - startTime
+try {
+  const modules = await scanDirectory(appsDir)
+  logger.debug(`[memz-plugin] 发现模块：${modules.length} 个`)
 
-logger.info(coloredDashes)
-logger.info(chalk.green('MEMZ插件载入完成'))
-logger.info(`成功加载：${chalk.green(successCount)} 个`)
-logger.info(`加载失败：${chalk.red(failureCount)} 个`)
-logger.info(`总耗时：${chalk.yellow(elapsedTime)} 毫秒`)
-logger.info(coloredDashes)
+  // 加载
+  await Promise.all(
+    modules.map(({ name, filePath }) => loadModule(name, filePath))
+  )
+
+  // 加载统计
+  const endTime = Date.now()
+  const elapsedTime = endTime - startTime
+
+  logger.info(coloredDashes)
+  logger.info(chalk.green('MEMZ插件载入完成'))
+  logger.info(`成功加载：${chalk.green(successCount)} 个`)
+  logger.info(`加载失败：${chalk.red(failureCount)} 个`)
+  logger.info(`总耗时：${chalk.yellow(elapsedTime)} 毫秒`)
+  logger.info(coloredDashes)
+} catch (error) {
+  logger.error(chalk.red(`[memz-plugin] 插件加载失败：${error.message}`))
+  logger.debug(error)
+}
 
 export { apps }

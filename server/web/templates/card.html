@@ -1,0 +1,38 @@
+<div class="card">
+  <div class="card-header">
+    <h2>{{title}}</h2>
+    <span class="method {{method}}">{{method}}</span>
+  </div>
+  <div class="card-body">
+    <div class="info-section">
+      <div class="info-row">
+        <span class="label">路径:</span>
+        <code class="path">{{path}}</code>
+      </div>
+      {{#description}}
+      <div class="info-row">
+        <span class="label">说明:</span>
+        <span class="description">{{description}}</span>
+      </div>
+      {{/description}}
+    </div>
+    {{#hasParams}}
+    <div class="params-section">
+      <div class="params-header">参数列表</div>
+      <div class="params-list">
+        {{#params}}
+        <div class="param-item">
+          <div class="param-name-wrap">
+            <code class="param-name">{{name}}</code>
+            <span class="badge {{#required}}required{{/required}}{{^required}}optional{{/required}}">
+              {{#required}}必填{{/required}}{{^required}}可选{{/required}}
+            </span>
+          </div>
+          <div class="param-desc">{{description}}</div>
+        </div>
+        {{/params}}
+      </div>
+    </div>
+    {{/hasParams}}
+  </div>
+</div> 

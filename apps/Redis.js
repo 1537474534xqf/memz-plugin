@@ -100,7 +100,7 @@ export class RedisStatus extends plugin {
         }
 
         const image = await Render.render(
-          `HTML/redis/redis-${isPro ? 'pro' : 'basic'}.html`,
+          `web/html/redis/${isPro ? 'pro' : 'basic'}.html`,
           renderData,
           {
             e,
