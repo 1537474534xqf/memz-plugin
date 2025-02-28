@@ -4,7 +4,7 @@ import {
 } from './Screenshot.js'
 import {
   // 获取ICP备案信息
-  fetchIcpInfo,
+  fetchWestIcpInfo,
   // 翻译whois数据
   translateWhoisData,
   // 从HTML中提取SEO信息
@@ -31,7 +31,7 @@ export {
   // 截图
   generateScreenshot,
   // WebTools
-  fetchIcpInfo,
+  fetchWestIcpInfo,
   translateWhoisData,
   fetchSeoFromHtml,
   checkHttpStatus,

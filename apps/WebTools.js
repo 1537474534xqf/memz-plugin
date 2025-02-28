@@ -5,7 +5,7 @@ import * as cheerio from 'cheerio'
 import dns from 'dns'
 import net from 'net'
 import punycode from 'punycode/punycode.js'
-import { fetchIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
+import { fetchWestIcpInfo, translateWhoisData, fetchSeoFromHtml, checkHttpStatus, fetchSslInfo } from '#model'
 
 import puppeteer from '../../../lib/puppeteer/puppeteer.js'
 
@@ -498,11 +498,26 @@ export class WebTools extends plugin {
     }
 
     const domain = domainMatch[1].trim()
+    logger.info(`[memz-plugin] 备案查询域名API: ${memz.memz.icpBeian}`)
+    switch (memz.memz.icpBeian) {
+      case 1:
+        await this.westIcpInfo(e, domain)
+        break
+      case 2:
+        await this.baiduIcpInfo(e, domain)
+        break
+      case 3:
+        await this.icpShowIcpInfo(e, domain)
+        break
+      default:
+        await this.westIcpInfo(e, domain)
+        break
+    }
+  }
 
+  async westIcpInfo (e, domain) {
     try {
-      logger.debug(`[memz-plugin] 备案查询域名: ${domain}`)
-
-      const icpInfo = await fetchIcpInfo(domain)
+      const icpInfo = await fetchWestIcpInfo(domain)
 
       if (Object.keys(icpInfo).length === 0) {
         return await e.reply('未能获取到备案数据', true)
@@ -510,6 +525,42 @@ export class WebTools extends plugin {
 
       logger.debug(`[memz-plugin] 备案查询数据: ${JSON.stringify(icpInfo)}`)
 
+      const text = Object.entries(icpInfo)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n')
+
+      await e.reply(text, true)
+    } catch (error) {
+      logger.error(`[memz-plugin] 备案查询失败: ${error.message}`)
+      await e.reply(`错误: ${error.message}`, true)
+    }
+  }
+
+  // 暂定，百度这破接口太不稳定了
+  async baiduIcpInfo (e, domain) {
+
+  }
+
+  async icpShowIcpInfo (e, domain) {
+    try {
+      const response = await axios.get(`https://icp.show/query/web?search=${domain}`)
+      const data = response.data
+      let icpInfo = {}
+      if (data.code === 200 && data.data && data.data.list.length > 0) {
+        const item = data.data.list[0]
+        icpInfo = {
+          域名: item.domain,
+          主体名称: item.unitName,
+          备案号: item.mainLicence,
+          服务备案号: item.serviceLicence,
+          备案性质: item.natureName,
+          限制访问: item.limitAccess,
+          更新时间: item.updateRecordTime
+        }
+      }
+      if (Object.keys(icpInfo).length === 0) {
+        return await e.reply('未能获取到备案数据', true)
+      }
       const text = Object.entries(icpInfo)
         .map(([key, value]) => `${key}: ${value}`)
         .join('\n')

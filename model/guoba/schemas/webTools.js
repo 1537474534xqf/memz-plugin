@@ -38,6 +38,20 @@ export default [
     component: 'Switch'
   },
   {
+    field: 'memz.icpBeian',
+    label: '域名备案API',
+    bottomHelpMessage: 'itdog暂时不可用http测速',
+    component: 'Select',
+    componentProps: {
+      options: [
+        { label: '爬虫west.cn', value: 1 },
+        // { label: '百度接口', value: 2 },
+        { label: '工信部政务服务平台', value: 3 }
+      ],
+      placeholder: '请选择Ping类型'
+    }
+  },
+  {
     field: 'memz.DomainMinPricingAll',
     label: '域名价格',
     bottomHelpMessage: '域名常规最低价格查询(常规),关闭时仅主人可用',

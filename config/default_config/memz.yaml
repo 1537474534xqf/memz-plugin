@@ -37,6 +37,8 @@ SeoAll: true
 httpStatusAll: true
 # 是否所有人可用备案查询
 icpBeianAll: true
+# 备案接口
+icpBeian: 1
 # 是否所有人可用域名查询价格
 DomainMinPricingAll: true
 # 是否所有人可用网页截图

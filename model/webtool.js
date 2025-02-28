@@ -7,7 +7,7 @@ import { URL } from 'url'
 import puppeteer from 'puppeteer'
 
 // ICP备案查询
-export async function fetchIcpInfo (domain) {
+export async function fetchWestIcpInfo (domain) {
   // 去掉一些奇奇怪怪的东西
   domain = domain.replace(/^https?:\/\//, '')
   domain = domain.replace(/^www\./, '')
