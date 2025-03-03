@@ -28,7 +28,7 @@ git clone --depth=1 https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plu
 如果无法访问GitHub,可以使用**Ghproxy**进行安装
 
 ```bash
-git clone --depth=1 https://ghp.ci/https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
+git clone --depth=1 https://ghfast.top/https://github.com/MEMLTS/memz-plugin.git ./plugins/memz-plugin/
 ```
 
 #### 使用Gitee安装
