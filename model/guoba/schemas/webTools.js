@@ -40,7 +40,6 @@ export default [
   {
     field: 'memz.icpBeian',
     label: '域名备案API',
-    bottomHelpMessage: 'itdog暂时不可用http测速',
     component: 'Select',
     componentProps: {
       options: [

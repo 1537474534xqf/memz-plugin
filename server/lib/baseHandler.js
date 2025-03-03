@@ -6,8 +6,8 @@ export class BaseApiHandler {
  * 构造函数
  * 用于初始化请求处理对象
  *
- * @param {Object} req - 请求对象，包含请求相关信息（如URL、头部等）
- * @param {Object} res - 响应对象，用于向客户端发送响应
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
  * @param {Object} options - 可选配置对象，用于自定义请求处理行为，默认为空对象
  */
   constructor (req, res, options = {}) {
@@ -17,13 +17,15 @@ export class BaseApiHandler {
     this.res = res
     // 可选配置对象
     this.options = options
-    // 如果x-forwarded-proto头部存在，则使用该值，否则根据请求连接是否加密来判断
-    this.protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-    this.url = new URL(req.url, `${this.protocol}://${req.headers.host}`)
+    // Express中可以直接获取协议
+    this.protocol = req.protocol
+    // Express中可以直接访问baseUrl、originalUrl等
+    this.url = new URL(req.originalUrl, `${this.protocol}://${req.get('host')}`)
   }
 
   /**
    * 获取POST请求数据
+   * 在Express中已经通过body-parser中间件处理过，可以直接从req.body获取
    */
   getPostData () {
     return new Promise((resolve, reject) => {
@@ -31,28 +33,11 @@ export class BaseApiHandler {
         return reject(new Error('Not POST request'))
       }
 
-      let data = ''
-      this.req.on('data', chunk => {
-        data += chunk
-      })
-
-      this.req.on('end', () => {
-        try {
-          const body = JSON.parse(data)
-          resolve(body)
-        } catch (err) {
-          reject(new Error('Invalid JSON'))
-        }
-      })
-
-      // 监听请求体错误
-      this.req.on('error', err => {
-        reject(err)
-      })
-
-      // 请求体大小限制
-      if (this.req.headers['content-length'] > 1024 * 1024) { // 1MB
-        reject(new Error('Request body too large'))
+      // 如果使用了express.json()中间件，可以直接获取
+      if (this.req.body) {
+        return resolve(this.req.body)
+      } else {
+        reject(new Error('Request body not available. Make sure express.json() middleware is used.'))
       }
     })
   }
@@ -70,13 +55,18 @@ export class BaseApiHandler {
 
   /**
    * 参数验证
+   * 同时检查query和body中的参数
    */
   validateParams (params) {
     const missing = []
     for (const [key, required] of Object.entries(params)) {
-      // 判断参数是否为必填项且未传入
-      if (required && !this.url.searchParams.get(key) &&
-         (this.req.method === 'POST' ? !this.req.body?.[key] : true)) {
+      // 检查query参数
+      const queryValue = this.req.query[key]
+      // 检查body参数
+      const bodyValue = this.req.body?.[key]
+
+      // 如果是必填且两个地方都没有，则记为缺失
+      if (required && !queryValue && !bodyValue) {
         missing.push(key)
       }
     }

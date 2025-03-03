@@ -1,4 +1,5 @@
 import logger from './lib/logger.js'
+import express from 'express'
 import http from 'http'
 import https from 'https'
 import os from 'os'
@@ -7,16 +8,19 @@ import path from 'path'
 import chalk from 'chalk'
 import { pathToFileURL } from 'url'
 import Redis from 'ioredis'
+import cors from 'cors'
 import { PluginPath, isFramework } from '../components/Path.js'
 import Config from '../components/Config.js'
 import { RedisConfig } from '../components/Redis.js'
 import { generateMarkdownDocs, clearApiDocsCache } from './model/apiDocs.js'
 import chokidar from 'chokidar'
+import setupDebugRoutes from './tools/route-debugger.js'
 
 // 导入前端页面处理函数
 import { web } from './web/index.js'
 
 const config = Config.getConfig('api')
+const app = express()
 
 // 创建Redis客户端
 let redis = null
@@ -67,7 +71,7 @@ async function initRedis () {
 }
 
 const apiHandlersCache = {}
-const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [] }
+const loadStats = { success: 0, failure: 0, totalTime: 0, routeTimes: [], skipped: 0 }
 const REDIS_STATS_KEY = 'MEMZ/API'
 
 // 开发模式监听器
@@ -77,12 +81,23 @@ let watcher = null
 async function reloadApiModule (filePath) {
   try {
     const relativePath = path.relative(path.join(PluginPath, 'server', 'api'), filePath)
+    // 使用 path.posix 确保路径分隔符统一为 /
     const route = '/' + relativePath.replace(/\\/g, '/').replace(/\.js$/, '')
+    const normalizedRoute = route.replace(/\/+/g, '/')
 
-    // 清除模块缓存
+    // 清除模块缓存和旧路由
     const moduleUrl = pathToFileURL(filePath).href
-    delete apiHandlersCache[route]
+    delete apiHandlersCache[normalizedRoute]
     clearApiDocsCache()
+
+    // 尝试移除现有路由
+    app._router.stack = app._router.stack.filter(layer => {
+      if (layer.route && layer.route.path === normalizedRoute) {
+        logger.info(chalk.yellow(`[DEV] 移除已存在的路由: ${normalizedRoute}`))
+        return false
+      }
+      return true
+    })
 
     // 重新加载模块
     const startTime = Date.now()
@@ -90,10 +105,36 @@ async function reloadApiModule (filePath) {
     const handler = handlerModule.default
 
     if (typeof handler === 'function') {
-      apiHandlersCache[route] = handler
+      apiHandlersCache[normalizedRoute] = handler
       const loadTime = Date.now() - startTime
 
-      logger.info(chalk.green(`[DEV] 重载模块成功: ${route}`))
+      // 注册路由
+      const method = handlerModule.method || 'GET'
+      const lowercaseMethod = method.toLowerCase()
+
+      if (['get', 'post', 'put', 'delete', 'patch', 'options', 'head'].includes(lowercaseMethod)) {
+        app[lowercaseMethod](normalizedRoute, async (req, res) => {
+          try {
+            await handler(req, res)
+          } catch (err) {
+            logger.error(`[API错误] ${normalizedRoute}: ${err.message}`)
+            res.status(500).json({ error: '服务器内部错误', message: err.message })
+          }
+        })
+        logger.info(chalk.green(`[DEV] 注册路由: ${lowercaseMethod.toUpperCase()} ${normalizedRoute}`))
+      } else {
+        app.get(normalizedRoute, async (req, res) => {
+          try {
+            await handler(req, res)
+          } catch (err) {
+            logger.error(`[API错误] ${normalizedRoute}: ${err.message}`)
+            res.status(500).json({ error: '服务器内部错误', message: err.message })
+          }
+        })
+        logger.info(chalk.green(`[DEV] 注册路由: GET ${normalizedRoute} (默认)`))
+      }
+
+      logger.info(chalk.green(`[DEV] 重载模块成功: ${normalizedRoute}`))
       logger.info(chalk.blue(`[DEV] 重载耗时: ${loadTime}ms`))
 
       // 输出模块信息
@@ -110,7 +151,7 @@ async function reloadApiModule (filePath) {
       const apiDoc = await generateMarkdownDocs()
       await fs.writeFile(path.join(PluginPath, 'API.md'), apiDoc, 'utf8')
     } else {
-      logger.warn(chalk.yellow(`[DEV] 模块 ${route} 未导出有效的处理函数`))
+      logger.warn(chalk.yellow(`[DEV] 模块 ${normalizedRoute} 未导出有效的处理函数`))
     }
   } catch (error) {
     logger.error(chalk.red(`[DEV] 重载模块失败: ${error.message}`))
@@ -202,14 +243,12 @@ const updateRequestStats = async (ip, route) => {
 
 // 修改鉴权检查函数
 export const checkAuthAndBlacklist = async (req, res, token) => {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+  const ip = req.headers['x-forwarded-for'] || req.ip
 
   // 如果Redis不可用,只检查token
   if (!redisAvailable) {
     if (token !== config.token) {
-      res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({ error: '无效的访问令牌' }))
-      return false
+      return res.status(401).json({ error: '无效的访问令牌' })
     }
     return true
   }
@@ -219,9 +258,7 @@ export const checkAuthAndBlacklist = async (req, res, token) => {
     // IP黑名单检查
     const blacklisted = await redis.sismember(`${REDIS_STATS_KEY}:blacklistedIPs`, ip)
     if (blacklisted) {
-      res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({ error: '您的IP已被黑名单限制访问' }))
-      return false
+      return res.status(403).json({ error: '您的IP已被黑名单限制访问' })
     }
 
     // 检查失败次数
@@ -236,9 +273,9 @@ export const checkAuthAndBlacklist = async (req, res, token) => {
 
     // 如果失败次数达到设定次数且时间在设定窗口内，则返回限制
     if (failCount >= config.maxFailAttempts && Date.now() - failData.timestamp < config.timeWindow) {
-      res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({ error: `多次失败尝试，您的IP已被临时限制访问（超过 ${config.maxFailAttempts} 次失败，限制时长 ${config.timeWindow / 1000 / 60} 分钟）` }))
-      return false
+      return res.status(403).json({
+        error: `多次失败尝试，您的IP已被临时限制访问（超过 ${config.maxFailAttempts} 次失败，限制时长 ${config.timeWindow / 1000 / 60} 分钟）`
+      })
     }
 
     // token 验证
@@ -250,9 +287,7 @@ export const checkAuthAndBlacklist = async (req, res, token) => {
         await redis.hset(failKey, 'count', 1, 'timestamp', Date.now())
       }
 
-      res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({ error: '无效的访问令牌' }))
-      return false
+      return res.status(401).json({ error: '无效的访问令牌' })
     }
 
     if (failData) {
@@ -264,135 +299,62 @@ export const checkAuthAndBlacklist = async (req, res, token) => {
     // Redis出错时只检查token
     logger.debug(`[鉴权检查] Redis操作失败: ${err.message}`)
     if (token !== config.token) {
-      res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' })
-      res.end(JSON.stringify({ error: '无效的访问令牌' }))
-      return false
+      return res.status(401).json({ error: '无效的访问令牌' })
     }
     return true
   }
 }
 
-// 获取统计信息
-const getStats = async (req, res) => {
-  if (!redisAvailable) {
-    res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({ error: 'Redis服务不可用,统计功能已禁用' }))
-    return
-  }
-
-  const protocol = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http')
-  const parsedUrl = new URL(req.url, `${protocol}://${req.headers.host}`)
-
-  const token = parsedUrl.searchParams.get('token')
-
-  const isAuthorized = await checkAuthAndBlacklist(req, res, token)
-  if (!isAuthorized) return
-
-  try {
-    const keys = await redis.keys(`${REDIS_STATS_KEY}:*`)
-    const statsPromises = keys.map(async (key) => ({
-      [key.split(':').pop()]: await redis.hgetall(key)
-    }))
-    const stats = Object.assign({}, ...(await Promise.all(statsPromises)))
-
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify(stats, null, 2))
-  } catch (err) {
-    logger.error(chalk.red(`[统计错误] 获取统计信息失败: ${err.message}`))
-    res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' })
-    res.end(JSON.stringify({ error: '获取统计信息失败', details: err.message }))
-  }
-}
-
-// 健康检查
-const healthCheck = (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-  res.end(
-    JSON.stringify({
-      status: '服务正常',
-      time: new Date().toLocaleString()
-    })
-  )
-}
-
-// 获取favicon
-const serveFavicon = async (req, res) => {
-  try {
-    const faviconPath = path.join(PluginPath, 'server', 'favicon.ico')
-    const favicon = await fs.readFile(faviconPath)
-    res.writeHead(200, { 'Content-Type': 'image/x-icon' })
-    res.end(favicon)
-  } catch (err) {
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
-    res.end('404 未找到：favicon.ico')
-    logger.warn(`[favicon] 加载失败: ${err.message}`)
-  }
-}
-
-// 加载 API 服务
-const loadApiHandler = async (filePath, routePrefix = '') => {
-  const route = `${routePrefix}/${path.basename(filePath, '.js')}`
+// 请求日志记录中间件
+const requestLogger = async (req, res, next) => {
   const startTime = Date.now()
 
-  // 初始化 apiList 数组
-  if (!global.apiList) {
-    global.apiList = []
+  let ip = req.ip
+  if (config.cdn) {
+    ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.ip
   }
 
-  // 黑名单API
-  if (config.blackApiList.includes(route)) {
-    logger.info(chalk.yellow(`API加载跳过[黑名单]: ${route}`))
-    loadStats.skipped = (loadStats.skipped || 0) + 1
-    return
+  // 处理多个 X-Forwarded-For 头部中的多个 IP 地址，取最右边的 IP
+  if (ip && ip.includes(',')) {
+    ip = ip.split(',').pop().trim()
   }
 
-  try {
-    const handlerModule = await import(pathToFileURL(filePath))
-    const handler = handlerModule.default
-
-    if (typeof handler === 'function') {
-      apiHandlersCache[route] = handler
-      global.apiList.push({ path: route, title: handlerModule.title || null }) // 将路由存储到 apiList
-
-      const loadTime = Date.now() - startTime
-      loadStats.routeTimes.push({ route, time: loadTime })
-
-      // 加载成功
-      logger.debug(chalk.blueBright(`API加载完成 路由: ${route}, 耗时: ${loadTime}ms`))
-      loadStats.success++
-    } else {
-      // 无效文件
-      logger.warn(chalk.yellow(`API服务跳过无效文件: ${filePath}`))
-      loadStats.failure++
-    }
-  } catch (err) {
-    // 捕获错误的堆栈信息
-    const stackTrace = err.stack ? err.stack.split('\n') : []
-    stackTrace.forEach(line => {
-      if (line.includes('at ')) {
-        logger.error(chalk.red(`错误位置: ${line}`))
-      }
-    })
-
-    logger.error(`[加载调试] 错误详情:\n${err.stack}`)
-
-    loadStats.failure++
+  // 如果 IP 是 IPv6 映射的 IPv4 地址，去掉 "::ffff:" 前缀
+  if (ip && ip.startsWith('::ffff:')) {
+    ip = ip.replace('::ffff:', '')
   }
-}
 
-// 递归加载 API 服务
-const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
-  const entries = await fs.readdir(directory, { withFileTypes: true })
-  const loadPromises = entries.map(async (entry) => {
-    const fullPath = path.join(directory, entry.name)
-    if (entry.isDirectory()) {
-      return loadApiHandlersRecursively(fullPath, `${routePrefix}/${entry.name}`)
-    } else if (entry.isFile() && entry.name.endsWith('.js')) {
-      return loadApiHandler(fullPath, routePrefix)
-    }
+  // 黑名单和白名单检查
+  if (config.blacklistedIPs.includes(ip)) {
+    logger.warn(`[黑名单 IP] ${ip}`)
+    return res.status(403).send('403 禁止访问：您的 IP 已被列入黑名单')
+  }
+
+  if (config.whitelistedIPs.length > 0 && !config.whitelistedIPs.includes(ip)) {
+    return res.status(403).send('403 禁止访问：您的 IP 不在白名单中')
+  }
+
+  const route = req.path
+  logger.debug(`[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
+
+  // 记录请求日志
+  const log = [`[请求日志] IP: ${ip} 路由: ${route}`]
+  if (Object.keys(req.query).length > 0) {
+    const paramString = Object.entries(req.query).map(([key, value]) => `${key}:${value}`).join(',')
+    log.push(`参数: ${paramString}`)
+  }
+  logger.info(log.join(' '))
+  await updateRequestStats(ip, route)
+
+  // 监控响应完成时间
+  res.on('finish', () => {
+    const endTime = Date.now()
+    logger.info(`[请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`)
   })
-  await Promise.all(loadPromises)
+
+  next()
 }
+
 // 获取公网 IP
 async function getPublicIP () {
   const apiUrls = [
@@ -438,125 +400,150 @@ const getLocalIPs = async () => {
     public: publicIP
   }
 }
-const handleRequest = async (req, res) => {
-  const startTime = Date.now()
-  let ip
-  if (config.cdn) {
-    ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress
-  } else {
-    ip = req.socket.remoteAddress || req.headers['x-forwarded-for'] || req.headers['x-real-ip']
-  }
 
-  // 处理多个 X-Forwarded-For 头部中的多个 IP 地址，取最右边的 IP
-  if (ip && ip.includes(',')) {
-    ip = ip.split(',').pop().trim()
-  }
+// 注册所有应用级中间件
+app.set('trust proxy', config.cdn)
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-  // 如果 IP 是 IPv6 映射的 IPv4 地址，去掉 "::ffff:" 前缀
-  if (ip && ip.startsWith('::ffff:')) {
-    ip = ip.replace('::ffff:', '')
-  }
-
-  logger.debug(`[请求调试] 收到请求: IP=${ip}, URL=${req.url}, Method=${req.method}, Headers=${JSON.stringify(req.headers)}`)
-
-  // 黑名单和白名单检查
-  if (config.blacklistedIPs.includes(ip)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
-    res.end('403 禁止访问：您的 IP 已被列入黑名单')
-    logger.warn(`[黑名单 IP] ${ip}`)
-    return
-  }
-
-  if (config.whitelistedIPs.length > 0 && !config.whitelistedIPs.includes(ip)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' })
-    res.end('403 禁止访问：您的 IP 不在白名单中')
-    return
-  }
-
-  const url = new URL(req.url, `http://${req.headers.host}`)
-  const route = url.pathname
-
-  // 记录请求日志
-  const logRequest = async (route, ip) => {
-    const log = [`[请求日志] IP: ${ip} 路由: ${route}`]
-    const queryParams = new URLSearchParams(url.search)
-    if ([...queryParams].length > 0) {
-      const paramString = [...queryParams].map(([key, value]) => `${key}:${value}`).join(',')
-      log.push(`参数: ${paramString}`)
-    }
-    logger.info(log.join(' '))
-    await updateRequestStats(ip, route)
-  }
-
-  // 路由处理
-  if (route === '/') {
-    logRequest(route, ip)
-    return web(req, res)
-  }
-
-  if (route === '/health') {
-    logRequest(route, ip)
-    return healthCheck(req, res)
-  }
-
-  if (route === '/stats') {
-    logRequest(route, ip)
-    return await getStats(req, res)
-  }
-
-  if (route === '/favicon.ico') {
-    logRequest(route, ip)
-    return await serveFavicon(req, res)
-  }
-
-  const handler = apiHandlersCache[route]
-  if (handler) {
-    try {
-      logRequest(route, ip)
-
-      if (config.corsenabled) {
-        res.setHeader('Access-Control-Allow-Origin', config.corsorigin)
-      }
-      res.setHeader('Content-Type', 'application/json; charset=utf-8')
-
-      await handler(req, res)
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' })
-      res.end(`500 服务器内部错误：${err.message}`)
-      logger.error(`[${config.port}][MEMZ-API] 路由: ${route} 错误: ${err.message}`)
-    }
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
-    res.end('404 未找到：接口不存在')
-    logger.warn(`[404] 路由不存在: ${route}`)
-  }
-
-  const endTime = Date.now()
-  logger.info(`[请求完成] IP: ${ip} 路由: ${route} 响应时间: ${endTime - startTime}ms`)
+// 配置CORS
+if (config.corsenabled) {
+  app.use(cors({
+    origin: config.corsorigin,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }))
 }
 
-// 启动服务
+// 请求日志中间件
+app.use(requestLogger)
+
+const apiRouter = express.Router()
+
 export async function startServer () {
   try {
-    await initRedis() // 添加Redis初始化
+    await initRedis()
 
     const startTime = Date.now()
 
+    // 基础路由注册
+    app.get('/', (req, res) => web(req, res))
+    app.get('/health', (req, res) => res.json({ status: '服务正常', time: new Date().toLocaleString() }))
+    app.get('/favicon.ico', async (req, res) => {
+      try {
+        const faviconPath = path.join(PluginPath, 'server', 'favicon.ico')
+        const favicon = await fs.readFile(faviconPath)
+        res.setHeader('Content-Type', 'image/x-icon').send(favicon)
+      } catch (err) {
+        res.status(404).send('404 未找到：favicon.ico')
+      }
+    })
+
+    // 统计信息路由
+    app.get('/stats', async (req, res) => {
+      if (!redisAvailable) {
+        return res.status(503).json({ error: 'Redis 不可用，无法获取统计信息' })
+      }
+
+      try {
+        // 获取所有IP统计键
+        const keys = await redis.keys(`${REDIS_STATS_KEY}:Stats:*`)
+        const allStats = {}
+
+        // 遍历所有IP统计数据
+        for (const key of keys) {
+          const ip = key.split(':').pop()
+          const stats = await redis.hgetall(key)
+          allStats[ip] = stats
+        }
+
+        res.json({
+          message: '获取统计数据成功',
+          stats: allStats
+        })
+      } catch (err) {
+        res.status(500).json({ error: err.message })
+      }
+    })
+
+    // 设置调试路由
+    setupDebugRoutes(app)
+
+    // API路由器挂载 - 确保在加载API前挂载
+    app.use('/api', apiRouter)
+
+    // 加载API模块
     const apiDir = path.join(PluginPath, 'server', 'api')
     await loadApiHandlersRecursively(apiDir)
 
     loadStats.totalTime = Date.now() - startTime
 
+    // 验证路由加载
+    const routes = app._router.stack
+      .filter(layer => layer.route)
+      .map(layer => ({
+        path: layer.route.path,
+        methods: Object.keys(layer.route.methods)
+      }))
+
+    logger.debug(chalk.cyan(`直接注册的路由数量: ${routes.length}`))
+
+    // 输出API路由器中的路由
+    const apiRoutes = apiRouter.stack
+      .filter(layer => layer.route)
+      .map(layer => ({
+        path: layer.route.path,
+        methods: Object.keys(layer.route.methods)
+      }))
+
+    logger.debug(chalk.cyan(`API路由器中的路由数量: ${apiRoutes.length}`))
+
     logger.info(chalk.greenBright('**********************************'))
     logger.info(chalk.green('MEMZ-API 服务载入完成'))
     logger.info(chalk.greenBright(`成功加载：${loadStats.success} 个`))
     logger.info(chalk.yellowBright(`加载失败：${loadStats.failure} 个`))
-    logger.info(chalk.greenBright(`黑名单列表：${loadStats.skipped} 个`))
+    logger.info(chalk.greenBright(`黑名单列表：${loadStats.skipped || 0} 个`))
     logger.info(chalk.cyanBright(`总耗时：${loadStats.totalTime} 毫秒`))
     loadStats.routeTimes.forEach(({ route, time }) => {
       logger.info(chalk.magentaBright(`路由: ${route}, 加载时间: ${time}ms`))
     })
     logger.info(chalk.greenBright('**********************************'))
+
+    // 拼写纠正中间件
+    app.use((req, res, next) => {
+      const commonTypos = {
+        '/text': '/test',
+        '/debug/routes': '/api/debug/routes'
+      }
+
+      if (commonTypos[req.path]) {
+        logger.info(`[自动纠正] 将 ${req.path} 重定向到 ${commonTypos[req.path]}`)
+        return res.redirect(commonTypos[req.path])
+      }
+
+      next()
+    })
+
+    // 404处理器
+    app.use((req, res) => {
+      logger.warn(`[404] 路由不存在: ${req.path}`)
+      res.status(404).json({
+        code: 404,
+        message: '接口不存在',
+        path: req.path
+      })
+    })
+
+    // 错误处理中间件
+    app.use((err, req, res, next) => {
+      logger.error(`[服务器错误] ${err.message}`)
+      logger.error(err.stack)
+      res.status(500).json({
+        code: 500,
+        message: '服务器内部错误',
+        error: err.message
+      })
+    })
 
     // 生成API文档
     const apiDoc = await generateMarkdownDocs()
@@ -567,20 +554,20 @@ export async function startServer () {
       startDevMode()
     }
 
-    const serverOptions = config.httpsenabled
-      ? {
-          key: await fs.readFile(config.httpskey),
-          cert: await fs.readFile(config.httpscert)
-        }
-      : {}
+    // 创建HTTP/HTTPS服务器
+    let server
+    if (config.httpsenabled) {
+      const httpsOptions = {
+        key: await fs.readFile(config.httpskey),
+        cert: await fs.readFile(config.httpscert)
+      }
+      server = https.createServer(httpsOptions, app)
+    } else {
+      server = http.createServer(app)
+    }
 
-    const server = config.httpsenabled
-      ? https.createServer(serverOptions, handleRequest)
-      : http.createServer(handleRequest)
-
-    server.on('error', handleServerError)
-
-    server.listen(config.port, config.host || '0.0.0.0', '::', async () => {
+    // 启动服务器
+    server.listen(config.port, config.host || '0.0.0.0', async () => {
       const protocol = config.httpsenabled ? 'https' : 'http'
 
       try {
@@ -623,7 +610,7 @@ export async function startServer () {
       }
     })
 
-    // 添加关闭处理
+    // 关闭处理
     process.on('SIGINT', () => {
       stopDevMode()
       server.close()
@@ -632,26 +619,166 @@ export async function startServer () {
 
     return server
   } catch (error) {
-    handleStartupError(error)
+    if (error.code === 'ENOENT') {
+      logger.error(`文件未找到: ${error.path}。请检查配置文件中的路径是否正确。`)
+    } else {
+      logger.error(`启动服务器时发生错误: ${error.message}`)
+      logger.error(error.stack)
+    }
   }
 }
 
-// 处理服务器错误
-const handleServerError = (error) => {
-  const errorMessages = {
-    EADDRINUSE: `端口 ${config.port} 已被占用，请修改配置文件中的端口号或关闭占用该端口的程序。`,
-    EACCES: `端口 ${config.port} 权限不足，请尝试使用管理员权限启动程序，或者修改为更高的端口号（>=1024）。`
+// 加载 API 服务
+const loadApiHandler = async (filePath, routePrefix = '') => {
+  try {
+    const routePath = path.basename(filePath, '.js')
+    // 构建API路由路径，确保格式正确
+    let route
+    if (!routePrefix || routePrefix === '/') {
+      route = `/${routePath}`
+    } else {
+      route = `${routePrefix}/${routePath}`
+    }
+
+    // 确保路由以 / 开头并规范化
+    const normalizedRoute = route.startsWith('/') ? route : `/${route}`
+    // 进一步规范化，避免连续斜杠
+    const cleanedRoute = normalizedRoute.replace(/\/+/g, '/')
+
+    const startTime = Date.now()
+
+    if (!global.apiList) {
+      global.apiList = []
+    }
+
+    // 黑名单API
+    if (config.blackApiList.includes(cleanedRoute)) {
+      logger.info(chalk.yellow(`API加载跳过[黑名单]: ${cleanedRoute}`))
+      loadStats.skipped = (loadStats.skipped || 0) + 1
+      return
+    }
+
+    const handlerModule = await import(pathToFileURL(filePath))
+    const handler = handlerModule.default
+
+    if (typeof handler === 'function') {
+      apiHandlersCache[cleanedRoute] = handler
+      global.apiList.push({ path: cleanedRoute, title: handlerModule.title || null })
+
+      // 获取模块支持的方法
+      const method = handlerModule.method || 'GET'
+      const lowercaseMethod = method.toLowerCase()
+
+      // 定义API路径（去掉前导斜杠，因为apiRouter已挂载在/api下）
+      // 处理路径以适应apiRouter
+      const apiPath = cleanedRoute.startsWith('/') ? cleanedRoute.substring(1) : cleanedRoute
+
+      // 调试日志
+      logger.debug(chalk.gray(`注册API: 文件=${path.basename(filePath)}, 路径前缀=${routePrefix}, 最终路径=${apiPath}`))
+
+      // 确保是有效的HTTP方法
+      if (!['get', 'post', 'put', 'delete', 'patch', 'options', 'head'].includes(lowercaseMethod)) {
+        logger.warn(chalk.yellow(`无效的HTTP方法 ${method} 用于路由 ${cleanedRoute}，将默认使用GET`))
+
+        // 注册到apiRouter
+        apiRouter.get(apiPath, async (req, res) => {
+          try {
+            await handler(req, res)
+          } catch (err) {
+            logger.error(`[API错误] ${cleanedRoute}: ${err.message}`)
+            res.status(500).json({ error: '服务器内部错误', message: err.message })
+          }
+        })
+
+        // 同时注册一个不带前缀的路由用于调试
+        app.get(`/api/${apiPath}`, async (req, res) => {
+          try {
+            await handler(req, res)
+          } catch (err) {
+            logger.error(`[API错误] ${cleanedRoute}: ${err.message}`)
+            res.status(500).json({ error: '服务器内部错误', message: err.message })
+          }
+        })
+
+        logger.info(chalk.blue(`注册API路由: GET /api/${apiPath}`))
+      } else {
+        // 注册到apiRouter
+        apiRouter[lowercaseMethod](apiPath, async (req, res) => {
+          try {
+            await handler(req, res)
+          } catch (err) {
+            logger.error(`[API错误] ${cleanedRoute}: ${err.message}`)
+            res.status(500).json({ error: '服务器内部错误', message: err.message })
+          }
+        })
+
+        // 同时注册一个不带前缀的路由用于调试
+        app[lowercaseMethod](`/api/${apiPath}`, async (req, res) => {
+          try {
+            await handler(req, res)
+          } catch (err) {
+            logger.error(`[API错误] ${cleanedRoute}: ${err.message}`)
+            res.status(500).json({ error: '服务器内部错误', message: err.message })
+          }
+        })
+
+        logger.info(chalk.blue(`注册API路由: ${lowercaseMethod.toUpperCase()} /api/${apiPath}`))
+      }
+
+      const loadTime = Date.now() - startTime
+      loadStats.routeTimes.push({ route: cleanedRoute, time: loadTime })
+
+      // 加载成功
+      logger.info(chalk.blueBright(`API加载完成 路由: ${cleanedRoute}, 耗时: ${loadTime}ms`))
+      loadStats.success++
+    } else {
+      // 无效文件
+      logger.warn(chalk.yellow(`API服务跳过无效文件: ${filePath}`))
+      loadStats.failure++
+    }
+  } catch (err) {
+    // 捕获错误的堆栈信息
+    const stackTrace = err.stack ? err.stack.split('\n') : []
+    stackTrace.forEach(line => {
+      if (line.includes('at ')) {
+        logger.error(chalk.red(`错误位置: ${line}`))
+      }
+    })
+
+    logger.error(`[加载调试] 错误详情:\n${err.stack}`)
+    loadStats.failure++
   }
-  const message = errorMessages[error.code] || `服务器运行时发生未知错误: ${error.message}`
-  logger.error(chalk.red(message))
 }
 
-// 处理启动错误
-const handleStartupError = (error) => {
-  if (error.code === 'ENOENT') {
-    logger.error(`文件未找到: ${error.path}。请检查配置文件中的路径是否正确。`)
-  } else {
-    logger.error(`启动服务器时发生错误: ${error.message}`)
+// 递归加载 API 服务
+const loadApiHandlersRecursively = async (directory, routePrefix = '') => {
+  try {
+    const entries = await fs.readdir(directory, { withFileTypes: true })
+    const loadPromises = entries.map(async (entry) => {
+      const fullPath = path.join(directory, entry.name)
+      if (entry.isDirectory()) {
+        const dirName = entry.name
+
+        let newPrefix
+        if (!routePrefix || routePrefix === '/') {
+          newPrefix = `/${dirName}`
+        } else {
+          newPrefix = `${routePrefix}/${dirName}`
+        }
+
+        // 规范化处理
+        const normalizedPrefix = newPrefix.replace(/\/+/g, '/')
+
+        logger.debug(chalk.gray(`处理API子目录: ${dirName}, 路径前缀: ${normalizedPrefix}`))
+
+        return loadApiHandlersRecursively(fullPath, normalizedPrefix)
+      } else if (entry.isFile() && entry.name.endsWith('.js')) {
+        return loadApiHandler(fullPath, routePrefix)
+      }
+    })
+    await Promise.all(loadPromises)
+  } catch (err) {
+    logger.error(chalk.red(`加载API目录失败: ${directory} - ${err.message}`))
   }
 }
 
